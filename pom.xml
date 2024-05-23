@@ -44,6 +44,14 @@
 			<version>1.10.5</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.orekit/orekit -->
+		<dependency>
+			<groupId>org.orekit</groupId>
+			<artifactId>orekit</artifactId>
+			<version>12.0.2</version>
+		</dependency>
+
+
 	</dependencies>
 
 	<build>
