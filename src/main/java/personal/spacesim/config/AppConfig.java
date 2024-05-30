@@ -4,7 +4,8 @@ import org.orekit.frames.Frame;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import personal.spacesim.orekit.CustomFrameFactory;
-import personal.spacesim.services.CelestialService;
+import personal.spacesim.services.implementation.EarthService;
+
 
 @Configuration
 public class AppConfig {
@@ -15,7 +16,7 @@ public class AppConfig {
     }
 
     @Bean
-    public CelestialService celestialService() {
-        return new CelestialService();
+    public EarthService earthService() {
+        return new EarthService();
     }
 }

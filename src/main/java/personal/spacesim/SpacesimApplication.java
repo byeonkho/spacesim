@@ -8,7 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import personal.spacesim.services.CelestialService;
+import personal.spacesim.services.implementation.EarthService;
+
 
 @SpringBootApplication
 public class SpacesimApplication implements CommandLineRunner {
@@ -18,7 +19,7 @@ public class SpacesimApplication implements CommandLineRunner {
 	private Frame heliocentricFrame;
 
 	@Autowired
-	private CelestialService celestialService;
+	private EarthService earthService;
 
 	public static void main(String[] args) {
 		SpringApplication.run(SpacesimApplication.class, args);
@@ -28,8 +29,8 @@ public class SpacesimApplication implements CommandLineRunner {
 	public void run(String... args) {
 		AbsoluteDate date = new AbsoluteDate(2024, 5, 1, TimeScalesFactory.getUTC());
 
-		Vector3D earthPosition = celestialService.getEarthPosition(heliocentricFrame, date);
-		Vector3D earthVelocity = celestialService.getEarthVelocity(heliocentricFrame, date);
+		Vector3D earthPosition = earthService.getPosition(heliocentricFrame, date);
+		Vector3D earthVelocity = earthService.getVelocity(heliocentricFrame, date);
 
 		System.out.println("Heliocentric Position of Earth (in meters): " + earthPosition);
 		System.out.println("Heliocentric Velocity of Earth (in meters per second): " + earthVelocity);

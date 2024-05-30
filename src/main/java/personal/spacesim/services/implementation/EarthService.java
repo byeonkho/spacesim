@@ -1,4 +1,4 @@
-package personal.spacesim.services;
+package personal.spacesim.services.implementation;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.CelestialBody;
@@ -7,19 +7,27 @@ import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.springframework.stereotype.Service;
+import personal.spacesim.services.interfaces.PlanetaryOperations;
 
 @Service
-public class CelestialService {
+public class EarthService implements PlanetaryOperations {
 
-    public Vector3D getEarthPosition(Frame frame, AbsoluteDate date) {
-        CelestialBody earth = CelestialBodyFactory.getEarth();
+    private final CelestialBody earth;
+
+    public EarthService() {
+        this.earth = CelestialBodyFactory.getEarth();
+    }
+
+    @Override
+    public Vector3D getPosition(Frame frame, AbsoluteDate date) {
         PVCoordinates earthPV = earth.getPVCoordinates(date, frame);
         return earthPV.getPosition();
     }
 
-    public Vector3D getEarthVelocity(Frame frame, AbsoluteDate date) {
-        CelestialBody earth = CelestialBodyFactory.getEarth();
+    @Override
+    public Vector3D getVelocity(Frame frame, AbsoluteDate date) {
         PVCoordinates earthPV = earth.getPVCoordinates(date, frame);
         return earthPV.getVelocity();
     }
 }
+
