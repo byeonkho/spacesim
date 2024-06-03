@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import personal.spacesim.services.interfaces.PlanetaryOperations;
+import personal.spacesim.services.implementation.CelestialBodyWrapper;
+
 
 import java.util.Map;
 
@@ -18,10 +19,10 @@ import java.util.Map;
 public class PlanetController {
 
     // provided by CelestialServiceConfig
-    private final Map<String, PlanetaryOperations> celestialServices;
+    private final Map<String, CelestialBodyWrapper> celestialServices;
 
     @Autowired
-    public PlanetController(Map<String, PlanetaryOperations> celestialServices) {
+    public PlanetController(Map<String, CelestialBodyWrapper> celestialServices) {
         this.celestialServices = celestialServices;
     }
 
@@ -33,7 +34,7 @@ public class PlanetController {
         AbsoluteDate date = new AbsoluteDate(dateStr, TimeScalesFactory.getUTC());
         Frame frame = heliocentricFrame;
 
-        PlanetaryOperations service = celestialServices.get(planetName.toLowerCase());
+        CelestialBodyWrapper service = celestialServices.get(planetName.toLowerCase());
         if (service == null) {
             throw new IllegalArgumentException("Unsupported planet: " + planetName);
         }
@@ -46,7 +47,7 @@ public class PlanetController {
         AbsoluteDate date = new AbsoluteDate(dateStr, TimeScalesFactory.getUTC());
         Frame frame = heliocentricFrame;
 
-        PlanetaryOperations service = celestialServices.get(planetName.toLowerCase());
+        CelestialBodyWrapper service = celestialServices.get(planetName.toLowerCase());
         if (service == null) {
             throw new IllegalArgumentException("Unsupported planet: " + planetName);
         }

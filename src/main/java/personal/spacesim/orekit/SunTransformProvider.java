@@ -21,6 +21,7 @@ public class SunTransformProvider implements TransformProvider {
 
     @Override
     public Transform getTransform(AbsoluteDate date) {
+        //PV coordinates of the Sun using ICRF
         PVCoordinates pvCoordinates = sunPVProvider.getPVCoordinates(date, FramesFactory.getICRF());
         return new Transform(date, pvCoordinates.negate());
     }

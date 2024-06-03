@@ -11,7 +11,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import personal.spacesim.services.interfaces.PlanetaryOperations;
+import personal.spacesim.services.implementation.CelestialBodyWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
@@ -19,11 +19,11 @@ import java.util.Map;
 @Component
 public class WebSocketHandler extends TextWebSocketHandler {
 
-    private final Map<String, PlanetaryOperations> celestialServices;
+    private final Map<String, CelestialBodyWrapper> celestialServices;
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public WebSocketHandler(Map<String, PlanetaryOperations> celestialServices, ObjectMapper objectMapper) {
+    public WebSocketHandler(Map<String, CelestialBodyWrapper> celestialServices, ObjectMapper objectMapper) {
         this.celestialServices = celestialServices;
         this.objectMapper = objectMapper;
     }
@@ -34,7 +34,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
         String planetName = payload.get("planetName").toLowerCase();
         String dateStr = payload.get("dateStr");
 
-        PlanetaryOperations service = celestialServices.get(planetName);
+        CelestialBodyWrapper service = celestialServices.get(planetName);
         if (service == null) {
             session.sendMessage(new TextMessage("Unsupported planet: " + planetName));
             return;
