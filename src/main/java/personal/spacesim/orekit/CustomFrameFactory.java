@@ -1,5 +1,6 @@
 package personal.spacesim.orekit;
 
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -14,7 +15,9 @@ public class CustomFrameFactory {
         Frame icrfFrame = FramesFactory.getICRF();
 
         // Init the Sun and setup for transform into Heliocentric frame
-        TransformProvider sunTransformProvider = new SunTransformProvider(CelestialBodyFactory.getSun());
+
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        TransformProvider sunTransformProvider = sun.getInertiallyOrientedFrame().getTransformProvider();
 
         // Create the heliocentric frame
         return new Frame(icrfFrame, sunTransformProvider, "Heliocentric Frame");

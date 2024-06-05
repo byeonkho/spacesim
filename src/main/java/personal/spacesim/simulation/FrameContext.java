@@ -2,15 +2,13 @@ package personal.spacesim.simulation;
 
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.springframework.stereotype.Component;
 import personal.spacesim.orekit.CustomFrameFactory;
 
-@Component
 public class FrameContext {
     private Frame currentFrame;
 
-    public FrameContext(String frameName) {
-        setFrame(frameName);
+    public FrameContext() {
+        this.currentFrame = FramesFactory.getICRF();
     }
 
     public void setFrame(String frameName) {
