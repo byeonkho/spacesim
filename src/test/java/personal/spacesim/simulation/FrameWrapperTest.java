@@ -20,10 +20,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-class FrameContextTest {
+class FrameWrapperTest {
 
     @Autowired
-    private FrameContext frameContext;
+    private FrameWrapper frameWrapper;
 
     @BeforeAll
     static void setUpClass() throws IOException {
@@ -35,27 +35,27 @@ class FrameContextTest {
 
     @Test
     void testSetFrameICRF() {
-        frameContext.setFrame("ICRF");
+        frameWrapper.setFrame("ICRF");
         Frame expectedFrame = FramesFactory.getICRF();
-        Frame actualFrame = frameContext.getCurrentFrame();
+        Frame actualFrame = frameWrapper.getCurrentFrame();
         assertNotNull(actualFrame);
         assertEquals(expectedFrame.getName(), actualFrame.getName());
     }
 
     @Test
     void testSetFrameGCRF() {
-        frameContext.setFrame("GCRF");
+        frameWrapper.setFrame("GCRF");
         Frame expectedFrame = FramesFactory.getGCRF();
-        Frame actualFrame = frameContext.getCurrentFrame();
+        Frame actualFrame = frameWrapper.getCurrentFrame();
         assertNotNull(actualFrame);
         assertEquals(expectedFrame.getName(), actualFrame.getName());
     }
 
     @Test
     void testSetFrameHeliocentric() {
-        frameContext.setFrame("HELIOCENTRIC");
+        frameWrapper.setFrame("HELIOCENTRIC");
         Frame expectedFrame = CustomFrameFactory.createHeliocentricFrame();
-        Frame actualFrame = frameContext.getCurrentFrame();
+        Frame actualFrame = frameWrapper.getCurrentFrame();
         assertNotNull(actualFrame);
         assertEquals(expectedFrame.getName(), actualFrame.getName());
     }
@@ -63,7 +63,7 @@ class FrameContextTest {
     @Test
     void testSetFrameUnknown() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            frameContext.setFrame("UNKNOWN");
+            frameWrapper.setFrame("UNKNOWN");
         });
         assertEquals("Unknown frame: UNKNOWN", exception.getMessage());
     }

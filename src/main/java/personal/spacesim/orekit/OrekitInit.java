@@ -8,6 +8,8 @@ import java.io.File;
 
 public class OrekitInit {
 
+    //TODO orekit should be initialized on app start, responsibility should not be left to frame class
+
     private static boolean initialized = false;
 
     private OrekitInit() {

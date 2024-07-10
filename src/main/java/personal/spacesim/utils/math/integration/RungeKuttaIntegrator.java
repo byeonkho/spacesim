@@ -35,7 +35,7 @@ public class RungeKuttaIntegrator implements Integrator {
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(OrbitType.CARTESIAN);
 
-        PVCoordinates initialPV = new PVCoordinates(body.getCurrentPosition(), body.getCurrentVelocity());
+        PVCoordinates initialPV = new PVCoordinates(body.getPosition(), body.getVelocity());
         Orbit initialOrbit = new CartesianOrbit(initialPV, frame, currentDate, body.getMass());
         propagator.setInitialState(new SpacecraftState(initialOrbit));
 

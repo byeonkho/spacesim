@@ -15,8 +15,8 @@ public class EulerIntegrator implements Integrator {
 
         double mass = body.getMass();
         Vector3D acceleration = totalForce.scalarMultiply(1.0 / mass);
-        Vector3D newVelocity = body.getCurrentVelocity().add(acceleration.scalarMultiply(deltaTime));
-        Vector3D newPosition = body.getCurrentPosition().add(newVelocity.scalarMultiply(deltaTime));
+        Vector3D newVelocity = body.getVelocity().add(acceleration.scalarMultiply(deltaTime));
+        Vector3D newPosition = body.getPosition().add(newVelocity.scalarMultiply(deltaTime));
 
         body.setPosition(newPosition);
         body.setVelocity(newVelocity);

@@ -23,7 +23,6 @@ public class CelestialBodyWrapper {
         this.mass = this.getMass();
         this.position = body.getPVCoordinates(date, frame).getPosition();
         this.velocity = body.getPVCoordinates(date, frame).getVelocity();
-
     }
 
     public CelestialBodyWrapper(String name) {
@@ -32,14 +31,6 @@ public class CelestialBodyWrapper {
         this.defaultFrame = CustomFrameFactory.createHeliocentricFrame();
         this.position = body.getPVCoordinates(defaultDate, defaultFrame).getPosition();
         this.velocity = body.getPVCoordinates(defaultDate, defaultFrame).getVelocity();
-    }
-
-    public Vector3D getPosition(Frame frame, AbsoluteDate date) {
-        return body.getPVCoordinates(date, frame).getPosition();
-    }
-
-    public Vector3D getVelocity(Frame frame, AbsoluteDate date) {
-        return body.getPVCoordinates(date, frame).getVelocity();
     }
 
     public double getMass() {
@@ -58,11 +49,11 @@ public class CelestialBodyWrapper {
         this.velocity = velocity;
     }
 
-    public Vector3D getCurrentPosition() {
+    public Vector3D getPosition() {
         return position;
     }
 
-    public Vector3D getCurrentVelocity() {
+    public Vector3D getVelocity() {
         return velocity;
     }
 

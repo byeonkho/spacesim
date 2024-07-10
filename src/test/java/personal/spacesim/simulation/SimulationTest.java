@@ -1,6 +1,5 @@
 package personal.spacesim.simulation;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,7 +10,6 @@ import org.mockito.MockitoAnnotations;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
-import org.orekit.data.ZipJarCrawler;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -31,7 +29,7 @@ import static org.mockito.Mockito.*;
 class SimulationTest {
 
     @Mock
-    private FrameContext frameContext;
+    private FrameWrapper frameWrapper;
 
     @InjectMocks
     private Simulation simulation;
@@ -49,7 +47,7 @@ class SimulationTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         // Mock the getCurrentFrame method to return a valid Frame
-        when(frameContext.getCurrentFrame()).thenReturn(FramesFactory.getICRF());
+        when(frameWrapper.getCurrentFrame()).thenReturn(FramesFactory.getICRF());
     }
 
     @Test
@@ -76,7 +74,7 @@ class SimulationTest {
     @Test
     void testSetReferenceFrame() {
         simulation.setReferenceFrame("HELIOCENTRIC");
-        verify(frameContext, times(1)).setFrame("HELIOCENTRIC");
+        verify(frameWrapper, times(1)).setFrame("HELIOCENTRIC");
     }
 
     @Test

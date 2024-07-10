@@ -4,11 +4,15 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import personal.spacesim.orekit.CustomFrameFactory;
 
-public class FrameContext {
+public class FrameWrapper {
     private Frame currentFrame;
 
-    public FrameContext() {
-        this.currentFrame = FramesFactory.getICRF();
+    public FrameWrapper() {
+        setFrame("HELIOCENTRIC");
+    }
+
+    public FrameWrapper(String frameName) {
+        setFrame(frameName);
     }
 
     public void setFrame(String frameName) {
