@@ -2,26 +2,31 @@ package personal.spacesim.simulation;
 
 import org.orekit.time.AbsoluteDate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class SimulationSessionService {
 
-    private final ConcurrentHashMap<String, Simulation> simulationMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Simulation> simulationMap;
     private final SimulationFactory simulationFactory;
 
     @Autowired
-    public SimulationSessionService(SimulationFactory simulationFactory) {
+    public SimulationSessionService(SimulationFactory simulationFactory
+    ) {
         this.simulationFactory = simulationFactory;
+        this.simulationMap = new ConcurrentHashMap<>();
     }
 
-    public List<CelestialBodyWrapper> createSimulation(
+    public Simulation createSimulation(
             List<String> celestialBodyNames,
             String frameStr,
             String integratorStr,
@@ -29,6 +34,7 @@ public class SimulationSessionService {
     ) {
         String sessionID = UUID.randomUUID().toString();
         Simulation simulation = simulationFactory.createSimulation(
+                sessionID,
                 celestialBodyNames,
                 frameStr,
                 integratorStr,
@@ -38,28 +44,36 @@ public class SimulationSessionService {
                 sessionID,
                 simulation
         );
-        return simulation.getCelestialBodies();
+        return simulation;
     }
 
     public Simulation getSimulation(String sessionID) {
         return simulationMap.get(sessionID);
     }
 
+    public List<Simulation> getAllSimulations() {
+        return new ArrayList<>(simulationMap.values());
+    }
+
     public void removeSimulation(String sessionID) {
         simulationMap.remove(sessionID);
     }
 
-    public void runSimulation(
+    public Map<AbsoluteDate, List<CelestialBodyWrapper>> runSimulation(
             String sessionID,
             double totalTime,
             double deltaTime
     ) {
         Simulation simulation = getSimulation(sessionID);
         if (simulation != null) {
-            simulation.run(
-                    totalTime,
-                    deltaTime
-            );
+            try {
+                return simulation.run(totalTime, deltaTime);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException("Error running simulation", e);
+            }
+        } else {
+            throw new IllegalArgumentException("Simulation not found for session ID: " + sessionID);
         }
     }
 

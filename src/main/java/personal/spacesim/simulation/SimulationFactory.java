@@ -1,6 +1,5 @@
 package personal.spacesim.simulation;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import personal.spacesim.utils.math.integrators.IntegratorFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Component
 public class SimulationFactory {
@@ -27,19 +25,21 @@ public class SimulationFactory {
     @Autowired
     public SimulationFactory(IntegratorFactory integratorFactory,
                              CelestialBodyWrapperFactory celestialBodyWrapperFactory,
-                             CustomFrameFactory customFrameFactory) {
+                             CustomFrameFactory customFrameFactory
+                            ) {
         this.integratorFactory = integratorFactory;
         this.celestialBodyWrapperFactory = celestialBodyWrapperFactory;
         this.customFrameFactory = customFrameFactory;
+
     }
 
     public Simulation createSimulation(
+            String sessionID,
             List<String> celestialBodyNames,
             String frameStr,
             String integratorStr,
             AbsoluteDate simStartDate
     ) {
-        String sessionID = UUID.randomUUID().toString();
 
         // using singleton DI instead of static method
         Frame frame = customFrameFactory.createFrame(frameStr);

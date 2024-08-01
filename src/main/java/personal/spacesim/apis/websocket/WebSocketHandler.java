@@ -1,6 +1,7 @@
 package personal.spacesim.apis.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.orekit.time.AbsoluteDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -12,6 +13,7 @@ import personal.spacesim.simulation.body.CelestialBodyWrapper;
 import personal.spacesim.simulation.SimulationSessionService;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class WebSocketHandler extends TextWebSocketHandler {
@@ -44,17 +46,16 @@ public class WebSocketHandler extends TextWebSocketHandler {
             double deltaTime = request.getDeltaTime();
 
             if (sessionID == null || totalTime <= 0 || deltaTime <= 0) {
-                session.sendMessage(new TextMessage("Invalid payload"));
+                session.sendMessage(new TextMessage(    "Invalid payload"));
                 return;
             }
 
-            simulationSessionService.runSimulation(
+            Map<AbsoluteDate, List<CelestialBodyWrapper>> results = simulationSessionService.runSimulation(
                     sessionID,
                     totalTime,
                     deltaTime
             );
 
-            List<CelestialBodyWrapper> results = simulationSessionService.getSimulationResults(sessionID);
             session.sendMessage(new TextMessage(objectMapper.writeValueAsString(results)));
         } catch (Exception e) {
             e.printStackTrace();

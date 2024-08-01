@@ -1,5 +1,6 @@
 package personal.spacesim.config;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -15,6 +16,7 @@ public class JacksonConfig {
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
         module.addSerializer(Vector3D.class, new Vector3DSerializer());
+        mapper.configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true);
         mapper.registerModule(module);
         return mapper;
     }

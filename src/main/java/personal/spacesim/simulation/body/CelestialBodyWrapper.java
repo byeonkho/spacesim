@@ -24,6 +24,14 @@ public class CelestialBodyWrapper {
         this.velocity = body.getPVCoordinates(date, frame).getVelocity();
     }
 
+    // Copy constructor
+    public CelestialBodyWrapper(CelestialBodyWrapper other) {
+        this.body = other.body;
+        this.mass = other.mass;
+        this.position = new Vector3D(other.position.getX(), other.position.getY(), other.position.getZ());
+        this.velocity = new Vector3D(other.velocity.getX(), other.velocity.getY(), other.velocity.getZ());
+    }
+
     public double getMass() {
         return body.getGM() / Constants.GRAVITATIONAL_CONSTANT;
     }

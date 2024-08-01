@@ -7,10 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import personal.spacesim.dtos.SimulationRequestDTO;
 import personal.spacesim.dtos.SimulationResponseDTO;
+import personal.spacesim.simulation.Simulation;
 import personal.spacesim.simulation.SimulationSessionService;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/simulation")
@@ -33,32 +35,36 @@ public class SimulationController {
         String frameStr = request.getFrame();
         String integratorStr = request.getIntegrator();
 
-        List<CelestialBodyWrapper> celestialBodyList = simulationSessionService.createSimulation(
+        Simulation simulation = simulationSessionService.createSimulation(
                 celestialBodyNames,
                 frameStr,
                 integratorStr,
                 date
         );
-        SimulationResponseDTO responseDTO = new SimulationResponseDTO(celestialBodyList);
+
+        List<CelestialBodyWrapper> celestialBodyList = simulation.getCelestialBodies();
+        String sessionID = simulation.getSessionID();
+
+        SimulationResponseDTO responseDTO = new SimulationResponseDTO(celestialBodyList, sessionID);
 
         return ResponseEntity.ok(responseDTO);
     }
 
-//    @PostMapping("/run")
-//    public ResponseEntity<String> runSimulation(@RequestParam String sessionID, @RequestParam double totalTime, @RequestParam double deltaTime) {
-//        simulationSessionService.runSimulation(sessionID, totalTime, deltaTime);
-//        return ResponseEntity.ok("Simulation run for session: " + sessionID);
-//    }
-//
-//    @PostMapping("/update")
-//    public ResponseEntity<String> updateSimulation(@RequestParam String sessionID, @RequestParam double deltaTime) {
-//        simulationSessionService.updateSimulation(sessionID, deltaTime);
-//        return ResponseEntity.ok("Simulation updated for session: " + sessionID);
-//    }
+    @GetMapping("/getAllSimIDs")
+    public ResponseEntity<List<String>> getAllSimIDs() {
+        List<Simulation> simulations = simulationSessionService.getAllSimulations();
+        List<String> sessionIDs = simulations.stream()
+                .map(Simulation::getSessionID)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(sessionIDs);
+    }
 
-    @GetMapping("/results")
-    public ResponseEntity<List<CelestialBodyWrapper>> getSimulationResults(@RequestParam String sessionID) {
-        List<CelestialBodyWrapper> results = simulationSessionService.getSimulationResults(sessionID);
-        return ResponseEntity.ok(results);
+    @GetMapping("/checkIfExists")
+    public ResponseEntity<Boolean> checkIfExists(@RequestParam String sessionID) {
+        Simulation simulation = simulationSessionService.getSimulation(sessionID);
+        if (simulation != null) {
+            return ResponseEntity.ok(true);
+        }
+        return ResponseEntity.ok(false);
     }
 }
