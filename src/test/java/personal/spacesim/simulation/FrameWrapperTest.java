@@ -11,7 +11,7 @@ import org.orekit.frames.FramesFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import personal.spacesim.orekit.CustomFrameFactory;
+import personal.spacesim.simulation.frame.CustomFrameFactory;
 
 import java.io.File;
 import java.io.IOException;

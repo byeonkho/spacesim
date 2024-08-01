@@ -1,35 +1,37 @@
 package personal.spacesim.config;
 
-import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
-import org.springframework.context.annotation.Bean;
+import jakarta.annotation.PostConstruct;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import personal.spacesim.orekit.CustomFrameFactory;
-import personal.spacesim.services.implementation.EarthService;
-import personal.spacesim.services.implementation.MarsService;
-import personal.spacesim.services.implementation.MoonService;
-
+import org.orekit.data.DataContext;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
+import java.io.File;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Configuration
+@ComponentScan(basePackages = "personal.spacesim")
 public class AppConfig {
 
-    @Bean
-    public Frame heliocentricFrame() {
-        return CustomFrameFactory.createHeliocentricFrame();
+    private static final Logger logger = LoggerFactory.getLogger(AppConfig.class);
+
+    /**
+     * Initializes Orekit at start
+     */
+    @PostConstruct
+    public void initializeOrekit() {
+        logger.info("Initializing Orekit data...");
+        // Path to the directory containing Orekit data files
+        String orekitDataPath = "/Users/byeonkho/Desktop/personal projs/orekit-data";
+        File orekitData = new File(orekitDataPath);
+        if (!orekitData.exists() || !orekitData.isDirectory()) {
+            logger.error("Orekit data directory not found: {}", orekitDataPath);
+            throw new IllegalStateException("Orekit data directory not found: " + orekitDataPath);
+        }
+        DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
+        manager.addProvider(new DirectoryCrawler(orekitData));
+        logger.info("Orekit data initialized successfully.");
     }
 
-    @Bean
-    public EarthService earthService() {
-        return new EarthService();
-    }
-
-    @Bean
-    public MarsService marsService() {
-        return new MarsService();
-    }
-
-    @Bean
-    public MoonService moonService() {
-        return new MoonService();
-    }
 }

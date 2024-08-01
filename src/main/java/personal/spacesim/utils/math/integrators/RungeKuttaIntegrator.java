@@ -1,4 +1,4 @@
-package personal.spacesim.utils.math.integration;
+package personal.spacesim.utils.math.integrators;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
@@ -11,7 +11,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
-import personal.spacesim.services.implementation.CelestialBodyWrapper;
+import personal.spacesim.simulation.body.CelestialBodyWrapper;
 
 public class RungeKuttaIntegrator implements Integrator {
 

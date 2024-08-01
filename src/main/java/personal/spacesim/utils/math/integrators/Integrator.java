@@ -1,9 +1,9 @@
-package personal.spacesim.utils.math.integration;
+package personal.spacesim.utils.math.integrators;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import personal.spacesim.services.implementation.CelestialBodyWrapper;
+import personal.spacesim.simulation.body.CelestialBodyWrapper;
 
 public interface Integrator {
     void update(CelestialBodyWrapper body,

@@ -10,12 +10,11 @@ import org.mockito.MockitoAnnotations;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
-import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import personal.spacesim.services.implementation.CelestialBodyWrapper;
+import personal.spacesim.simulation.body.CelestialBodyWrapper;
 
 import java.io.File;
 import java.io.IOException;
@@ -83,8 +82,8 @@ class SimulationTest {
         simulation.addCelestialBody(body);
         AbsoluteDate initialDate = AbsoluteDate.J2000_EPOCH;
         simulation.update(3600.0);
-        verify(body, times(1)).getPosition(any(Frame.class), any(AbsoluteDate.class));
-        verify(body, times(1)).getVelocity(any(Frame.class), any(AbsoluteDate.class));
+        verify(body, times(1)).getPosition();
+        verify(body, times(1)).getVelocity();
     }
 
     @Test
@@ -92,7 +91,7 @@ class SimulationTest {
         CelestialBodyWrapper body = mock(CelestialBodyWrapper.class);
         simulation.addCelestialBody(body);
         simulation.run(7200.0, 3600.0);
-        verify(body, times(2)).getPosition(any(Frame.class), any(AbsoluteDate.class));
-        verify(body, times(2)).getVelocity(any(Frame.class), any(AbsoluteDate.class));
+        verify(body, times(1)).getPosition();
+        verify(body, times(1)).getVelocity();
     }
 }
