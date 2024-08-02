@@ -16,17 +16,32 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/simulation")
+
 public class SimulationController {
 
     private final SimulationSessionService simulationSessionService;
+
 
     @Autowired
     public SimulationController(SimulationSessionService simulationSessionService) {
         this.simulationSessionService = simulationSessionService;
     }
 
+    /**
+     *
+     * @param request payload consists of
+     *                1. simulation start date
+     *                2. list of celestial bodies to simulate
+     *                3. frame
+     *                4. integrator
+     * @return returns the list of celestial bodies with position and velocity at the simulation start date as a JSON
+     * object + the sessionID used
+     * to identify the simulation instance the client owns.
+     */
     @PostMapping("/initialize")
     public ResponseEntity<SimulationResponseDTO> initializeSimulation(@RequestBody SimulationRequestDTO request) {
+
+        // getting parameters from payload
         AbsoluteDate date = new AbsoluteDate(
                 request.getDate(),
                 TimeScalesFactory.getUTC()
@@ -35,6 +50,7 @@ public class SimulationController {
         String frameStr = request.getFrame();
         String integratorStr = request.getIntegrator();
 
+        // calling the service
         Simulation simulation = simulationSessionService.createSimulation(
                 celestialBodyNames,
                 frameStr,
@@ -42,11 +58,10 @@ public class SimulationController {
                 date
         );
 
+        // building response object
         List<CelestialBodyWrapper> celestialBodyList = simulation.getCelestialBodies();
         String sessionID = simulation.getSessionID();
-
         SimulationResponseDTO responseDTO = new SimulationResponseDTO(celestialBodyList, sessionID);
-
         return ResponseEntity.ok(responseDTO);
     }
 

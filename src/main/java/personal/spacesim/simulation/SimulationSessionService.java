@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import personal.spacesim.dtos.WebSocketMetaData;
+import personal.spacesim.dtos.WebSocketResponseDTO;
+import personal.spacesim.simulation.body.CelestialBodySnapshot;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
 
 import java.util.ArrayList;
@@ -61,7 +63,7 @@ public class SimulationSessionService {
         simulationMap.remove(sessionID);
     }
 
-    public Map<WebSocketMetaData, List<CelestialBodyWrapper>> runSimulation(
+    public WebSocketResponseDTO runSimulation(
             String sessionID,
             double totalTime,
             double deltaTime
@@ -76,16 +78,6 @@ public class SimulationSessionService {
             }
         } else {
             throw new IllegalArgumentException("Simulation not found for session ID: " + sessionID);
-        }
-    }
-
-    public void updateSimulation(
-            String sessionID,
-            double deltaTime
-    ) {
-        Simulation simulation = getSimulation(sessionID);
-        if (simulation != null) {
-            simulation.update(deltaTime);
         }
     }
 

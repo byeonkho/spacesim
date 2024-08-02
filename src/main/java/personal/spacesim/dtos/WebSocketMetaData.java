@@ -8,7 +8,7 @@ import java.util.Objects;
 
 public class WebSocketMetaData {
 
-    @JsonSerialize(using = AbsoluteDateSerializer.class)
+
     private AbsoluteDate date;
 
     public AbsoluteDate getDate() {
@@ -19,10 +19,6 @@ public class WebSocketMetaData {
         this.date = date;
     }
 
-    @Override
-    public String toString() {
-        return "date: " + date.toString();
-    }
 
     @Override
     public boolean equals(Object o) {

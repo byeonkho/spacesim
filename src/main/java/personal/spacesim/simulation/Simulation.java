@@ -4,6 +4,8 @@
     import org.orekit.frames.Frame;
     import org.orekit.time.AbsoluteDate;
     import personal.spacesim.dtos.WebSocketMetaData;
+    import personal.spacesim.dtos.WebSocketResponseDTO;
+    import personal.spacesim.simulation.body.CelestialBodySnapshot;
     import personal.spacesim.utils.math.functions.Gravity;
     import personal.spacesim.utils.math.integrators.Integrator;
     import personal.spacesim.simulation.body.CelestialBodyWrapper;
@@ -39,8 +41,7 @@
             this.simCurrentDate = simStartDate;
         }
 
-        public List<CelestialBodyWrapper> update(double deltaTime) {
-
+        private void update(double deltaTime) {
             simCurrentDate = simCurrentDate.shiftedBy(deltaTime);
 
             for (CelestialBodyWrapper body : celestialBodies) {
@@ -63,24 +64,22 @@
                 logger.info("{} Position: {}, Velocity: {}", body.getName(), body.getPosition(),
                             body.getVelocity());
             }
-
-            return new ArrayList<>(celestialBodies);
         }
 
-        public Map<WebSocketMetaData, List<CelestialBodyWrapper>> run(double totalTime, double deltaTime) {
+        public WebSocketResponseDTO run(double totalTime, double deltaTime) {
             double currentTime = 0;
-            Map<WebSocketMetaData, List<CelestialBodyWrapper>> results = new LinkedHashMap<>();
+            Map<WebSocketMetaData, List<CelestialBodySnapshot>> results = new LinkedHashMap<>();
 
             while (currentTime < totalTime) {
                 WebSocketMetaData metaData = new WebSocketMetaData();
                 // First iteration
                 if (currentTime == 0) {
                     metaData.setDate(simStartDate);
-                    results.put(metaData, deepCopyCelestialBodies(celestialBodies));
+                    results.put(metaData, snapshotCelestialBodies(celestialBodies));
                 } else {
                     update(deltaTime);
                     metaData.setDate(simCurrentDate);
-                    results.put(metaData, deepCopyCelestialBodies(celestialBodies));
+                    results.put(metaData, snapshotCelestialBodies(celestialBodies));
                 }
                 currentTime += deltaTime;
                 logger.info("Simulation time: {} seconds", currentTime);
@@ -89,13 +88,18 @@
             logger.info("Simulation completed for total time: {} seconds", totalTime);
             logger.info("Simulation ran using frame: {}", frame.getName());
 
-            return results;
+            return new WebSocketResponseDTO(results);
         }
 
-        private List<CelestialBodyWrapper> deepCopyCelestialBodies(List<CelestialBodyWrapper> originalList) {
-            List<CelestialBodyWrapper> copy = new ArrayList<>();
+        private List<CelestialBodySnapshot> snapshotCelestialBodies(List<CelestialBodyWrapper> originalList) {
+            List<CelestialBodySnapshot> copy = new ArrayList<>();
             for (CelestialBodyWrapper body : originalList) {
-                copy.add(new CelestialBodyWrapper(body));
+                CelestialBodySnapshot snapshot = new CelestialBodySnapshot();
+                snapshot.setMass(body.getMass());
+                snapshot.setPosition(body.getPosition());
+                snapshot.setVelocity(body.getVelocity());
+                snapshot.setName(body.getName());
+                copy.add(snapshot);
             }
             return copy;
         }
