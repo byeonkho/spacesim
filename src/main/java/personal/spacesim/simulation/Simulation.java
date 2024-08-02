@@ -3,6 +3,7 @@
     import org.hipparchus.geometry.euclidean.threed.Vector3D;
     import org.orekit.frames.Frame;
     import org.orekit.time.AbsoluteDate;
+    import personal.spacesim.dtos.WebSocketMetaData;
     import personal.spacesim.utils.math.functions.Gravity;
     import personal.spacesim.utils.math.integrators.Integrator;
     import personal.spacesim.simulation.body.CelestialBodyWrapper;
@@ -66,17 +67,20 @@
             return new ArrayList<>(celestialBodies);
         }
 
-        public Map<AbsoluteDate, List<CelestialBodyWrapper>> run(double totalTime, double deltaTime) {
+        public Map<WebSocketMetaData, List<CelestialBodyWrapper>> run(double totalTime, double deltaTime) {
             double currentTime = 0;
-            Map<AbsoluteDate, List<CelestialBodyWrapper>> results = new LinkedHashMap<>();
+            Map<WebSocketMetaData, List<CelestialBodyWrapper>> results = new LinkedHashMap<>();
 
             while (currentTime < totalTime) {
+                WebSocketMetaData metaData = new WebSocketMetaData();
                 // First iteration
                 if (currentTime == 0) {
-                    results.put(simCurrentDate, deepCopyCelestialBodies(celestialBodies));
+                    metaData.setDate(simStartDate);
+                    results.put(metaData, deepCopyCelestialBodies(celestialBodies));
                 } else {
                     update(deltaTime);
-                    results.put(simCurrentDate, deepCopyCelestialBodies(celestialBodies));
+                    metaData.setDate(simCurrentDate);
+                    results.put(metaData, deepCopyCelestialBodies(celestialBodies));
                 }
                 currentTime += deltaTime;
                 logger.info("Simulation time: {} seconds", currentTime);

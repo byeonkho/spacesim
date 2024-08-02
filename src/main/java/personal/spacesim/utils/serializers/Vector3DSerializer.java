@@ -1,4 +1,4 @@
-package personal.spacesim.utils;
+package personal.spacesim.utils.serializers;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;

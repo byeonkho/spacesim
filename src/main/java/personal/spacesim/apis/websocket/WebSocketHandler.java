@@ -8,6 +8,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.stereotype.Component;
+import personal.spacesim.dtos.WebSocketMetaData;
 import personal.spacesim.dtos.WebsocketRequestDTO;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
 import personal.spacesim.simulation.SimulationSessionService;
@@ -50,7 +51,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 return;
             }
 
-            Map<AbsoluteDate, List<CelestialBodyWrapper>> results = simulationSessionService.runSimulation(
+            Map<WebSocketMetaData, List<CelestialBodyWrapper>> results = simulationSessionService.runSimulation(
                     sessionID,
                     totalTime,
                     deltaTime

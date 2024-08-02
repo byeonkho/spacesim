@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
+import personal.spacesim.dtos.WebSocketMetaData;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
 
 import java.util.ArrayList;
@@ -32,7 +33,8 @@ public class SimulationSessionService {
             String integratorStr,
             AbsoluteDate simStartDate
     ) {
-        String sessionID = UUID.randomUUID().toString();
+//        String sessionID = UUID.randomUUID().toString();
+        String sessionID = "1";
         Simulation simulation = simulationFactory.createSimulation(
                 sessionID,
                 celestialBodyNames,
@@ -59,7 +61,7 @@ public class SimulationSessionService {
         simulationMap.remove(sessionID);
     }
 
-    public Map<AbsoluteDate, List<CelestialBodyWrapper>> runSimulation(
+    public Map<WebSocketMetaData, List<CelestialBodyWrapper>> runSimulation(
             String sessionID,
             double totalTime,
             double deltaTime
