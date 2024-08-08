@@ -1,20 +1,20 @@
+
 import { MeshProps, useFrame } from "@react-three/fiber";
 import React, {useEffect, useRef, useState} from "react";
 import * as THREE from "three";
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from "@/app/store/store";
-import { setActiveCelestialBodyId } from "@/app/store/CelestialBodySlice";
-import CelestialBodyGUI from './CelestialBodyGUI';
+import {setActiveCelestialBodyName} from "@/app/store/simulationSlice";
 import {GUI} from "dat.gui";
 
-interface SphereProps extends Omit<MeshProps, 'id'> {
-    id: string;
+interface CelestialBodyProps extends Omit<MeshProps, 'id'> {
+    name: string;
     color?: THREE.ColorRepresentation;
     // args?: [number, number, number];
 }
 
-const Sphere: React.FC<SphereProps> = ({
-                                           id,
+const CelestialBody: React.FC<CelestialBodyProps> = ({
+                                           name,
 
                                            args = [5, 16, 32],
                                            color= 'orange',// Default args value
@@ -26,39 +26,47 @@ const Sphere: React.FC<SphereProps> = ({
     // const celestialBody = useSelector((state: RootState) =>
     //     state.celestialBody.bodies.find(body => body.id === id)
     // );
-    const activeCelestialBodyId = useSelector((state: RootState) => state.celestialBody.activeSphereId);
+    const activeCelestialBodyName = useSelector((state: RootState) => state.simulation.activeCelestialBodyName);
 
     useEffect(() => {
-        if (meshRef.current) {
-            const gui = new GUI();
+        if (typeof window !== 'undefined' && meshRef.current) {
+            import('dat.gui').then(({ GUI }) => { // executes only if the window object exists. dat.gui needs it and
+                // it's only available on the browser. next.js renders SSR and skips this, react then executes it CSR.
+                const gui = new GUI();
 
-            // Position Controls
-            const positionFolder = gui.addFolder(`Position Controls - ${id}`);
-            positionFolder.add(meshRef.current.position, 'x', -50, 50);
-            positionFolder.add(meshRef.current.position, 'y', -50, 50);
-            positionFolder.add(meshRef.current.position, 'z', -50, 50);
-            positionFolder.open();
 
-            // Rotation Controls
-            const rotationFolder = gui.addFolder(`Rotation Controls - ${id}`);
-            rotationFolder.add(meshRef.current.rotation, 'x', 0, Math.PI * 2);
-            rotationFolder.add(meshRef.current.rotation, 'y', 0, Math.PI * 2);
-            rotationFolder.add(meshRef.current.rotation, 'z', 0, Math.PI * 2);
-            rotationFolder.open();
+                // if (typeof window !== 'undefined' && meshRef.current) {
+                //     import('dat.gui').then(({ GUI }) => { // executes only if the window object exists. dat.gui needs it and
+                //         // it's only available on the browser. next.js renders SSR and skips this, react then executes it CSR.
 
-            return () => {
-                gui.destroy();
-            };
+                // Position Controls
+                const positionFolder = gui.addFolder(`Position Controls - ${name}`);
+                positionFolder.add(meshRef.current.position, 'x', -50, 50);
+                positionFolder.add(meshRef.current.position, 'y', -50, 50);
+                positionFolder.add(meshRef.current.position, 'z', -50, 50);
+                positionFolder.open();
+
+                // Rotation Controls
+                const rotationFolder = gui.addFolder(`Rotation Controls - ${name}`);
+                rotationFolder.add(meshRef.current.rotation, 'x', 0, Math.PI * 2);
+                rotationFolder.add(meshRef.current.rotation, 'y', 0, Math.PI * 2);
+                rotationFolder.add(meshRef.current.rotation, 'z', 0, Math.PI * 2);
+                rotationFolder.open();
+
+                return () => {
+                    gui.destroy();
+                };
+            });
         }
-    }, [id]);
+    }, [name]);
 
     return (
         <>
             <mesh
                 {...props}
                 ref={meshRef}
-                scale={activeCelestialBodyId === id ? 1.5 : 1}
-                onClick={() => dispatch(setActiveCelestialBodyId(activeCelestialBodyId === id ? null : id))}
+                scale={activeCelestialBodyName === name ? 1.5 : 1}
+                onClick={() => dispatch(setActiveCelestialBodyName(activeCelestialBodyName === name ? null : name))}
                 onPointerOver={() => setHover(true)}
                 onPointerOut={() => setHover(false)}
             >
@@ -69,4 +77,4 @@ const Sphere: React.FC<SphereProps> = ({
     );
 }
 
-export default Sphere;
+export default CelestialBody;

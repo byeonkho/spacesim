@@ -8,7 +8,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.stereotype.Component;
-import personal.spacesim.dtos.WebSocketMetaData;
+
 import personal.spacesim.dtos.WebSocketResponseDTO;
 import personal.spacesim.dtos.WebsocketRequestDTO;
 import personal.spacesim.simulation.body.CelestialBodySnapshot;
@@ -42,7 +42,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
      * The websocket currently handles a single responsibility: to receive the command parameters and run
      * the respective simulation.
      *
-     * @param session JSON response payload is a LinkedHashMap with keys of type {@link WebSocketMetaData} and values of
+     * @param session JSON response payload is a LinkedHashMap with keys of type {@link WebSocketResponseKey} and values of
      *                type ArrayList of {@link CelestialBodySnapshot}. Each key-value pair encapsulates the information
      *                required for the frontend to render the simulation at each time step, namely:
      *                <ul>

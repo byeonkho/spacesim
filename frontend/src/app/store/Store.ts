@@ -1,9 +1,9 @@
 import { configureStore } from '@reduxjs/toolkit';
-import celestialBodyReducer from './CelestialBodySlice';
+import simulationSliceReducer from './simulationSlice';
 
 export const store = configureStore({
     reducer: {
-        celestialBody: celestialBodyReducer,
+        simulation: simulationSliceReducer,
     },
 });
 

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import personal.spacesim.dtos.SimulationRequestDTO;
 import personal.spacesim.dtos.SimulationResponseDTO;
+import personal.spacesim.dtos.SimulationResponseMetadata;
 import personal.spacesim.simulation.Simulation;
 import personal.spacesim.simulation.SimulationSessionService;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
@@ -61,7 +62,10 @@ public class SimulationController {
         // building response object
         List<CelestialBodyWrapper> celestialBodyList = simulation.getCelestialBodies();
         String sessionID = simulation.getSessionID();
-        SimulationResponseDTO responseDTO = new SimulationResponseDTO(celestialBodyList, sessionID);
+        List<SimulationResponseMetadata> celestialBodyMetadata = celestialBodyList.stream()
+                .map(body -> new SimulationResponseMetadata(body.getName(), body.getMass(), body.getRadius()))
+                .toList();
+        SimulationResponseDTO responseDTO = new SimulationResponseDTO(celestialBodyList, sessionID, celestialBodyMetadata);
         return ResponseEntity.ok(responseDTO);
     }
 

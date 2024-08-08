@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import * as dat from 'dat.gui';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from "@/app/store/store";
-import {updateRotation} from "@/app/store/CelestialBodySlice"
+import {updateRotation} from "@/app/store/simulationSlice"
 
 interface CelestialBodyGUIProps {
   id: string;

@@ -1,12 +1,10 @@
 package personal.spacesim.dtos;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.orekit.time.AbsoluteDate;
-import personal.spacesim.utils.serializers.AbsoluteDateSerializer;
 
 import java.util.Objects;
 
-public class WebSocketMetaData {
+public class WebSocketResponseKey {
 
 
     private AbsoluteDate date;
@@ -19,12 +17,11 @@ public class WebSocketMetaData {
         this.date = date;
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        WebSocketMetaData that = (WebSocketMetaData) o;
+        WebSocketResponseKey that = (WebSocketResponseKey) o;
         return Objects.equals(
                 date,
                 that.date

@@ -3,8 +3,8 @@ package personal.spacesim.utils.serializers;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import personal.spacesim.dtos.WebSocketMetaData;
 import personal.spacesim.dtos.WebSocketResponseDTO;
+import personal.spacesim.dtos.WebSocketResponseKey;
 import personal.spacesim.simulation.body.CelestialBodySnapshot;
 
 import java.io.IOException;
@@ -16,7 +16,7 @@ public class WebSocketResponseSerializer extends JsonSerializer<WebSocketRespons
     @Override
     public void serialize(WebSocketResponseDTO value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         gen.writeStartObject();
-        for (Map.Entry<WebSocketMetaData, List<CelestialBodySnapshot>> entry : value.getResults().entrySet()) {
+        for (Map.Entry<WebSocketResponseKey, List<CelestialBodySnapshot>> entry : value.getResults().entrySet()) {
             String fieldName = "date: " + entry.getKey().getDate().toString();  // Prepend "date: " to the date string
             gen.writeFieldName(fieldName);
             gen.writeObject(entry.getValue());

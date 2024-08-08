@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
-import personal.spacesim.dtos.WebSocketMetaData;
 import personal.spacesim.dtos.WebSocketResponseDTO;
 import personal.spacesim.simulation.body.CelestialBodySnapshot;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;

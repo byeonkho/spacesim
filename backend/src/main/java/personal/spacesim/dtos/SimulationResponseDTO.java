@@ -2,6 +2,7 @@ package personal.spacesim.dtos;
 
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SimulationResponseDTO {
@@ -9,9 +10,13 @@ public class SimulationResponseDTO {
     private List<CelestialBodyWrapper> celestialBodyList;
     private String sessionID;
 
-    public SimulationResponseDTO (List<CelestialBodyWrapper> celestialBodyList, String sessionID) {
+
+    private List<SimulationResponseMetadata> celestialBodyMetadata;
+
+    public SimulationResponseDTO (List<CelestialBodyWrapper> celestialBodyList, String sessionID, List<SimulationResponseMetadata> celestialBodyMetadata) {
         this.celestialBodyList = celestialBodyList;
         this.sessionID = sessionID;
+        this.celestialBodyMetadata = celestialBodyMetadata;
     }
 
     public List<CelestialBodyWrapper> getCelestialBodyList() {
@@ -30,5 +35,12 @@ public class SimulationResponseDTO {
         this.celestialBodyList = celestialBodyList;
     }
 
+    public List<SimulationResponseMetadata> getMetadataList() {
+        return celestialBodyMetadata;
+    }
+
+    public void setMetadataList(List<SimulationResponseMetadata> celestialBodyMetadata) {
+        this.celestialBodyMetadata = celestialBodyMetadata;
+    }
 
 }

@@ -3,8 +3,9 @@
     import org.hipparchus.geometry.euclidean.threed.Vector3D;
     import org.orekit.frames.Frame;
     import org.orekit.time.AbsoluteDate;
-    import personal.spacesim.dtos.WebSocketMetaData;
+
     import personal.spacesim.dtos.WebSocketResponseDTO;
+    import personal.spacesim.dtos.WebSocketResponseKey;
     import personal.spacesim.simulation.body.CelestialBodySnapshot;
     import personal.spacesim.utils.math.functions.Gravity;
     import personal.spacesim.utils.math.integrators.Integrator;
@@ -68,10 +69,10 @@
 
         public WebSocketResponseDTO run(double totalTime, double deltaTime) {
             double currentTime = 0;
-            Map<WebSocketMetaData, List<CelestialBodySnapshot>> results = new LinkedHashMap<>();
+            Map<WebSocketResponseKey, List<CelestialBodySnapshot>> results = new LinkedHashMap<>();
 
             while (currentTime < totalTime) {
-                WebSocketMetaData metaData = new WebSocketMetaData();
+                WebSocketResponseKey metaData = new WebSocketResponseKey();
                 // First iteration
                 if (currentTime == 0) {
                     metaData.setDate(simStartDate);
