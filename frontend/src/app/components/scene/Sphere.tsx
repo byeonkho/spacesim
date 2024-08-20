@@ -3,19 +3,17 @@ import { MeshProps, useFrame } from "@react-three/fiber";
 import React, {useEffect, useRef, useState} from "react";
 import * as THREE from "three";
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from "@/app/store/store";
+import { AppDispatch, RootState } from "@/app/store/Store";
 import {setActiveCelestialBodyName} from "@/app/store/simulationSlice";
 import {GUI} from "dat.gui";
 
-interface CelestialBodyProps extends Omit<MeshProps, 'id'> {
+interface CelestialBodyProps extends MeshProps {
     name: string;
     color?: THREE.ColorRepresentation;
-    // args?: [number, number, number];
 }
 
-const CelestialBody: React.FC<CelestialBodyProps> = ({
+const Sphere: React.FC<CelestialBodyProps> = ({
                                            name,
-
                                            args = [5, 16, 32],
                                            color= 'orange',// Default args value
                                            ...props
@@ -23,9 +21,7 @@ const CelestialBody: React.FC<CelestialBodyProps> = ({
     const meshRef = useRef<THREE.Mesh>(null!);
     const [hovered, setHover] = useState(false);
     const dispatch = useDispatch<AppDispatch>();
-    // const celestialBody = useSelector((state: RootState) =>
-    //     state.celestialBody.bodies.find(body => body.id === id)
-    // );
+
     const activeCelestialBodyName = useSelector((state: RootState) => state.simulation.activeCelestialBodyName);
 
     useEffect(() => {
@@ -33,11 +29,6 @@ const CelestialBody: React.FC<CelestialBodyProps> = ({
             import('dat.gui').then(({ GUI }) => { // executes only if the window object exists. dat.gui needs it and
                 // it's only available on the browser. next.js renders SSR and skips this, react then executes it CSR.
                 const gui = new GUI();
-
-
-                // if (typeof window !== 'undefined' && meshRef.current) {
-                //     import('dat.gui').then(({ GUI }) => { // executes only if the window object exists. dat.gui needs it and
-                //         // it's only available on the browser. next.js renders SSR and skips this, react then executes it CSR.
 
                 // Position Controls
                 const positionFolder = gui.addFolder(`Position Controls - ${name}`);
@@ -77,4 +68,4 @@ const CelestialBody: React.FC<CelestialBodyProps> = ({
     );
 }
 
-export default CelestialBody;
+export default Sphere;

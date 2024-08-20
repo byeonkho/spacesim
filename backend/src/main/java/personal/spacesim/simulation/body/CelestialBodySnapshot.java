@@ -4,7 +4,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 
 public class CelestialBodySnapshot {
     private String name;
-    private double mass;
+
     private Vector3D position;
     private Vector3D velocity;
 
@@ -14,14 +14,6 @@ public class CelestialBodySnapshot {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public double getMass() {
-        return mass;
-    }
-
-    public void setMass(double mass) {
-        this.mass = mass;
     }
 
     public Vector3D getPosition() {

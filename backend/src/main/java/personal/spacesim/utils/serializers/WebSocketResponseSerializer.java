@@ -16,11 +16,20 @@ public class WebSocketResponseSerializer extends JsonSerializer<WebSocketRespons
     @Override
     public void serialize(WebSocketResponseDTO value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         gen.writeStartObject();
-        for (Map.Entry<WebSocketResponseKey, List<CelestialBodySnapshot>> entry : value.getResults().entrySet()) {
+
+        // Serialize the messageType field
+        gen.writeStringField("messageType", value.getMessageType());
+
+        // Serialize the data map
+        gen.writeFieldName("data");
+        gen.writeStartObject();
+        for (Map.Entry<WebSocketResponseKey, List<CelestialBodySnapshot>> entry : value.getData().get("data").entrySet()) {
             String fieldName = "date: " + entry.getKey().getDate().toString();  // Prepend "date: " to the date string
             gen.writeFieldName(fieldName);
             gen.writeObject(entry.getValue());
         }
+        gen.writeEndObject();
+
         gen.writeEndObject();
     }
 }

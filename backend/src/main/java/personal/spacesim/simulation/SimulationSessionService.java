@@ -2,22 +2,23 @@ package personal.spacesim.simulation;
 
 import org.orekit.time.AbsoluteDate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.HandlerExceptionResolver;
+
 import personal.spacesim.dtos.WebSocketResponseDTO;
-import personal.spacesim.simulation.body.CelestialBodySnapshot;
+
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class SimulationSessionService {
 
+    // TODO logic for memory management (max size of map)
     private final ConcurrentHashMap<String, Simulation> simulationMap;
     private final SimulationFactory simulationFactory;
 
@@ -34,8 +35,7 @@ public class SimulationSessionService {
             String integratorStr,
             AbsoluteDate simStartDate
     ) {
-//        String sessionID = UUID.randomUUID().toString();
-        String sessionID = "1";
+        String sessionID = UUID.randomUUID().toString();
         Simulation simulation = simulationFactory.createSimulation(
                 sessionID,
                 celestialBodyNames,

@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/simulation")
-
+@CrossOrigin(origins = "*") //TODO Allow all origins - dev only
 public class SimulationController {
 
     private final SimulationSessionService simulationSessionService;

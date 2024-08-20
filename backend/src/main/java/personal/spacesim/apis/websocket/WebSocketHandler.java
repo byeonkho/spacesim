@@ -1,7 +1,7 @@
 package personal.spacesim.apis.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.orekit.time.AbsoluteDate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -9,8 +9,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.stereotype.Component;
 
-import personal.spacesim.dtos.WebSocketResponseDTO;
-import personal.spacesim.dtos.WebsocketRequestDTO;
+import personal.spacesim.dtos.*;
 import personal.spacesim.simulation.body.CelestialBodySnapshot;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
 import personal.spacesim.simulation.SimulationSessionService;
@@ -42,7 +41,8 @@ public class WebSocketHandler extends TextWebSocketHandler {
      * The websocket currently handles a single responsibility: to receive the command parameters and run
      * the respective simulation.
      *
-     * @param session JSON response payload is a LinkedHashMap with keys of type {@link WebSocketResponseKey} and values of
+     * @param session JSON response payload is a LinkedHashMap with keys of type {@link WebSocketResponseKey} and
+     *                values of
      *                type ArrayList of {@link CelestialBodySnapshot}. Each key-value pair encapsulates the information
      *                required for the frontend to render the simulation at each time step, namely:
      *                <ul>
@@ -87,6 +87,8 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     totalTime,
                     deltaTime
             );
+
+            responseDTO.setMessageType("SIM_DATA");
 
             session.sendMessage(new TextMessage(objectMapper.writeValueAsString(responseDTO)));
         } catch (Exception e) {

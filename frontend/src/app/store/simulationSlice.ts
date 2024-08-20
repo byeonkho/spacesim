@@ -20,20 +20,23 @@ interface CelestialBodyMetadata {
 }
 
 export interface SimulationData {
+    [date: string]: CelestialBody[];
+}
+
+export interface SimulationParameters {
     celestialBodyList: CelestialBody[];
     sessionID: string;
     metadataList: CelestialBodyMetadata[];
 }
 
-
 interface SimulationState {
     activeCelestialBodyName: string | null; // state is set on browser click
-    simulationData: SimulationData | null; // the concrete state built from the JSON
+    simulationParameters: SimulationParameters | null; // the concrete state built from the JSON
 }
 
 const initialState: SimulationState = {
     activeCelestialBodyName: null,
-    simulationData: null
+    simulationParameters: null
 };
 
 export const simulationSlice = createSlice({
@@ -41,17 +44,26 @@ export const simulationSlice = createSlice({
     initialState,
     reducers: {
         setActiveCelestialBodyName: (state, action: PayloadAction<string | null>) => {
-            state.activeCelestialBodyName = action.payload;
+            state.activeCelestialBodyName = action.payload; // redux toolkit creates a new state object, this
+            // doesn't mutate it directly.
         },
-        loadSimulationData: (state, action: PayloadAction<SimulationData>) => {
-            state.simulationData = action.payload;
+
+        loadSimulationParameters: (state, action: PayloadAction<SimulationParameters>) => {
+            state.simulationParameters = action.payload;
+        },
+
+        //TODO better name for this pls
+        updateDataReceived: (state, action: PayloadAction<SimulationData>) => {
+            state.simulationComputedData = action.payload;
+            console.log("Simulation data updated:", state.simulationData);
         },
     },
 });
 
 export const {
     setActiveCelestialBodyName,
-    loadSimulationData,
+    loadSimulationParameters,
+    updateDataReceived,
 } = simulationSlice.actions;
 
 export default simulationSlice.reducer;

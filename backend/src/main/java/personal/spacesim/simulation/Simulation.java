@@ -96,7 +96,6 @@
             List<CelestialBodySnapshot> copy = new ArrayList<>();
             for (CelestialBodyWrapper body : originalList) {
                 CelestialBodySnapshot snapshot = new CelestialBodySnapshot();
-                snapshot.setMass(body.getMass());
                 snapshot.setPosition(body.getPosition());
                 snapshot.setVelocity(body.getVelocity());
                 snapshot.setName(body.getName());
