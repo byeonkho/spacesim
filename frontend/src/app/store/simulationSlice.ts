@@ -23,7 +23,7 @@ export interface SimulationData {
     [date: string]: CelestialBody[];
 }
 
-export interface SimulationParameters {
+interface SimulationParameters {
     celestialBodyList: CelestialBody[];
     sessionID: string;
     metadataList: CelestialBodyMetadata[];
@@ -31,12 +31,15 @@ export interface SimulationParameters {
 
 interface SimulationState {
     activeCelestialBodyName: string | null; // state is set on browser click
-    simulationParameters: SimulationParameters | null; // the concrete state built from the JSON
+    simulationParameters: SimulationParameters | null;
+    simulationData: SimulationData | null;
 }
 
+// this is mandatory; passed to createSlice
 const initialState: SimulationState = {
     activeCelestialBodyName: null,
-    simulationParameters: null
+    simulationParameters: null,
+    simulationData: null
 };
 
 export const simulationSlice = createSlice({
@@ -52,9 +55,8 @@ export const simulationSlice = createSlice({
             state.simulationParameters = action.payload;
         },
 
-        //TODO better name for this pls
         updateDataReceived: (state, action: PayloadAction<SimulationData>) => {
-            state.simulationComputedData = action.payload;
+            state.simulationData = action.payload;
             console.log("Simulation data updated:", state.simulationData);
         },
     },

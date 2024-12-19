@@ -10,7 +10,7 @@ const WebSocketDataSender: React.FC = () => {
     // State to store the form data
     const [totalTime, setTotalTime] = useState<number>(0);
     const [deltaTime, setDeltaTime] = useState<number>(0);
-    const sessionID = useSelector((state: RootState) => state.simulation.simulationData?.sessionID);
+    const sessionID = useSelector((state: RootState) => state.simulation.simulationParameters?.sessionID);
 
     // Handle form submission
     const handleSubmit = (event: React.FormEvent) => {
@@ -22,6 +22,8 @@ const WebSocketDataSender: React.FC = () => {
             deltaTime,
             sessionID
         };
+
+        console.log("debug 2", JSON.stringify(requestData));
 
         // Dispatch the sendMessage action to send data over the WebSocket
         dispatch(requestRunSimulation(requestData));

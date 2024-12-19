@@ -54,6 +54,7 @@ const Interface: React.FC = () => {
         initializeCelestialBodies(dispatch, requestBody);
     };
 
+    // TODO use .env
     const handleInitializeWebSocket = () => {
         dispatch(connect('ws://localhost:8080/ws'));
     };

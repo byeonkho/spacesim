@@ -1,5 +1,6 @@
 import {Middleware, MiddlewareAPI, Dispatch, Action} from 'redux';
 import {updateDataReceived} from "@/app/store/simulationSlice";
+import {useDispatch} from "react-redux";
 
 interface ConnectAction {
     type: 'webSocket/connect';
@@ -39,6 +40,7 @@ type WebSocketAction = ConnectAction | DisconnectAction | RequestRunSimulationAc
 // the socket instance is housed in this class as Redux only allows for serializable objects to exist in store
 let socket: WebSocket | null = null;
 
+
 export const webSocketMiddleware: Middleware =
     (store: MiddlewareAPI) =>
         (next: Dispatch<Action>) =>
@@ -49,7 +51,8 @@ export const webSocketMiddleware: Middleware =
                             // Close the existing connection if there is one
                             socket.close();
                         }
-                        socket = new WebSocket(action.payload) as WebSocket;
+                        socket = new WebSocket(action.payload); // payload is the backend ws url;
+                        // defined in .env
 
                         socket.onmessage = (event: MessageEvent) => {
                             try {
@@ -57,7 +60,9 @@ export const webSocketMiddleware: Middleware =
 
                                 switch (messageData.messageType) {
                                     case 'SIM_DATA':
-                                        store.dispatch(updateDataReceived(messageData));
+                                        store.dispatch(updateDataReceived(messageData)); // store.dispatch used here
+                                        // instead of useDispatch() because middleware is not part of the React
+                                        // component tree; useDispatch() only works within components
                                         break;
 
                                     // case 'NOTIFICATION':

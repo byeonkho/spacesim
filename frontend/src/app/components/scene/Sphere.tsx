@@ -1,9 +1,8 @@
-
-import { MeshProps, useFrame } from "@react-three/fiber";
+import {MeshProps, useFrame} from "@react-three/fiber";
 import React, {useEffect, useRef, useState} from "react";
 import * as THREE from "three";
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from "@/app/store/Store";
+import {useDispatch, useSelector} from 'react-redux';
+import {AppDispatch, RootState} from "@/app/store/Store";
 import {setActiveCelestialBodyName} from "@/app/store/simulationSlice";
 import {GUI} from "dat.gui";
 
@@ -13,11 +12,11 @@ interface CelestialBodyProps extends MeshProps {
 }
 
 const Sphere: React.FC<CelestialBodyProps> = ({
-                                           name,
-                                           args = [5, 16, 32],
-                                           color= 'orange',// Default args value
-                                           ...props
-                                       }) => {
+                                                  args = [5, 16, 32],
+                                                  name,
+                                                  color = 'orange',// Default args value
+                                                  ...props
+                                              }) => {
     const meshRef = useRef<THREE.Mesh>(null!);
     const [hovered, setHover] = useState(false);
     const dispatch = useDispatch<AppDispatch>();
@@ -26,7 +25,7 @@ const Sphere: React.FC<CelestialBodyProps> = ({
 
     useEffect(() => {
         if (typeof window !== 'undefined' && meshRef.current) {
-            import('dat.gui').then(({ GUI }) => { // executes only if the window object exists. dat.gui needs it and
+            import('dat.gui').then(({GUI}) => { // executes only if the window object exists. dat.gui needs it and
                 // it's only available on the browser. next.js renders SSR and skips this, react then executes it CSR.
                 const gui = new GUI();
 
@@ -52,19 +51,17 @@ const Sphere: React.FC<CelestialBodyProps> = ({
     }, [name]);
 
     return (
-        <>
-            <mesh
-                {...props}
-                ref={meshRef}
-                scale={activeCelestialBodyName === name ? 1.5 : 1}
-                onClick={() => dispatch(setActiveCelestialBodyName(activeCelestialBodyName === name ? null : name))}
-                onPointerOver={() => setHover(true)}
-                onPointerOut={() => setHover(false)}
-            >
-                <sphereGeometry args={args} />
-                <meshStandardMaterial color={hovered ? 'hotpink' : color} wireframe = {true} />
-            </mesh>
-        </>
+        <mesh
+            {...props}
+            ref={meshRef}
+            scale={activeCelestialBodyName === name ? 1.5 : 1}
+            onClick={() => dispatch(setActiveCelestialBodyName(activeCelestialBodyName === name ? null : name))}
+            onPointerOver={() => setHover(true)}
+            onPointerOut={() => setHover(false)}
+        >
+            <sphereGeometry args={args}/>
+            <meshStandardMaterial color={hovered ? 'hotpink' : color} wireframe={true}/>
+        </mesh>
     );
 }
 

@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {AppDispatch} from "@/app/store/Store";
-import {SimulationComputedData, updateDataReceived} from "@/app/store/simulationSlice";
+import {SimulationData, updateDataReceived} from "@/app/store/simulationSlice";
 
 
 interface WebSocketState {
@@ -46,6 +46,6 @@ export const {
 
 export default webSocketSlice.reducer;
 
-export const handleWebSocketMessage = (dispatch: AppDispatch, data: SimulationComputedData) => {
-    dispatch(updateDataReceived(data)); // Dispatch to simulation slice
-};
+// export const handleWebSocketMessage = (dispatch: AppDispatch, data: SimulationData) => {
+//     dispatch(updateDataReceived(data)); // Dispatch to simulation slice
+// };
