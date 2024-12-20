@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { Vector3 } from "three";
 
 // interfaces defining the structure of the JSON to be consumed
 interface Vector3 {
