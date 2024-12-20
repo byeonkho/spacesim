@@ -22,16 +22,26 @@ public class AppConfig {
     @PostConstruct
     public void initializeOrekit() {
         logger.info("Initializing Orekit data...");
-        // Path to the directory containing Orekit data files
-        String orekitDataPath = "/Users/byeonkho/Desktop/personal projs/orekit-data";
-        File orekitData = new File(orekitDataPath);
-        if (!orekitData.exists() || !orekitData.isDirectory()) {
-            logger.error("Orekit data directory not found: {}", orekitDataPath);
-            throw new IllegalStateException("Orekit data directory not found: " + orekitDataPath);
+
+        // Locate Orekit data from the classpath
+        String orekitDataPath = "orekit-data-master";
+        File orekitData;
+        try {
+            orekitData = new File(getClass().getClassLoader().getResource(orekitDataPath).toURI());
+        } catch (Exception e) {
+            logger.error("Error locating Orekit data in the classpath: {}", orekitDataPath, e);
+            throw new IllegalStateException("Orekit data directory not found in the classpath: " + orekitDataPath, e);
         }
+
+        if (!orekitData.exists() || !orekitData.isDirectory()) {
+            logger.error("Orekit data directory not found: {}", orekitData.getAbsolutePath());
+            throw new IllegalStateException("Orekit data directory not found: " + orekitData.getAbsolutePath());
+        }
+
         DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
         manager.addProvider(new DirectoryCrawler(orekitData));
-        logger.info("Orekit data initialized successfully.");
+        logger.info("Orekit data initialized successfully from classpath.");
     }
+
 
 }

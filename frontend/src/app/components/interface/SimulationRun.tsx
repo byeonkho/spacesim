@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import {useDispatch, useSelector} from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { TextField, Button, Box } from '@mui/material';
-import {requestRunSimulation, sendMessage} from "@/app/store/middleware/webSocketMiddleware";
-import {RootState} from "@/app/store/Store";
+import { requestRunSimulation } from "@/app/store/middleware/webSocketMiddleware";
+import { RootState } from "@/app/store/Store";
 
 const WebSocketDataSender: React.FC = () => {
     const dispatch = useDispatch();
@@ -10,23 +10,45 @@ const WebSocketDataSender: React.FC = () => {
     // State to store the form data
     const [totalTime, setTotalTime] = useState<number>(0);
     const [deltaTime, setDeltaTime] = useState<number>(0);
-    const sessionID = useSelector((state: RootState) => state.simulation.simulationParameters?.sessionID);
+    const sessionID = useSelector((state: RootState) => state.simulation.simulationParameters?.simulationMetadata.sessionID);
 
     // Handle form submission
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
 
-        // Prepare the data as per WebsocketRequestDTO
-        const requestData = {
-            totalTime,
-            deltaTime,
-            sessionID
-        };
+        try {
+            // Validate the input values
+            if (!totalTime || totalTime <= 0) {
+                throw new Error("Total time must be a positive number.");
+            }
+            if (!deltaTime || deltaTime <= 0) {
+                throw new Error("Delta time must be a positive number.");
+            }
+            if (!sessionID) {
+                throw new Error("Session ID is required.");
+            }
 
-        console.log("debug 2", JSON.stringify(requestData));
+            // Prepare the data as per WebSocketRequestDTO
+            const requestData = {
+                totalTime,
+                deltaTime,
+                sessionID
+            };
 
-        // Dispatch the sendMessage action to send data over the WebSocket
-        dispatch(requestRunSimulation(requestData));
+            console.log("Request data:", requestData);
+
+            // Dispatch the sendMessage action to send data over the WebSocket
+            dispatch(requestRunSimulation(requestData));
+            console.log("Request sent successfully.");
+        } catch (error: unknown) {
+            // Log or handle errors
+            if (error instanceof Error) {
+                console.error("Form submission error:", error.message);
+                alert(error.message); // Optionally show an alert to the user
+            } else {
+                console.error("An unknown error occurred during form submission.");
+            }
+        }
     };
 
     return (
@@ -35,14 +57,16 @@ const WebSocketDataSender: React.FC = () => {
                 label="Total Time"
                 type="number"
                 value={totalTime}
-                onChange={(e) => setTotalTime(parseFloat(e.target.value))}
+                onChange={(e) => setTotalTime(Math.max(0, parseFloat(e.target.value)))} // Prevent negatives
+                inputProps={{ min: 0 }} // Enforce min value in the UI
                 fullWidth
             />
             <TextField
                 label="Delta Time"
                 type="number"
                 value={deltaTime}
-                onChange={(e) => setDeltaTime(parseFloat(e.target.value))}
+                onChange={(e) => setDeltaTime(Math.max(0, parseFloat(e.target.value)))} // Prevent negatives
+                inputProps={{ min: 0 }} // Enforce min value in the UI
                 fullWidth
             />
             <Button variant="contained" color="primary" type="submit">

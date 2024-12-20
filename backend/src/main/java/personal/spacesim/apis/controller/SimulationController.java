@@ -7,10 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import personal.spacesim.dtos.SimulationRequestDTO;
 import personal.spacesim.dtos.SimulationResponseDTO;
-import personal.spacesim.dtos.SimulationResponseMetadata;
 import personal.spacesim.simulation.Simulation;
 import personal.spacesim.simulation.SimulationSessionService;
-import personal.spacesim.simulation.body.CelestialBodyWrapper;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,30 +40,25 @@ public class SimulationController {
     @PostMapping("/initialize")
     public ResponseEntity<SimulationResponseDTO> initializeSimulation(@RequestBody SimulationRequestDTO request) {
 
-        // getting parameters from payload
+        // get parameters from payload
         AbsoluteDate date = new AbsoluteDate(
                 request.getDate(),
                 TimeScalesFactory.getUTC()
         );
         List<String> celestialBodyNames = request.getCelestialBodyNames();
-        String frameStr = request.getFrame();
-        String integratorStr = request.getIntegrator();
+        String frame = request.getFrame();
+        String integrator = request.getIntegrator();
 
         // calling the service
-        Simulation simulation = simulationSessionService.createSimulation(
+        String sessionID = simulationSessionService.createSimulation(
                 celestialBodyNames,
-                frameStr,
-                integratorStr,
+                frame,
+                integrator,
                 date
         );
 
         // building response object
-        List<CelestialBodyWrapper> celestialBodyList = simulation.getCelestialBodies();
-        String sessionID = simulation.getSessionID();
-        List<SimulationResponseMetadata> celestialBodyMetadata = celestialBodyList.stream()
-                .map(body -> new SimulationResponseMetadata(body.getName(), body.getMass(), body.getRadius()))
-                .toList();
-        SimulationResponseDTO responseDTO = new SimulationResponseDTO(celestialBodyList, sessionID, celestialBodyMetadata);
+        SimulationResponseDTO responseDTO = simulationSessionService.returnSimulationResponseDTO(sessionID);
         return ResponseEntity.ok(responseDTO);
     }
 

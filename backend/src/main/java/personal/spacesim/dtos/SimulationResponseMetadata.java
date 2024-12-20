@@ -1,39 +1,13 @@
 package personal.spacesim.dtos;
 
+import lombok.Data;
+
+@Data
 public class SimulationResponseMetadata {
-    private String name;
-    private double mass;
-    private double radius;
 
-    public SimulationResponseMetadata(String name, double mass, double radius) {
-        this.name = name;
-        this.mass = mass;
-        this.radius = radius;
+    private String sessionID;
+
+    public SimulationResponseMetadata(String sessionID) {
+        this.sessionID = sessionID;
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public double getMass() {
-        return mass;
-    }
-
-    public void setMass(double mass) {
-        this.mass = mass;
-    }
-
-    public double getRadius() {
-        return radius;
-    }
-
-    public void setRadius(double radius) {
-        this.radius = radius;
-    }
-
-
 }

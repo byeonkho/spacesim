@@ -29,6 +29,7 @@ export const initializeCelestialBodies = async (dispatch: AppDispatch, requestBo
         const data: SimulationParameters = await response.json();
 
         console.log('Response data:', data);
+        console.log('sessionID:', data.simulationMetadata);
 
         // Dispatch the loadSimulationData action with the fetched data
         dispatch(loadSimulationParameters(data));

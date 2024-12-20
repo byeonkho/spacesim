@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Component;
 
+import personal.spacesim.dtos.SimulationResponseDTO;
+import personal.spacesim.dtos.SimulationResponseMetadata;
 import personal.spacesim.dtos.WebSocketResponseDTO;
 
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
@@ -29,7 +31,7 @@ public class SimulationSessionService {
         this.simulationMap = new ConcurrentHashMap<>();
     }
 
-    public Simulation createSimulation(
+    public String createSimulation(
             List<String> celestialBodyNames,
             String frameStr,
             String integratorStr,
@@ -47,8 +49,18 @@ public class SimulationSessionService {
                 sessionID,
                 simulation
         );
-        return simulation;
+        System.out.println("sessionID: " + sessionID);
+        return sessionID;
     }
+
+    public SimulationResponseDTO returnSimulationResponseDTO(String sessionID) {
+        Simulation simulation = simulationMap.get(sessionID);
+        List<CelestialBodyWrapper> celestialBodyList = simulation.getCelestialBodies();
+        SimulationResponseMetadata metadata = new SimulationResponseMetadata(sessionID);
+        // Construct and return the response DTO
+        return new SimulationResponseDTO(celestialBodyList, metadata);
+    }
+
 
     public Simulation getSimulation(String sessionID) {
         return simulationMap.get(sessionID);

@@ -1,27 +1,13 @@
 package personal.spacesim.dtos;
 
+import lombok.Data;
+
 import java.util.List;
 
+@Data
 public class SimulationRequestDTO {
     private List<String> celestialBodyNames;
     private String date;
     private String frame;
     private String integrator;
-
-    public List<String> getCelestialBodyNames() {
-        return celestialBodyNames;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public String getFrame() {
-        return frame;
-    }
-
-    public String getIntegrator() {
-        return integrator;
-    }
-
 }

@@ -1,11 +1,12 @@
     package personal.spacesim.simulation;
 
+    import lombok.Getter;
+    import lombok.Setter;
     import org.hipparchus.geometry.euclidean.threed.Vector3D;
     import org.orekit.frames.Frame;
     import org.orekit.time.AbsoluteDate;
 
     import personal.spacesim.dtos.WebSocketResponseDTO;
-    import personal.spacesim.dtos.WebSocketResponseKey;
     import personal.spacesim.simulation.body.CelestialBodySnapshot;
     import personal.spacesim.utils.math.functions.Gravity;
     import personal.spacesim.utils.math.integrators.Integrator;
@@ -15,15 +16,20 @@
 
     import java.util.*;
 
+    @Getter
+    @Setter
     public class Simulation {
 
         private final Logger logger = LoggerFactory.getLogger(Simulation.class);
+
+        // Getters and setters
 
         private final String sessionID;
         private Frame frame;
         private List<CelestialBodyWrapper> celestialBodies;
         private AbsoluteDate simStartDate;
         private AbsoluteDate simCurrentDate;
+
         private Integrator integrator;
 
         public Simulation(
@@ -69,18 +75,15 @@
 
         public WebSocketResponseDTO run(double totalTime, double deltaTime) {
             double currentTime = 0;
-            Map<WebSocketResponseKey, List<CelestialBodySnapshot>> results = new LinkedHashMap<>();
+            Map<AbsoluteDate, List<CelestialBodySnapshot>> results = new LinkedHashMap<>();
 
             while (currentTime < totalTime) {
-                WebSocketResponseKey metaData = new WebSocketResponseKey();
                 // First iteration
                 if (currentTime == 0) {
-                    metaData.setDate(simStartDate);
-                    results.put(metaData, snapshotCelestialBodies(celestialBodies));
+                    results.put(simStartDate, snapshotCelestialBodies(celestialBodies));
                 } else {
                     update(deltaTime);
-                    metaData.setDate(simCurrentDate);
-                    results.put(metaData, snapshotCelestialBodies(celestialBodies));
+                    results.put(simCurrentDate, snapshotCelestialBodies(celestialBodies));
                 }
                 currentTime += deltaTime;
                 logger.info("Simulation time: {} seconds", currentTime);
@@ -102,22 +105,5 @@
                 copy.add(snapshot);
             }
             return copy;
-        }
-
-        // Getters and setters
-        public String getSessionID() {
-            return sessionID;
-        }
-
-        public List<CelestialBodyWrapper> getCelestialBodies() {
-            return new ArrayList<>(celestialBodies);
-        }
-
-        public void setReferenceFrame(Frame frame) {
-            this.frame = frame;
-        }
-
-        public void setIntegrator(Integrator integrator) {
-            this.integrator = integrator;
         }
     }

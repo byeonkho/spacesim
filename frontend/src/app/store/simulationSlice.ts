@@ -13,20 +13,17 @@ interface CelestialBody {
     velocity: Vector3;
 }
 
-interface CelestialBodyMetadata {
-    name: string;
-    mass: number;
-    radius: number;
+interface SimulationMetadata {
+    sessionID: string;
 }
 
 export interface SimulationData {
     [date: string]: CelestialBody[];
 }
 
-interface SimulationParameters {
+export interface SimulationParameters {
     celestialBodyList: CelestialBody[];
-    sessionID: string;
-    metadataList: CelestialBodyMetadata[];
+    simulationMetadata: SimulationMetadata;
 }
 
 interface SimulationState {
@@ -52,7 +49,9 @@ export const simulationSlice = createSlice({
         },
 
         loadSimulationParameters: (state, action: PayloadAction<SimulationParameters>) => {
+            console.log("Payload received in reducer:", action.payload);
             state.simulationParameters = action.payload;
+            console.log("Updated state in reducer:", state.simulationParameters);
         },
 
         updateDataReceived: (state, action: PayloadAction<SimulationData>) => {
