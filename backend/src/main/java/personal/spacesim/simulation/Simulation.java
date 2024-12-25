@@ -5,16 +5,18 @@
     import org.hipparchus.geometry.euclidean.threed.Vector3D;
     import org.orekit.frames.Frame;
     import org.orekit.time.AbsoluteDate;
-
-    import personal.spacesim.dtos.WebSocketResponseDTO;
-    import personal.spacesim.simulation.body.CelestialBodySnapshot;
-    import personal.spacesim.utils.math.functions.Gravity;
-    import personal.spacesim.utils.math.integrators.Integrator;
-    import personal.spacesim.simulation.body.CelestialBodyWrapper;
     import org.slf4j.Logger;
     import org.slf4j.LoggerFactory;
+    import personal.spacesim.dtos.WebSocketResponseDTO;
+    import personal.spacesim.simulation.body.CelestialBodySnapshot;
+    import personal.spacesim.simulation.body.CelestialBodyWrapper;
+    import personal.spacesim.utils.math.functions.Gravity;
+    import personal.spacesim.utils.math.integrators.Integrator;
 
-    import java.util.*;
+    import java.util.ArrayList;
+    import java.util.LinkedHashMap;
+    import java.util.List;
+    import java.util.Map;
 
     @Getter
     @Setter

@@ -10,7 +10,7 @@ const WebSocketDataSender: React.FC = () => {
     // State to store the form data
     const [totalTime, setTotalTime] = useState<number>(0);
     const [deltaTime, setDeltaTime] = useState<number>(0);
-    const sessionID = useSelector((state: RootState) => state.simulation.simulationParameters?.simulationMetadata.sessionID);
+    const sessionID = useSelector((state: RootState) => state.simulation.simulationParameters?.simulationMetaData.sessionID);
 
     // Handle form submission
     const handleSubmit = (event: React.FormEvent) => {

@@ -2,18 +2,15 @@ package personal.spacesim.simulation;
 
 import org.orekit.time.AbsoluteDate;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.stereotype.Component;
-
+import personal.spacesim.constants.PhysicsConstants;
 import personal.spacesim.dtos.SimulationResponseDTO;
 import personal.spacesim.dtos.SimulationResponseMetadata;
 import personal.spacesim.dtos.WebSocketResponseDTO;
-
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -56,11 +53,14 @@ public class SimulationSessionService {
     public SimulationResponseDTO returnSimulationResponseDTO(String sessionID) {
         Simulation simulation = simulationMap.get(sessionID);
         List<CelestialBodyWrapper> celestialBodyList = simulation.getCelestialBodies();
-        SimulationResponseMetadata metadata = new SimulationResponseMetadata(sessionID);
+        SimulationResponseMetadata simulationResponseMetadata = new SimulationResponseMetadata(sessionID);
         // Construct and return the response DTO
-        return new SimulationResponseDTO(celestialBodyList, metadata);
+        return new SimulationResponseDTO(
+                celestialBodyList,
+                PhysicsConstants.RADIUS_MAP,
+                simulationResponseMetadata
+        );
     }
-
 
     public Simulation getSimulation(String sessionID) {
         return simulationMap.get(sessionID);

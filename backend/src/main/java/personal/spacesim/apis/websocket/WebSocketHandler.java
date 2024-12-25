@@ -1,18 +1,17 @@
 package personal.spacesim.apis.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import org.springframework.stereotype.Component;
-
-import personal.spacesim.dtos.*;
+import personal.spacesim.dtos.WebSocketResponseDTO;
+import personal.spacesim.dtos.WebsocketRequestDTO;
+import personal.spacesim.simulation.SimulationSessionService;
 import personal.spacesim.simulation.body.CelestialBodySnapshot;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
-import personal.spacesim.simulation.SimulationSessionService;
 
 @Component
 public class WebSocketHandler extends TextWebSocketHandler {
