@@ -57,7 +57,6 @@ public class SimulationSessionService {
         // Construct and return the response DTO
         return new SimulationResponseDTO(
                 celestialBodyList,
-                PhysicsConstants.RADIUS_MAP,
                 simulationResponseMetadata
         );
     }

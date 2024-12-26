@@ -14,10 +14,6 @@ interface CelestialBody {
     velocity: Vector3;
 }
 
-interface RadiusMap {
-    [bodyName: string]: number;
-}
-
 interface SimulationMetadata {
     sessionID: string;
 }
@@ -28,7 +24,6 @@ export interface SimulationData {
 
 export interface SimulationParameters {
     celestialBodyList: CelestialBody[];
-    radiusMap: RadiusMap;
     simulationMetaData: SimulationMetadata;
 }
 

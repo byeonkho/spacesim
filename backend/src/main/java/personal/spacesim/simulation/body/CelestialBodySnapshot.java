@@ -8,4 +8,5 @@ public class CelestialBodySnapshot {
     private String name;
     private Vector3D position;
     private Vector3D velocity;
+    private double radius;
 }

@@ -69,6 +69,8 @@ export default function Scene() {
                         position={[ body.position.x / SimConstants.SCALE_FACTOR,
                                     body.position.y / SimConstants.SCALE_FACTOR,
                                     body.position.z / SimConstants.SCALE_FACTOR,]}
+                        // args={[body.radius / (SimConstants.SCALE_FACTOR), 32, 16]} // params: args, widthSegments,
+                        // heightSegments
                     />
                 );
             })}
