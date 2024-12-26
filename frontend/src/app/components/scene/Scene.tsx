@@ -1,7 +1,7 @@
 import { Canvas, extend } from "@react-three/fiber";
 import CameraControls from "@/app/components/utils/CameraControls";
 import Sphere from "@/app/components/scene/Sphere";
-import React from "react";
+import React, {useEffect, useState} from "react";
 import { OrbitControls } from "three-stdlib";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/store/Store";
@@ -14,6 +14,58 @@ export default function Scene() {
 
     // Debug Redux state
     console.log("Simulation data from Redux:", simulationData);
+
+    // Track the current time step
+    const [currentTimeStepIndex, setCurrentTimeStepIndex] = useState(0);
+    const timeStepKeys = simulationData
+        ? Object.keys(simulationData.data).sort((a, b) => {
+            const dateA = new Date(a.split(": ")[1]).getTime();
+            const dateB = new Date(b.split(": ")[1]).getTime();
+            return dateA - dateB; // Sort ascending by timestamp
+        })
+        : [];
+    const totalTimeSteps = timeStepKeys.length;
+
+    // Animation loop
+    // useEffect(() => {
+    //     if (!simulationData || totalTimeSteps === 0) return;
+    //
+    //     const interval = setInterval(() => {
+    //         setCurrentTimeStepIndex((prevIndex) => {
+    //             if (prevIndex + 1 < totalTimeSteps) {
+    //                 console.log(`Updating to index: ${prevIndex + 1}`); // Debug
+    //                 return prevIndex + 1;
+    //             } else {
+    //                 console.log("Reached the end of timesteps, stopping animation."); // Debug
+    //                 clearInterval(interval); // This needs to be handled correctly
+    //                 return prevIndex; // Keep it at the last index
+    //             }
+    //         });
+    //     }, 1000 / 30); // Adjust speed (e.g., 30 FPS)
+    //
+    //     // Cleanup the interval when the component unmounts or dependencies change
+    //     return () => clearInterval(interval);
+    // }, [simulationData, totalTimeSteps]);
+
+    //with looping
+    useEffect(() => {
+        if (!simulationData || totalTimeSteps === 0) return;
+
+        const interval = setInterval(() => {
+            setCurrentTimeStepIndex((prevIndex) => {
+                const nextIndex = (prevIndex + 1) % totalTimeSteps; // Loop back to 0 after the last index
+                console.log(`Updating to index: ${nextIndex}`); // Debug
+                return nextIndex;
+            });
+        }, 1000 / 30); // Adjust speed (e.g., 30 FPS)
+
+        // Cleanup the interval when the component unmounts or dependencies change
+        return () => {
+            console.log("Cleaning up interval.");
+            clearInterval(interval);
+        };
+    }, [simulationData, totalTimeSteps]);
+
 
     if (!simulationData || !simulationData.data) {
         console.log("Simulation data is not loaded yet or is invalid.");
@@ -29,20 +81,13 @@ export default function Scene() {
         ); // Render a loading state
     }
 
-    // Extract the latest date key
-    const latestTimestep = Object.keys(simulationData.data)
-        .sort((a, b) => new Date(a.split(": ")[1]).getTime() - new Date(b.split(": ")[1]).getTime())
-        .pop();
-
-    console.log("Latest timestep:", latestTimestep);
-
-    // Get celestial bodies or fallback to an empty array
-    const celestialBodies = latestTimestep && Array.isArray(simulationData.data[latestTimestep])
-        ? simulationData.data[latestTimestep]
-        : [];
-
+    // Current celestial bodies
+    const currentTimeStep = timeStepKeys[currentTimeStepIndex];
+    console.log("current timestep: ", currentTimeStep);
+    const celestialBodies =
+        currentTimeStep && simulationData.data[currentTimeStep] ? simulationData.data[currentTimeStep] : [];
     // Debug celestial bodies
-    console.log("Celestial bodies at latest timestep:", celestialBodies);
+    console.log("Celestial bodies at latest timeStep:", celestialBodies);
 
     return (
         <Canvas style={{ width: "100vw", height: "100vh" }}>
@@ -77,3 +122,4 @@ export default function Scene() {
         </Canvas>
     );
 }
+
