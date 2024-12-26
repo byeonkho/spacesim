@@ -1,18 +1,17 @@
 package personal.spacesim.apis.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import org.springframework.stereotype.Component;
-
-import personal.spacesim.dtos.*;
+import personal.spacesim.dtos.WebSocketResponseDTO;
+import personal.spacesim.dtos.WebsocketRequestDTO;
+import personal.spacesim.services.SimulationSessionService;
 import personal.spacesim.simulation.body.CelestialBodySnapshot;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
-import personal.spacesim.simulation.SimulationSessionService;
 
 @Component
 public class WebSocketHandler extends TextWebSocketHandler {
@@ -73,10 +72,9 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     WebsocketRequestDTO.class
             );
             String sessionID = request.getSessionID();
-            double totalTime = request.getTotalTime();
-            double deltaTime = request.getDeltaTime();
+            String timeStep = request.getTimeStep();
 
-            if (sessionID == null || totalTime <= 0 || deltaTime <= 0) {
+            if (sessionID == null || timeStep == null) {
                 session.sendMessage(new TextMessage("Invalid payload"));
                 return;
             }
@@ -84,8 +82,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
             // run the simulation and construct the response
             WebSocketResponseDTO responseDTO = simulationSessionService.runSimulation(
                     sessionID,
-                    totalTime,
-                    deltaTime
+                    timeStep
             );
 
             responseDTO.setMessageType("SIM_DATA");

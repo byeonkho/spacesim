@@ -1,14 +1,14 @@
 package personal.spacesim.config;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
-import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import java.io.File;
 
 @Configuration
 @ComponentScan(basePackages = "personal.spacesim")

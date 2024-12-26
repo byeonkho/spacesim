@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { TextField, Button, Box } from '@mui/material';
+import { Button, Box, MenuItem, Select, InputLabel, FormControl, SelectChangeEvent } from '@mui/material';
 import { requestRunSimulation } from "@/app/store/middleware/webSocketMiddleware";
 import { RootState } from "@/app/store/Store";
 
@@ -8,9 +8,8 @@ const WebSocketDataSender: React.FC = () => {
     const dispatch = useDispatch();
 
     // State to store the form data
-    const [totalTime, setTotalTime] = useState<number>(0);
-    const [deltaTime, setDeltaTime] = useState<number>(0);
-    const sessionID = useSelector((state: RootState) => state.simulation.simulationParameters?.simulationMetadata.sessionID);
+    const [timeStep, setTimeStep] = useState<string>("Hours");
+    const sessionID = useSelector((state: RootState) => state.simulation.simulationParameters?.simulationMetaData?.sessionID);
 
     // Handle form submission
     const handleSubmit = (event: React.FormEvent) => {
@@ -18,20 +17,16 @@ const WebSocketDataSender: React.FC = () => {
 
         try {
             // Validate the input values
-            if (!totalTime || totalTime <= 0) {
-                throw new Error("Total time must be a positive number.");
-            }
-            if (!deltaTime || deltaTime <= 0) {
-                throw new Error("Delta time must be a positive number.");
-            }
+            validateString(timeStep);
+            console.log("Input is valid:", timeStep);
+
+            // Prepare the data as per WebSocketRequestDTO
             if (!sessionID) {
                 throw new Error("Session ID is required.");
             }
 
-            // Prepare the data as per WebSocketRequestDTO
             const requestData = {
-                totalTime,
-                deltaTime,
+                timeStep,
                 sessionID
             };
 
@@ -51,24 +46,34 @@ const WebSocketDataSender: React.FC = () => {
         }
     };
 
+    const handleChange = (e: SelectChangeEvent<string>) => {
+        setTimeStep(e.target.value);
+    };
+
+    function validateString(input: string) {
+        const validOptions = ["Seconds", "Hours", "Days", "Weeks"];
+        if (!validOptions.includes(input)) {
+            throw new Error(`Invalid time step. Please select one of: ${validOptions.join(", ")}.`);
+        }
+        return true; // If all validations pass
+    }
+
     return (
         <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <TextField
-                label="Total Time"
-                type="number"
-                value={totalTime}
-                onChange={(e) => setTotalTime(Math.max(0, parseFloat(e.target.value)))} // Prevent negatives
-                inputProps={{ min: 0 }} // Enforce min value in the UI
-                fullWidth
-            />
-            <TextField
-                label="Delta Time"
-                type="number"
-                value={deltaTime}
-                onChange={(e) => setDeltaTime(Math.max(0, parseFloat(e.target.value)))} // Prevent negatives
-                inputProps={{ min: 0 }} // Enforce min value in the UI
-                fullWidth
-            />
+            <FormControl fullWidth>
+                <InputLabel id="time-unit-label">Time Unit</InputLabel>
+                <Select
+                    labelId="time-unit-label"
+                    value={timeStep}
+                    onChange={handleChange}
+                >
+                    <MenuItem value="Seconds">Seconds</MenuItem>
+                    <MenuItem value="Hours">Hours</MenuItem>
+                    <MenuItem value="Days">Days</MenuItem>
+                    <MenuItem value="Weeks">Weeks</MenuItem>
+                </Select>
+            </FormControl>
+
             <Button variant="contained" color="primary" type="submit">
                 Send Data
             </Button>

@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { Vector3 } from "three";
 
 // interfaces defining the structure of the JSON to be consumed
 interface Vector3 {
@@ -8,7 +9,7 @@ interface Vector3 {
 }
 
 interface CelestialBody {
-    name: string;
+    bodyName: string;
     position: Vector3;
     velocity: Vector3;
 }
@@ -23,7 +24,7 @@ export interface SimulationData {
 
 export interface SimulationParameters {
     celestialBodyList: CelestialBody[];
-    simulationMetadata: SimulationMetadata;
+    simulationMetaData: SimulationMetadata;
 }
 
 interface SimulationState {
@@ -36,7 +37,7 @@ interface SimulationState {
 const initialState: SimulationState = {
     activeCelestialBodyName: null,
     simulationParameters: null,
-    simulationData: null
+    simulationData: null,
 };
 
 export const simulationSlice = createSlice({
@@ -48,7 +49,7 @@ export const simulationSlice = createSlice({
             // doesn't mutate it directly.
         },
 
-        loadSimulationParameters: (state, action: PayloadAction<SimulationParameters>) => {
+        loadSimulation: (state, action: PayloadAction<SimulationParameters>) => {
             console.log("Payload received in reducer:", action.payload);
             state.simulationParameters = action.payload;
             console.log("Updated state in reducer:", state.simulationParameters);
@@ -63,7 +64,7 @@ export const simulationSlice = createSlice({
 
 export const {
     setActiveCelestialBodyName,
-    loadSimulationParameters,
+    loadSimulation,
     updateDataReceived,
 } = simulationSlice.actions;
 

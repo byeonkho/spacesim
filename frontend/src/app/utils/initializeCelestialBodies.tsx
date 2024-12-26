@@ -1,5 +1,5 @@
 import { AppDispatch } from '../store/store';
-import {loadSimulationParameters, SimulationParameters} from "@/app/store/simulationSlice";
+import {loadSimulation, SimulationParameters} from "@/app/store/simulationSlice";
 
 // Load environment variables
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -29,10 +29,10 @@ export const initializeCelestialBodies = async (dispatch: AppDispatch, requestBo
         const data: SimulationParameters = await response.json();
 
         console.log('Response data:', data);
-        console.log('sessionID:', data.simulationMetadata);
+        console.log('sessionID:', data.simulationMetaData.sessionID);
 
         // Dispatch the loadSimulationData action with the fetched data
-        dispatch(loadSimulationParameters(data));
+        dispatch(loadSimulation(data));
     } catch (error) {
         console.error('Failed to load celestial objects data:', error);
     }

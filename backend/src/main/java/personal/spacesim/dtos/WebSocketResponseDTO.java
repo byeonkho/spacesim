@@ -4,9 +4,9 @@ import lombok.Data;
 import org.orekit.time.AbsoluteDate;
 import personal.spacesim.simulation.body.CelestialBodySnapshot;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 @Data
 public class WebSocketResponseDTO {

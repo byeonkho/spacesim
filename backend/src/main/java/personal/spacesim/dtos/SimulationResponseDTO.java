@@ -2,18 +2,18 @@ package personal.spacesim.dtos;
 
 import lombok.Data;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
-
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class SimulationResponseDTO {
     private List<CelestialBodyWrapper> celestialBodyList;
-
-    private SimulationResponseMetadata simulationMetadata;
+    private SimulationResponseMetadata simulationMetaData;
 
     public SimulationResponseDTO (List<CelestialBodyWrapper> celestialBodyList,
-                                  SimulationResponseMetadata celestialBodyMetadata) {
+                                  SimulationResponseMetadata simulationResponseMetadata
+                                 ) {
         this.celestialBodyList = celestialBodyList;
-        this.simulationMetadata = celestialBodyMetadata;
+        this.simulationMetaData = simulationResponseMetadata;
     }
 }

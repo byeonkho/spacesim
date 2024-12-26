@@ -7,7 +7,7 @@ import {useSelector} from "react-redux";
 import {RootState} from "@/app/store/Store";
 
 const Layout: React.FC = () => {
-    const sessionID = useSelector((state: RootState) => state.simulation.simulationParameters?.simulationMetadata.sessionID);
+    const sessionID = useSelector((state: RootState) => state.simulation.simulationParameters?.simulationMetaData.sessionID);
 
     return (
         <Grid container spacing={2}>

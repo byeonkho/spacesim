@@ -5,16 +5,19 @@
     import org.hipparchus.geometry.euclidean.threed.Vector3D;
     import org.orekit.frames.Frame;
     import org.orekit.time.AbsoluteDate;
-
-    import personal.spacesim.dtos.WebSocketResponseDTO;
-    import personal.spacesim.simulation.body.CelestialBodySnapshot;
-    import personal.spacesim.utils.math.functions.Gravity;
-    import personal.spacesim.utils.math.integrators.Integrator;
-    import personal.spacesim.simulation.body.CelestialBodyWrapper;
     import org.slf4j.Logger;
     import org.slf4j.LoggerFactory;
+    import personal.spacesim.constants.PhysicsConstants;
+    import personal.spacesim.dtos.WebSocketResponseDTO;
+    import personal.spacesim.simulation.body.CelestialBodySnapshot;
+    import personal.spacesim.simulation.body.CelestialBodyWrapper;
+    import personal.spacesim.utils.math.functions.Gravity;
+    import personal.spacesim.utils.math.integrators.Integrator;
 
-    import java.util.*;
+    import java.util.ArrayList;
+    import java.util.LinkedHashMap;
+    import java.util.List;
+    import java.util.Map;
 
     @Getter
     @Setter
@@ -22,15 +25,13 @@
 
         private final Logger logger = LoggerFactory.getLogger(Simulation.class);
 
-        // Getters and setters
-
         private final String sessionID;
         private Frame frame;
         private List<CelestialBodyWrapper> celestialBodies;
         private AbsoluteDate simStartDate;
         private AbsoluteDate simCurrentDate;
-
         private Integrator integrator;
+        public static final int timeStepsToRun = 10000;
 
         public Simulation(
                 String sessionID,
@@ -39,7 +40,6 @@
                 Integrator integrator,
                 AbsoluteDate simStartDate
                 ) {
-
             this.sessionID = sessionID;
             this.frame = frame;
             this.celestialBodies = celestialBodies;
@@ -48,8 +48,10 @@
             this.simCurrentDate = simStartDate;
         }
 
-        private void update(double deltaTime) {
-            simCurrentDate = simCurrentDate.shiftedBy(deltaTime);
+        private void update(String timeStep) {
+            double deltaTimeSeconds = convertTimeStep(timeStep);
+
+            simCurrentDate = simCurrentDate.shiftedBy(deltaTimeSeconds);
 
             for (CelestialBodyWrapper body : celestialBodies) {
                 if (body.getName().equals("SUN")) {
@@ -63,33 +65,37 @@
                 }
 
                 // mutates the state (pos, vel) of all objects in the celestialBodies array
-                integrator.update(body, totalForce, deltaTime, simCurrentDate, frame);
+                integrator.update(body, totalForce, deltaTimeSeconds, simCurrentDate, frame);
             }
 
-            logger.info("Updated positions and velocities for date: {}", simCurrentDate);
-            for (CelestialBodyWrapper body : celestialBodies) {
-                logger.info("{} Position: {}, Velocity: {}", body.getName(), body.getPosition(),
-                            body.getVelocity());
-            }
+//            logger.info("Updated positions and velocities for date: {}", simCurrentDate);
+//            for (CelestialBodyWrapper body : celestialBodies) {
+//                logger.info("{} Position: {}, Velocity: {}", body.getName(), body.getPosition(),
+//                            body.getVelocity());
+//            }
         }
 
-        public WebSocketResponseDTO run(double totalTime, double deltaTime) {
-            double currentTime = 0;
+        public WebSocketResponseDTO run(String timeStep) {
+            long startTime = System.nanoTime();
+            int currentTimeStep = 0;
             Map<AbsoluteDate, List<CelestialBodySnapshot>> results = new LinkedHashMap<>();
 
-            while (currentTime < totalTime) {
+            while (currentTimeStep < timeStepsToRun) {
                 // First iteration
-                if (currentTime == 0) {
+                if (currentTimeStep == 0) {
                     results.put(simStartDate, snapshotCelestialBodies(celestialBodies));
                 } else {
-                    update(deltaTime);
+                    update(timeStep);
                     results.put(simCurrentDate, snapshotCelestialBodies(celestialBodies));
                 }
-                currentTime += deltaTime;
-                logger.info("Simulation time: {} seconds", currentTime);
+                currentTimeStep ++;
+                logger.info("Simulation iteration: {} ", currentTimeStep);
             }
 
-            logger.info("Simulation completed for total time: {} seconds", totalTime);
+            long endTime = System.nanoTime();
+            double totalTimeSeconds = (endTime - startTime) / 1_000_000_000.0;
+
+            logger.info("Simulation completed for {} {} in {} seconds.", timeStepsToRun, timeStep, totalTimeSeconds);
             logger.info("Simulation ran using frame: {}", frame.getName());
 
             return new WebSocketResponseDTO(results);
@@ -102,8 +108,24 @@
                 snapshot.setPosition(body.getPosition());
                 snapshot.setVelocity(body.getVelocity());
                 snapshot.setName(body.getName());
+                snapshot.setRadius(body.getRadius());
                 copy.add(snapshot);
             }
             return copy;
+        }
+
+        private double convertTimeStep(String timeStep) {
+            switch (timeStep.toLowerCase()) {
+                case "seconds":
+                    return 1;
+                case "hours":
+                    return PhysicsConstants.SECONDS_PER_HOUR;
+                case "days":
+                    return PhysicsConstants.SECONDS_PER_DAY;
+                case "weeks":
+                    return PhysicsConstants.SECONDS_PER_WEEK;
+                default:
+                    throw new IllegalArgumentException("Unsupported time step unit: " + timeStep);
+            }
         }
     }

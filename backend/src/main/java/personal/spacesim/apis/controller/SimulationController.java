@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import personal.spacesim.dtos.SimulationRequestDTO;
 import personal.spacesim.dtos.SimulationResponseDTO;
 import personal.spacesim.simulation.Simulation;
-import personal.spacesim.simulation.SimulationSessionService;
+import personal.spacesim.services.SimulationSessionService;
 
 import java.util.List;
 import java.util.stream.Collectors;

@@ -4,9 +4,9 @@ import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import personal.spacesim.simulation.frame.CustomFrameFactory;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
 import personal.spacesim.simulation.body.CelestialBodyWrapperFactory;
+import personal.spacesim.simulation.frame.CustomFrameFactory;
 import personal.spacesim.utils.math.integrators.Integrator;
 import personal.spacesim.utils.math.integrators.IntegratorFactory;
 

@@ -1,10 +1,10 @@
 package personal.spacesim.dtos;
 
 import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 public class WebsocketRequestDTO {
-    private double totalTime;
-    private double deltaTime;
+    private String timeStep;
     private String sessionID;
 }
