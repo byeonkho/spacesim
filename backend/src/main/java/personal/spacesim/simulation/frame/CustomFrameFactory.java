@@ -11,12 +11,12 @@ import org.springframework.stereotype.Component;
 public class CustomFrameFactory {
 
     public static Frame createFrame(String frameName) {
-        switch (frameName.toUpperCase()) {
-            case "HELIOCENTRIC":
+        switch (frameName.toLowerCase()) {
+            case "heliocentric":
                 return createHeliocentricFrame();
-            case "ICRF":
+            case "icfr":
                 return FramesFactory.getICRF();
-            case "GCRF":
+            case "gcrf":
                 return FramesFactory.getGCRF();
             default:
                 throw new IllegalArgumentException("Unknown frame name: " + frameName);
@@ -31,15 +31,6 @@ public class CustomFrameFactory {
         CelestialBody sun = CelestialBodyFactory.getSun();
         TransformProvider sunTransformProvider = sun.getInertiallyOrientedFrame().getTransformProvider();
 
-        // Create the heliocentric frame
         return new Frame(icrfFrame, sunTransformProvider, "Heliocentric Frame");
     }
-
-    // Example for creating the GCRF frame
-    private Frame createGCRF() {
-        return FramesFactory.getGCRF();
-    }
-
-
-    // Add more private methods for creating other frames here
 }

@@ -28,9 +28,6 @@ const Interface: React.FC = () => {
     const [date, setDate] = useState<string>('2024-06-05T00:00:00.000');
     const [frame, setFrame] = useState<string>('Heliocentric');
     const [integrator, setIntegrator] = useState<string>('euler');
-
-
-
     const { isConnected } = useSelector((state: RootState) => state.webSocket);
 
     const handleCelestialBodyNamesChange = (event: SelectChangeEvent<string[]>) => {

@@ -9,7 +9,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import personal.spacesim.dtos.WebSocketResponseDTO;
 import personal.spacesim.dtos.WebsocketRequestDTO;
-import personal.spacesim.simulation.SimulationSessionService;
+import personal.spacesim.services.SimulationSessionService;
 import personal.spacesim.simulation.body.CelestialBodySnapshot;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
 
@@ -72,10 +72,9 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     WebsocketRequestDTO.class
             );
             String sessionID = request.getSessionID();
-            double totalTime = request.getTotalTime();
-            double deltaTime = request.getDeltaTime();
+            String timeStep = request.getTimeStep();
 
-            if (sessionID == null || totalTime <= 0 || deltaTime <= 0) {
+            if (sessionID == null || timeStep == null) {
                 session.sendMessage(new TextMessage("Invalid payload"));
                 return;
             }
@@ -83,8 +82,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
             // run the simulation and construct the response
             WebSocketResponseDTO responseDTO = simulationSessionService.runSimulation(
                     sessionID,
-                    totalTime,
-                    deltaTime
+                    timeStep
             );
 
             responseDTO.setMessageType("SIM_DATA");

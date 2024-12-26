@@ -8,7 +8,9 @@ import java.util.Map;
 @Getter
 public class PhysicsConstants {
     public static final double GRAVITATIONAL_CONSTANT = 6.67430e-11; // in m^3 kg^-1 s^-2
-
+    public static final double SECONDS_PER_HOUR = 3600;
+    public static final double SECONDS_PER_DAY = 86400;
+    public static final double SECONDS_PER_WEEK = 604800;
     public static final Map<String, Double> RADIUS_MAP = new HashMap<>();
 
     static {

@@ -11,6 +11,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import personal.spacesim.constants.PhysicsConstants;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
 
 public class RungeKuttaIntegrator implements Integrator {
@@ -18,7 +19,7 @@ public class RungeKuttaIntegrator implements Integrator {
     @Override
     public void update(CelestialBodyWrapper body,
                        Vector3D totalForce,
-                       double deltaTime,
+                       double deltaTimeSeconds,
                        AbsoluteDate currentDate,
                        Frame frame) {
 
@@ -36,10 +37,11 @@ public class RungeKuttaIntegrator implements Integrator {
         propagator.setOrbitType(OrbitType.CARTESIAN);
 
         PVCoordinates initialPV = new PVCoordinates(body.getPosition(), body.getVelocity());
-        Orbit initialOrbit = new CartesianOrbit(initialPV, frame, currentDate, body.getMass());
+        double gravitationalParameter = body.getMass() * PhysicsConstants.GRAVITATIONAL_CONSTANT;
+        Orbit initialOrbit = new CartesianOrbit(initialPV, frame, currentDate, gravitationalParameter);
         propagator.setInitialState(new SpacecraftState(initialOrbit));
 
-        SpacecraftState finalState = propagator.propagate(currentDate.shiftedBy(deltaTime));
+        SpacecraftState finalState = propagator.propagate(currentDate.shiftedBy(deltaTimeSeconds));
         PVCoordinates finalPV = finalState.getPVCoordinates();
 
         body.setPosition(finalPV.getPosition());

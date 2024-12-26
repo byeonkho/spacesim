@@ -18,7 +18,7 @@ const Sphere: React.FC<CelestialBodyProps> = ({
                                                   ...props
                                               }) => {
     const meshRef = useRef<THREE.Mesh>(null!);
-    const [hovered, setHover] = useState(false);
+    const [hovered, setHovered] = useState(false);
     const dispatch = useDispatch<AppDispatch>();
 
     const activeCelestialBodyName = useSelector((state: RootState) => state.simulation.activeCelestialBodyName);
@@ -56,8 +56,8 @@ const Sphere: React.FC<CelestialBodyProps> = ({
             ref={meshRef}
             scale={activeCelestialBodyName === name ? 1.5 : 1}
             onClick={() => dispatch(setActiveCelestialBodyName(activeCelestialBodyName === name ? null : name))}
-            onPointerOver={() => setHover(true)}
-            onPointerOut={() => setHover(false)}
+            onPointerOver={() => setHovered(true)}
+            onPointerOut={() => setHovered(false)}
         >
             <sphereGeometry args={args}/>
             <meshStandardMaterial color={hovered ? 'hotpink' : color} wireframe={true}/>

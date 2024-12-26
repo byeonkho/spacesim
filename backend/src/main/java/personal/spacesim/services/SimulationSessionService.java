@@ -1,12 +1,13 @@
-package personal.spacesim.simulation;
+package personal.spacesim.services;
 
 import org.orekit.time.AbsoluteDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import personal.spacesim.constants.PhysicsConstants;
 import personal.spacesim.dtos.SimulationResponseDTO;
 import personal.spacesim.dtos.SimulationResponseMetadata;
 import personal.spacesim.dtos.WebSocketResponseDTO;
+import personal.spacesim.simulation.Simulation;
+import personal.spacesim.simulation.SimulationFactory;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
 
 import java.util.ArrayList;
@@ -75,13 +76,12 @@ public class SimulationSessionService {
 
     public WebSocketResponseDTO runSimulation(
             String sessionID,
-            double totalTime,
-            double deltaTime
+            String timeStep
     ) {
         Simulation simulation = getSimulation(sessionID);
         if (simulation != null) {
             try {
-                return simulation.run(totalTime, deltaTime);
+                return simulation.run(timeStep);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException("Error running simulation", e);
