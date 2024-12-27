@@ -2,7 +2,7 @@
 
 import React from 'react';
 import {Box, Typography} from '@mui/material';
-import Interface from "@/app/components/interface/Interface";
+import UserParams from "@/app/components/interface/UserParams";
 import {useSelector} from "react-redux";
 import {RootState} from "@/app/store/Store";
 import TimeControls from "@/app/components/interface/TimeControls";
@@ -35,9 +35,9 @@ const Layout: React.FC = () => {
                     </Typography>
                 </Box>
 
-                {/* Interface (e.g., on the right side) */}
+                {/* UserParams (e.g., on the right side) */}
                 <Box sx={{ position: 'absolute', top: 20, right: 20, width: '25%', pointerEvents: 'auto' }}>
-                    <Interface />
+                    <UserParams />
                 </Box>
             </Box>
         </Box>

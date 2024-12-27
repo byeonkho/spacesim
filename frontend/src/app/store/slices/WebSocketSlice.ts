@@ -43,7 +43,3 @@ export const {
 } = webSocketSlice.actions;
 
 export default webSocketSlice.reducer;
-
-// export const handleWebSocketMessage = (dispatch: AppDispatch, data: SimulationData) => {
-//     dispatch(updateDataReceived(data)); // Dispatch to simulation slice
-// };

@@ -53,6 +53,11 @@ export const webSocketMiddleware: Middleware =
                         socket = new WebSocket(action.payload); // payload is the backend ws url;
                         // defined in .env
 
+                        socket.onopen = () => {
+                            console.log('WebSocket connection established.');
+
+                        };
+
                         socket.onmessage = (event: MessageEvent) => {
                             try {
                                 const messageData = JSON.parse(event.data);
@@ -64,10 +69,10 @@ export const webSocketMiddleware: Middleware =
                                         // component tree; useDispatch() only works within components
                                         break;
 
-                                    // case 'NOTIFICATION':
-                                    //     store.dispatch(notificationReceived(messageData.payload));
-                                    //     break;
-                                    //
+                                    case 'CONNECTION_SUCCESSFUL':
+                                        console.log('Connection acknowledged by server.');
+                                        store.dispatch({ type: 'webSocket/connected' }); // Dispatch action to update state
+                                        break;
                                     // case 'ERROR':
                                     //     store.dispatch(error(messageData.payload));
                                     //     break;

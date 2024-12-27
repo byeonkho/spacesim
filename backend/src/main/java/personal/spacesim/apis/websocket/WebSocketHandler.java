@@ -13,10 +13,13 @@ import personal.spacesim.services.SimulationSessionService;
 import personal.spacesim.simulation.body.CelestialBodySnapshot;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
 
+import java.io.IOException;
+
 @Component
 public class WebSocketHandler extends TextWebSocketHandler {
 
-
+    private String CONNECTION_SUCCESSFUL = "CONNECTION_SUCCESSFUL";
+    private String CONNECTION_FAILED = "CONNECTION_FAILED";
     private final SimulationSessionService simulationSessionService;
     private final ObjectMapper objectMapper;
 
@@ -97,8 +100,19 @@ public class WebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
         System.out.println("WebSocket connection established: " + session.getId());
-    }
 
+        // Construct a connection acknowledgment message
+        WebSocketResponseDTO connectionAck = new WebSocketResponseDTO();
+        connectionAck.setMessageType(CONNECTION_SUCCESSFUL);
+
+        try {
+            // Send the acknowledgment message to the client
+            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(connectionAck)));
+        } catch (IOException e) {
+            System.err.println("Failed to send connection acknowledgment: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
     @Override
     public void afterConnectionClosed(
             WebSocketSession session,

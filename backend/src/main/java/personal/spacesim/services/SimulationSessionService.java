@@ -1,6 +1,8 @@
 package personal.spacesim.services;
 
 import org.orekit.time.AbsoluteDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import personal.spacesim.dtos.SimulationResponseDTO;
@@ -17,6 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class SimulationSessionService {
+
+    private final Logger logger = LoggerFactory.getLogger(SimulationSessionService.class);
 
     // TODO logic for memory management (max size of map)
     private final ConcurrentHashMap<String, Simulation> simulationMap;
@@ -47,7 +51,10 @@ public class SimulationSessionService {
                 sessionID,
                 simulation
         );
-        System.out.println("sessionID: " + sessionID);
+        logger.info(
+                "sessionID: {}",
+                sessionID
+        );
         return sessionID;
     }
 

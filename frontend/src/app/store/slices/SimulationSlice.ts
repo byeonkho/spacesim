@@ -1,5 +1,6 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {Vector3} from "three";
+import {RootState} from "@/app/store/Store";
 
 interface TimeControls {
     isPaused: boolean;
@@ -105,6 +106,9 @@ export const simulationSlice = createSlice({
         }
     },
 });
+
+export const selectSessionID = (state: RootState) =>
+    state.simulation.simulationParameters?.simulationMetaData?.sessionID;
 
 export const {
     setActiveCelestialBodyName,
