@@ -1,7 +1,10 @@
-import {useFrame, useThree} from "@react-three/fiber";
-import React, {useRef} from "react";
+import React, { useRef } from "react";
+import { useFrame, useThree, extend } from "@react-three/fiber";
+import { OrbitControls } from "three-stdlib";
 
-function CameraControls() {
+extend({ OrbitControls });
+
+const CameraControls = () => {
     const { camera, gl } = useThree();
     const controlsRef = useRef(null);
 
@@ -11,7 +14,17 @@ function CameraControls() {
         }
     });
 
-    return <orbitControls ref={controlsRef} args={[camera, gl.domElement]} />;
-}
+    return (
+        <orbitControls
+            ref={controlsRef}
+            args={[camera, gl.domElement]}
+            enableDamping={true}
+            dampingFactor={0.1}
+            minDistance={1e1} // Minimum zoom distance
+            maxDistance={1e12} // Maximum zoom distance
+            maxPolarAngle={Math.PI / 2} // Restrict vertical rotation
+        />
+    );
+};
 
 export default CameraControls;

@@ -10,11 +10,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class CustomFrameFactory {
 
-    public static Frame createFrame(String frameName) {
+    public Frame createFrame(String frameName) {
         switch (frameName.toLowerCase()) {
             case "heliocentric":
                 return createHeliocentricFrame();
-            case "icfr":
+            case "icrf":
                 return FramesFactory.getICRF();
             case "gcrf":
                 return FramesFactory.getGCRF();
@@ -23,7 +23,7 @@ public class CustomFrameFactory {
         }
     }
 
-    private static Frame createHeliocentricFrame() {
+    private Frame createHeliocentricFrame() {
         // Get the ICRF frame
         Frame icrfFrame = FramesFactory.getICRF();
 

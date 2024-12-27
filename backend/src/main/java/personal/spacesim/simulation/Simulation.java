@@ -31,7 +31,7 @@
         private AbsoluteDate simStartDate;
         private AbsoluteDate simCurrentDate;
         private Integrator integrator;
-        public static final int timeStepsToRun = 10000;
+        public static final int TIMESTEPS_TO_RUN = 10000;
 
         public Simulation(
                 String sessionID,
@@ -80,7 +80,7 @@
             int currentTimeStep = 0;
             Map<AbsoluteDate, List<CelestialBodySnapshot>> results = new LinkedHashMap<>();
 
-            while (currentTimeStep < timeStepsToRun) {
+            while (currentTimeStep < TIMESTEPS_TO_RUN) {
                 // First iteration
                 if (currentTimeStep == 0) {
                     results.put(simStartDate, snapshotCelestialBodies(celestialBodies));
@@ -95,10 +95,12 @@
             long endTime = System.nanoTime();
             double totalTimeSeconds = (endTime - startTime) / 1_000_000_000.0;
 
-            logger.info("Simulation completed for {} {} in {} seconds.", timeStepsToRun, timeStep, totalTimeSeconds);
+            logger.info("Simulation completed for {} {} in {} seconds.", TIMESTEPS_TO_RUN, timeStep, totalTimeSeconds);
             logger.info("Simulation ran using frame: {}", frame.getName());
 
-            return new WebSocketResponseDTO(results);
+            WebSocketResponseDTO responsePayload = new WebSocketResponseDTO();
+            responsePayload.setData(results);
+            return responsePayload;
         }
 
         private List<CelestialBodySnapshot> snapshotCelestialBodies(List<CelestialBodyWrapper> originalList) {

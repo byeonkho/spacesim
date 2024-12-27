@@ -1,8 +1,8 @@
 package personal.spacesim.utils.math.functions;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import personal.spacesim.simulation.body.CelestialBodyWrapper;
 import personal.spacesim.constants.PhysicsConstants;
+import personal.spacesim.simulation.body.CelestialBodyWrapper;
 
 public class Gravity {
     public static Vector3D calculateGravitationalForce(CelestialBodyWrapper body1, CelestialBodyWrapper body2
