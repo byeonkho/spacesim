@@ -21,14 +21,11 @@ import theme from "@/muiTheme";
 
 export default function App() {
     return (
-        <>
-
-            <Provider store={store}>
-                <ThemeProvider theme={theme}>
-                    <Layout/>
-                    <Scene/>
-                </ThemeProvider>
-            </Provider>
-        </>
+        <Provider store={store}>
+            <ThemeProvider theme={theme}>
+                <Layout />
+                {/*<Scene />*/}
+            </ThemeProvider>
+        </Provider>
     );
 }

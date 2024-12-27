@@ -2,9 +2,6 @@ package personal.spacesim.dtos;
 
 import lombok.Data;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Data
 public class SimulationResponseMetadata {
 

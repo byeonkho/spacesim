@@ -11,6 +11,8 @@ extend({ OrbitControls });
 
 export default function Scene() {
     const simulationData = useSelector((state: RootState) => state.simulation.simulationData);
+    const {isPaused, progress, speedMultiplier} = useSelector((state: RootState) => state.simulation.timeControls);
+
 
     // Debug Redux state
     console.log("Simulation data from Redux:", simulationData);
@@ -49,22 +51,28 @@ export default function Scene() {
 
     //with looping
     useEffect(() => {
-        if (!simulationData || totalTimeSteps === 0) return;
+        if (!simulationData || totalTimeSteps === 0 || isPaused) {
+            console.log("Animation loop paused.");
+            return; // Skip setting the interval if paused or no data
+        }
 
         const interval = setInterval(() => {
             setCurrentTimeStepIndex((prevIndex) => {
-                const nextIndex = (prevIndex + 1) % totalTimeSteps; // Loop back to 0 after the last index
+                // Adjust the index based on the speed multiplier
+                const stepsToMove = Math.abs(speedMultiplier); // Number of steps to move
+                const direction = speedMultiplier > 0 ? 1 : -1; // Determine direction (forward or backward)
+                const nextIndex = (prevIndex + direction * stepsToMove + totalTimeSteps) % totalTimeSteps;
                 console.log(`Updating to index: ${nextIndex}`); // Debug
                 return nextIndex;
             });
-        }, 1000 / 30); // Adjust speed (e.g., 30 FPS)
+        }, 1000 / SimConstants.FPS); // Fixed interval based on FPS
 
         // Cleanup the interval when the component unmounts or dependencies change
         return () => {
             console.log("Cleaning up interval.");
             clearInterval(interval);
         };
-    }, [simulationData, totalTimeSteps]);
+    }, [simulationData, totalTimeSteps, isPaused, speedMultiplier]);
 
 
     if (!simulationData || !simulationData.data) {
@@ -90,7 +98,7 @@ export default function Scene() {
     console.log("Celestial bodies at latest timeStep:", celestialBodies);
 
     return (
-        <Canvas style={{ width: "100vw", height: "100vh" }}>
+        <Canvas style={{ width: "100%", height: "100%" }}>
             <CameraControls />
             <ambientLight intensity={Math.PI / 2} />
             <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />

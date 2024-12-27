@@ -3,7 +3,6 @@ package personal.spacesim.dtos;
 import lombok.Data;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
 import java.util.List;
-import java.util.Map;
 
 @Data
 public class SimulationResponseDTO {

@@ -21,15 +21,22 @@ public class WebSocketResponseDTOSerializer extends JsonSerializer<WebSocketResp
         gen.writeStringField("messageType", value.getMessageType());
 
         // Serialize the data map
-        gen.writeFieldName("data");
-        gen.writeStartObject();
-        for (Map.Entry<AbsoluteDate, List<CelestialBodySnapshot>> entry : value.getData().get("data").entrySet()) {
-            String fieldName = "date: " + entry.getKey().getDate().toString();  // Prepend "date: " to the date string
-            gen.writeFieldName(fieldName);
-            gen.writeObject(entry.getValue());
-        }
-        gen.writeEndObject();
+        Map<String, Map<AbsoluteDate, List<CelestialBodySnapshot>>> data = value.getData();
+        if (data == null || !data.containsKey("data")) {
+            gen.writeNullField("data");
+        } else {
+            gen.writeFieldName("data");
+            gen.writeStartObject();
 
+            for (Map.Entry<AbsoluteDate, List<CelestialBodySnapshot>> entry : data.get("data").entrySet()) {
+                String fieldName = "date: " + entry.getKey()
+                        .getDate()
+                        .toString();  // Prepend "date: " to the date string
+                gen.writeFieldName(fieldName);
+                gen.writeObject(entry.getValue());
+            }
+            gen.writeEndObject();
+        }
         gen.writeEndObject();
     }
 }

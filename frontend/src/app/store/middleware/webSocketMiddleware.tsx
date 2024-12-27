@@ -1,5 +1,5 @@
 import {Middleware, MiddlewareAPI, Dispatch, Action} from 'redux';
-import {updateDataReceived} from "@/app/store/simulationSlice";
+import {updateDataReceived} from "@/app/store/slices/SimulationSlice";
 import {useDispatch} from "react-redux";
 
 interface ConnectAction {

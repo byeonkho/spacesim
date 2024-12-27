@@ -1,5 +1,5 @@
 import { AppDispatch } from '../store/store';
-import {loadSimulation, SimulationParameters} from "@/app/store/simulationSlice";
+import {loadSimulation, SimulationParameters} from "@/app/store/slices/SimulationSlice";
 
 // Load environment variables
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;

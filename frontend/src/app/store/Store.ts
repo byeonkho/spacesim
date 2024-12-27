@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
-import simulationSliceReducer from './simulationSlice';
-import webSocketReducer from './webSocketSlice';
+import simulationSliceReducer from './slices/SimulationSlice';
+import webSocketReducer from './slices/WebSocketSlice';
 import {webSocketMiddleware} from "@/app/store/middleware/webSocketMiddleware";
 
 export const store = configureStore({

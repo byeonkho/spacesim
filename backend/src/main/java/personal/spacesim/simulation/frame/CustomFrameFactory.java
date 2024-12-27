@@ -14,7 +14,7 @@ public class CustomFrameFactory {
         switch (frameName.toLowerCase()) {
             case "heliocentric":
                 return createHeliocentricFrame();
-            case "icfr":
+            case "icrf":
                 return FramesFactory.getICRF();
             case "gcrf":
                 return FramesFactory.getGCRF();

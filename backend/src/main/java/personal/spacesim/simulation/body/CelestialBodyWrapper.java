@@ -11,6 +11,12 @@ import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import personal.spacesim.constants.PhysicsConstants;
 
+
+// we can't just use CelestialBody because to retrieve the PV coordinates we need a specific datetime; by wrapping it
+// here we can update the PV state through our manual compute.
+
+// TODO do we need the CelestialBody instance still after construction? we can possibly refactor to eliminate
+//  CelestialBodySnapshot.
 @Getter
 @Setter
 @ToString
@@ -24,8 +30,13 @@ public class CelestialBodyWrapper {
     private Vector3D velocity;
 
 
-    public CelestialBodyWrapper(String name, Frame frame, AbsoluteDate date) {
+    public CelestialBodyWrapper(
+            String name,
+            Frame frame,
+            AbsoluteDate date
+    ) {
         this.body = CelestialBodyFactory.getBody(name);
+
         this.name = name;
         this.mass = getMassConstant();
         Double radiusValue = PhysicsConstants.RADIUS_MAP.get(name.toUpperCase());
@@ -33,12 +44,18 @@ public class CelestialBodyWrapper {
             throw new IllegalArgumentException("Unknown celestial body: " + name);
         }
         this.radius = radiusValue;
-        this.position = body.getPVCoordinates(date, frame).getPosition();
-        this.velocity = body.getPVCoordinates(date, frame).getVelocity();
+        this.position = body.getPVCoordinates(
+                date,
+                frame
+        ).getPosition();
+        this.velocity = body.getPVCoordinates(
+                date,
+                frame
+        ).getVelocity();
     }
 
     private double getMassConstant() {
         return body.getGM() / PhysicsConstants.GRAVITATIONAL_CONSTANT;
     }
-
 }
+
