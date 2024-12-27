@@ -1,4 +1,4 @@
-import { configureStore } from '@reduxjs/toolkit';
+import {configureStore} from '@reduxjs/toolkit';
 import simulationSliceReducer from './slices/SimulationSlice';
 import webSocketReducer from './slices/WebSocketSlice';
 import {webSocketMiddleware} from "@/app/store/middleware/webSocketMiddleware";

@@ -1,10 +1,10 @@
-import { Canvas, extend } from "@react-three/fiber";
+import {Canvas, extend} from "@react-three/fiber";
 import CameraControls from "@/app/components/utils/CameraControls";
 import Sphere from "@/app/components/scene/Sphere";
 import React, {useEffect, useState} from "react";
-import { OrbitControls } from "three-stdlib";
-import { useSelector } from "react-redux";
-import { RootState } from "@/app/store/Store";
+import {OrbitControls} from "three-stdlib";
+import {useSelector} from "react-redux";
+import {RootState} from "@/app/store/Store";
 import SimConstants from "@/app/constants/SimConstants";
 
 extend({ OrbitControls });

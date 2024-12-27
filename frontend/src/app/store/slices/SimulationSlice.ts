@@ -1,5 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Vector3 } from "three";
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {Vector3} from "three";
 
 interface TimeControls {
     isPaused: boolean;
@@ -100,7 +100,7 @@ export const simulationSlice = createSlice({
                 }
             }
 
-            state.timeControls.speedMultiplier = Math.min(Math.max(newMultiplier, -8), 8);
+            state.timeControls.speedMultiplier = Math.min(Math.max(newMultiplier, -128), 128);
             console.log("new speed: " + state.timeControls.speedMultiplier);
         }
     },

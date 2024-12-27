@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Button, Box, MenuItem, Select, InputLabel, FormControl, SelectChangeEvent } from '@mui/material';
-import { requestRunSimulation } from "@/app/store/middleware/webSocketMiddleware";
-import { RootState } from "@/app/store/Store";
+import React, {useState} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import {Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent} from '@mui/material';
+import {requestRunSimulation} from "@/app/store/middleware/webSocketMiddleware";
+import {RootState} from "@/app/store/Store";
 
 const WebSocketDataSender: React.FC = () => {
     const dispatch = useDispatch();

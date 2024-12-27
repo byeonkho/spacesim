@@ -1,18 +1,9 @@
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/app/store/Store";
-import {
-    Box,
-    Typography,
-    LinearProgress,
-    Card,
-    CardContent,
-    Button,
-    SpeedDialAction,
-    SpeedDialIcon, SpeedDial, Toolbar, AppBar, Fab, Slider, IconButton
-} from "@mui/material";
-import {setProgress, togglePause, setSpeedMultiplier} from "@/app/store/slices/SimulationSlice";
-import {FastForward, FastRewind, Pause, PauseCircle, PlayArrow} from "@mui/icons-material";
+import {useDispatch, useSelector} from "react-redux";
+import {RootState} from "@/app/store/Store";
+import {Box, IconButton, Slider, Typography} from "@mui/material";
+import {setProgress, setSpeedMultiplier, togglePause} from "@/app/store/slices/SimulationSlice";
+import {FastForward, FastRewind, Pause, PlayArrow} from "@mui/icons-material";
 
 const TimeControls: React.FC = () => {
     const dispatch = useDispatch();

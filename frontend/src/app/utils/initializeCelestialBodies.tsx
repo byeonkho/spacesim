@@ -1,4 +1,4 @@
-import { AppDispatch } from '../store/store';
+import {AppDispatch} from '../store/store';
 import {loadSimulation, SimulationParameters} from "@/app/store/slices/SimulationSlice";
 
 // Load environment variables

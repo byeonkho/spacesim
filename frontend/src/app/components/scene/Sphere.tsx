@@ -1,4 +1,4 @@
-import {MeshProps, useFrame} from "@react-three/fiber";
+import {MeshProps} from "@react-three/fiber";
 import React, {useEffect, useRef, useState} from "react";
 import * as THREE from "three";
 import {useDispatch, useSelector} from 'react-redux';

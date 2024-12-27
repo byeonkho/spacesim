@@ -1,7 +1,7 @@
 // src/components/Layout.tsx
 
 import React from 'react';
-import {Grid, Box, Typography} from '@mui/material';
+import {Box, Typography} from '@mui/material';
 import Interface from "@/app/components/interface/Interface";
 import {useSelector} from "react-redux";
 import {RootState} from "@/app/store/Store";

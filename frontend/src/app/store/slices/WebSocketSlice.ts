@@ -1,6 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import {AppDispatch} from "@/app/store/Store";
-import {SimulationData, updateDataReceived} from "@/app/store/slices/SimulationSlice";
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 
 
 interface WebSocketState {

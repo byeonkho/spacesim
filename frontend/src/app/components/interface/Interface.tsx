@@ -1,23 +1,22 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
-    TextField,
+    Box,
     Button,
+    Drawer,
+    FormControl,
+    IconButton,
+    InputLabel,
     MenuItem,
     Select,
-    FormControl,
-    InputLabel,
-    Box,
     SelectChangeEvent,
-    Drawer,
-    IconButton,
-    Typography
+    TextField
 } from '@mui/material';
 import {useDispatch, useSelector} from 'react-redux';
 import MenuIcon from '@mui/icons-material/Menu';
-import { initializeCelestialBodies } from "@/app/utils/initializeCelestialBodies";
+import {initializeCelestialBodies} from "@/app/utils/initializeCelestialBodies";
 import theme from "@/muiTheme";
 import {RootState} from "@/app/store/Store";
-import {connect,  disconnect, sendMessage} from "@/app/store/middleware/webSocketMiddleware";
+import {connect, disconnect, sendMessage} from "@/app/store/middleware/webSocketMiddleware";
 import SimulationRun from "@/app/components/interface/SimulationRun";
 
 const Interface: React.FC = () => {
