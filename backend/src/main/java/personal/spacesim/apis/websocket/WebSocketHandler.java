@@ -18,8 +18,8 @@ import java.io.IOException;
 @Component
 public class WebSocketHandler extends TextWebSocketHandler {
 
-    private String CONNECTION_SUCCESSFUL = "CONNECTION_SUCCESSFUL";
-    private String CONNECTION_FAILED = "CONNECTION_FAILED";
+    private final String CONNECTION_SUCCESSFUL = "CONNECTION_SUCCESSFUL";
+    private final String CONNECTION_FAILED = "CONNECTION_FAILED";
     private final SimulationSessionService simulationSessionService;
     private final ObjectMapper objectMapper;
 

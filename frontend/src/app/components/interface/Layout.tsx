@@ -1,5 +1,3 @@
-// src/components/Layout.tsx
-
 import React from 'react';
 import {Box, Typography} from '@mui/material';
 import UserParams from "@/app/components/interface/UserParams";
@@ -7,6 +5,7 @@ import {useSelector} from "react-redux";
 import {RootState} from "@/app/store/Store";
 import TimeControls from "@/app/components/interface/TimeControls";
 import Scene from "@/app/components/scene/Scene";
+import ProgressBar from "@/app/components/interface/ProgressBar";
 
 const Layout: React.FC = () => {
     const sessionID = useSelector((state: RootState) => state.simulation.simulationParameters?.simulationMetaData.sessionID);
@@ -25,6 +24,7 @@ const Layout: React.FC = () => {
             <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 2, pointerEvents: 'none' }}>
                 {/* Time Controls */}
                 <Box sx={{ position: 'absolute', top: 20, left: 20, pointerEvents: 'auto' }}>
+                    <ProgressBar />
                     <TimeControls />
                 </Box>
 
