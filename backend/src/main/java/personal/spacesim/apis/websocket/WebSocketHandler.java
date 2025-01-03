@@ -1,6 +1,8 @@
 package personal.spacesim.apis.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -10,6 +12,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import personal.spacesim.dtos.WebSocketResponseDTO;
 import personal.spacesim.dtos.WebsocketRequestDTO;
 import personal.spacesim.services.SimulationSessionService;
+import personal.spacesim.simulation.Simulation;
 import personal.spacesim.simulation.body.CelestialBodySnapshot;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
 
@@ -17,6 +20,8 @@ import java.io.IOException;
 
 @Component
 public class WebSocketHandler extends TextWebSocketHandler {
+
+    private final Logger logger = LoggerFactory.getLogger(WebSocketHandler.class);
 
     private final String CONNECTION_SUCCESSFUL = "CONNECTION_SUCCESSFUL";
     private final String CONNECTION_FAILED = "CONNECTION_FAILED";
@@ -82,6 +87,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 return;
             }
 
+            logger.info("received websocket message");
             // run the simulation and construct the response
             WebSocketResponseDTO responseDTO = simulationSessionService.runSimulation(
                     sessionID

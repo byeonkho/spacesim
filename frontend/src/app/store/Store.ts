@@ -1,5 +1,5 @@
 import {configureStore} from '@reduxjs/toolkit';
-import simulationSliceReducer from './slices/SimulationSlice';
+import simulationSliceReducer, {simulationMiddleware} from './slices/SimulationSlice';
 import webSocketReducer from './slices/WebSocketSlice';
 import {webSocketMiddleware} from "@/app/store/middleware/webSocketMiddleware";
 
@@ -10,7 +10,8 @@ export const store = configureStore({
     },
 
     middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(webSocketMiddleware),
+        getDefaultMiddleware().concat(webSocketMiddleware, simulationMiddleware),
+
 });
 
 export type RootState = ReturnType<typeof store.getState>;

@@ -1,5 +1,6 @@
 import {Action, Dispatch, Middleware, MiddlewareAPI} from 'redux';
 import {updateDataReceived} from "@/app/store/slices/SimulationSlice";
+import {connected, disconnected, setRequestInProgress, setErrorMessage} from "@/app/store/slices/WebSocketSlice";
 
 interface ConnectAction {
     type: 'webSocket/connect';
@@ -22,11 +23,6 @@ export const connect = (url: string) => ({
 
 export const disconnect = () => ({
     type: 'webSocket/disconnect',
-});
-
-export const sendMessage = (message: any) => ({
-    type: 'webSocket/sendMessage',
-    payload: message,
 });
 
 export const requestRunSimulation = (message: any) => ({
@@ -64,14 +60,16 @@ export const webSocketMiddleware: Middleware =
 
                                 switch (messageData.messageType) {
                                     case 'SIM_DATA':
+                                        store.dispatch(setRequestInProgress(false));
                                         store.dispatch(updateDataReceived(messageData)); // store.dispatch used here
                                         // instead of useDispatch() because middleware is not part of the React
                                         // component tree; useDispatch() only works within components
+
                                         break;
 
                                     case 'CONNECTION_SUCCESSFUL':
                                         console.log('Connection acknowledged by server.');
-                                        store.dispatch({ type: 'webSocket/connected' }); // Dispatch action to update state
+                                        store.dispatch(connected());
                                         break;
                                     // case 'ERROR':
                                     //     store.dispatch(error(messageData.payload));
@@ -84,10 +82,11 @@ export const webSocketMiddleware: Middleware =
                                 console.error("Failed to parse WebSocket message:", err);
                             }
                         };
-                        socket.onerror = (error: Event) =>
-                            store.dispatch({type: 'webSocket/error', payload: error});
+                        socket.onerror = (event: ErrorEvent) => {
+                            store.dispatch(setErrorMessage(event.message))
+                        };
                         socket.onclose = () => {
-                            store.dispatch({type: 'webSocket/disconnected'});
+                            store.dispatch(disconnected());
                             socket = null; // Ensure socket is set to null when it's closed
                         };
                         break;
@@ -101,7 +100,8 @@ export const webSocketMiddleware: Middleware =
 
                     case 'webSocket/requestRunSimulation':
                         if (socket !== null && socket.readyState === WebSocket.OPEN) {
-                            console.log("debug", action.payload)
+                            console.log("SENDING WEBSOCKET: REQUESTRUNSIMULATION", action.payload)
+                            store.dispatch(setRequestInProgress(true));
                             socket!.send(JSON.stringify(action.payload)); // Non-null assertion
                         } else {
                             console.warn('Cannot send message: WebSocket is not open.');

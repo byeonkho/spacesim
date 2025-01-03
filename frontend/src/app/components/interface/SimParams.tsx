@@ -16,7 +16,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import {initializeCelestialBodies} from "@/app/utils/initializeCelestialBodies";
 import theme from "@/muiTheme";
 import {RootState, store} from "@/app/store/Store";
-import {connect, disconnect, requestRunSimulation, sendMessage} from "@/app/store/middleware/webSocketMiddleware";
+import {connect, disconnect, requestRunSimulation} from "@/app/store/middleware/webSocketMiddleware";
 import SimulationSlice, {selectSessionID} from "@/app/store/slices/SimulationSlice";
 
 const SimParams: React.FC = () => {

@@ -74,7 +74,7 @@ const Scene = () => {
         };
     }, [simulationData, totalTimeSteps, isPaused, speedMultiplier, currentTimeStepIndex, dispatch]);
 
-    if (!simulationData || !simulationData.data) {
+    if (!simulationData) {
         console.log("Simulation data is not loaded yet or is invalid.");
         return (
             <Canvas style={{ width: "100vw", height: "100vh" }}>
@@ -91,7 +91,7 @@ const Scene = () => {
     // Current celestial bodies
     const currentTimeStep = timeStepKeys[currentTimeStepIndex];
     const celestialBodies =
-        currentTimeStep && simulationData.data[currentTimeStep] ? simulationData.data[currentTimeStep] : [];
+        currentTimeStep && simulationData[currentTimeStep] ? simulationData[currentTimeStep] : [];
 
     return (
         <Canvas style={{width: "100%", height: "100%"}}

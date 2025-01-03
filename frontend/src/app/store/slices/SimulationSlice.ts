@@ -1,6 +1,7 @@
 import {createSelector, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {Vector3} from "three";
 import {RootState} from "@/app/store/Store";
+import {requestRunSimulation} from "@/app/store/middleware/webSocketMiddleware";
 
 interface TimeState {
     isPaused: boolean;
@@ -69,9 +70,18 @@ export const simulationSlice = createSlice({
             console.log("Updated state in reducer:", state.simulationParameters);
         },
 
-        updateDataReceived: (state, action: PayloadAction<SimulationData>) => {
-            state.simulationData = action.payload;
-            state.timeState.isPaused = false;
+        updateDataReceived: (state, action: PayloadAction<{ data: SimulationData }>) => {
+            if (!state.simulationData) {
+                state.simulationData = action.payload.data;
+            } else {
+                state.simulationData = {
+                    ...state.simulationData,
+                    ...action.payload.data,
+                };
+            }
+            if (state.timeState.isPaused) {
+                state.timeState.isPaused = false;
+            }
             console.log("Simulation data updated:", state.simulationData);
         },
         togglePause: (state) => {
@@ -112,13 +122,52 @@ export const simulationSlice = createSlice({
     },
 });
 
+///////////////////////////////////////////// MIDDLEWARE /////////////////////////////////////////////
+export const simulationMiddleware = store => next => action => {
+    if (action.type === 'simulation/setCurrentTimeStepIndex') {
+        const state = store.getState();
+
+        const simulationData = state.simulation.simulationData;
+        if (!simulationData) {
+            console.warn("simulationData is not available yet.");
+            return next(action);
+        }
+
+        const totalTimeSteps = selectTotalTimeSteps(state);
+        const currentTimeStepIndex = action.payload;
+        const remainingIndexes = totalTimeSteps - currentTimeStepIndex;
+
+        console.log("Simulation Data:", simulationData);
+        console.log("Total Time Steps:", totalTimeSteps);
+        console.log("Current Time Step Index:", currentTimeStepIndex);
+        console.log("Remaining Indexes:", remainingIndexes);
+
+        if (remainingIndexes <= 9000 && !state.webSocket.isRequestInProgress) {
+
+            console.log("DEBUG TRIGGERING DISPATCH")// Trigger when remaining indexes fall below 5000
+            const sessionID = selectSessionID(state);
+            if (!sessionID) {
+                console.warn("Session ID is not defined. Cannot send request.");
+                return next(action);
+            }
+
+            const requestData = { sessionID };
+            store.dispatch(requestRunSimulation(requestData));
+        }
+    }
+
+    return next(action);
+};
+
+
+///////////////////////////////////////////// SELECTORS /////////////////////////////////////////////
 export const selectTimeStepKeys = createSelector(
     (state: RootState) => state.simulation.simulationData,
     (simulationData) => {
-        if (!simulationData || !simulationData.data) {
+        if (!simulationData) {
             return [];
         }
-        return Object.keys(simulationData.data).sort((a, b) => {
+        return Object.keys(simulationData).sort((a, b) => {
             const dateA = new Date(a.split(": ")[1]).getTime();
             const dateB = new Date(b.split(": ")[1]).getTime();
             return dateA - dateB; // Sort ascending by timestamp

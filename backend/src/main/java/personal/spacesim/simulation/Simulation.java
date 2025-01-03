@@ -92,7 +92,6 @@
                     results.put(simCurrentDate, snapshotCelestialBodies(celestialBodies));
                 }
                 currentTimeStep ++;
-                logger.info("Simulation iteration: {} ", currentTimeStep);
             }
 
             long endTime = System.nanoTime();

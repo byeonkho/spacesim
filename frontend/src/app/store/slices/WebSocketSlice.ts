@@ -4,13 +4,15 @@ import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 interface WebSocketState {
     socket: WebSocket | null;
     isConnected: boolean;
-    error: string | null;
+    isRequestInProgress: boolean;
+    errorMessage: string | null;
 }
 
 const initialState: WebSocketState = {
     socket: null,
     isConnected: false,
-    error: null,
+    isRequestInProgress: false,
+    errorMessage: null,
 };
 
 export const webSocketSlice = createSlice({
@@ -25,8 +27,11 @@ export const webSocketSlice = createSlice({
             state.isConnected = false;
             state.error = null;
         },
-        error: (state, action: PayloadAction<string>) => {
-            state.error = action.payload;
+        setErrorMessage: (state, action: PayloadAction<string>) => {
+            state.errorMessage = action.payload;
+        },
+        setRequestInProgress: (state, action: PayloadAction<boolean>) => {
+            state.isRequestInProgress = action.payload;
         },
 
         notificationReceived: (state, action: PayloadAction<any>) => {
@@ -39,7 +44,8 @@ export const webSocketSlice = createSlice({
 export const {
     connected,
     disconnected,
-    error,
+    setErrorMessage,
+    setRequestInProgress
 } = webSocketSlice.actions;
 
 export default webSocketSlice.reducer;

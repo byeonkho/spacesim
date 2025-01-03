@@ -8,7 +8,7 @@ const ProgressBar: React.FC = () => {
     const currentTimeStepIndex = useSelector((state: RootState) => state.simulation.timeState?.currentTimeStepIndex || 0);
 
     // Calculate progress
-    const totalTimeSteps = simulationData ? Object.keys(simulationData.data).length : 0;
+    const totalTimeSteps = simulationData ? Object.keys(simulationData).length : 0;
     const progress = totalTimeSteps > 1 ? (currentTimeStepIndex / (totalTimeSteps - 1)) * 100 : 0;
 
     return (
