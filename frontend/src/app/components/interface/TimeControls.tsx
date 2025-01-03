@@ -7,24 +7,20 @@ import {FastForward, FastRewind, Pause, PlayArrow} from "@mui/icons-material";
 
 const TimeControls: React.FC = () => {
     const dispatch = useDispatch();
-    const {isPaused, progress, speedMultiplier} = useSelector((state: RootState) => state.simulation.timeControls);
-
-    const handleProgressChange = (event: Event, newValue: number | number[]) => {
-        dispatch(setProgress(newValue as number));
-    };
+    const {isPaused, speedMultiplier} = useSelector((state: RootState) => state.simulation.timeState);
 
     return (
         <Box sx={{ width: '100%', maxWidth: 500, margin: '0 auto', textAlign: 'center', padding: 2 }}>
-            <Typography variant="h6">
-                Simulation Progress
-            </Typography>
-            <Slider
-                value={progress || 0}
-                onChange={handleProgressChange}
-                aria-labelledby="simulation-progress"
-                valueLabelDisplay="auto"
-                sx={{ marginTop: 2 }}
-            />
+            {/*<Typography variant="h6">*/}
+            {/*    Simulation Progress*/}
+            {/*</Typography>*/}
+            {/*<Slider*/}
+            {/*    value={progress || 0}*/}
+            {/*    onChange={handleProgressChange}*/}
+            {/*    aria-labelledby="simulation-progress"*/}
+            {/*    valueLabelDisplay="auto"*/}
+            {/*    sx={{ marginTop: 2 }}*/}
+            {/*/>*/}
 
             <Typography variant="body1" sx={{ marginTop: 2 }}>
                 Current Speed: {speedMultiplier}x

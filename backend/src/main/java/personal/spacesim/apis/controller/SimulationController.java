@@ -67,7 +67,7 @@ public class SimulationController {
         List<Simulation> simulations = simulationSessionService.getAllSimulations();
         List<String> sessionIDs = simulations.stream()
                 .map(Simulation::getSessionID)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(sessionIDs);
     }
 

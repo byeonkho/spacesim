@@ -19,7 +19,7 @@ import {RootState, store} from "@/app/store/Store";
 import {connect, disconnect, requestRunSimulation, sendMessage} from "@/app/store/middleware/webSocketMiddleware";
 import SimulationSlice, {selectSessionID} from "@/app/store/slices/SimulationSlice";
 
-const UserParams: React.FC = () => {
+const SimParams: React.FC = () => {
     const dispatch = useDispatch();
     const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -251,4 +251,4 @@ const UserParams: React.FC = () => {
     );
 };
 
-export default UserParams;
+export default SimParams;

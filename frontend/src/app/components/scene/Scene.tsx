@@ -3,31 +3,18 @@ import CameraControls from "@/app/components/utils/CameraControls";
 import Sphere from "@/app/components/scene/Sphere";
 import React, {useEffect, useState} from "react";
 import {OrbitControls} from "three-stdlib";
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {RootState} from "@/app/store/Store";
 import SimConstants from "@/app/constants/SimConstants";
+import {selectTimeStepKeys, setCurrentTimeStepIndex} from "@/app/store/slices/SimulationSlice";
 
 extend({ OrbitControls });
 
-
-//TODO use const
-export default function Scene() {
+const Scene = () => {
+    const dispatch = useDispatch();
     const simulationData = useSelector((state: RootState) => state.simulation.simulationData);
-    const {isPaused, progress, speedMultiplier} = useSelector((state: RootState) => state.simulation.timeControls);
-
-
-    // Debug Redux state
-    // console.log("Simulation data from Redux:", simulationData);
-
-    // Track the current time step
-    const [currentTimeStepIndex, setCurrentTimeStepIndex] = useState(0);
-    const timeStepKeys = simulationData
-        ? Object.keys(simulationData.data).sort((a, b) => {
-            const dateA = new Date(a.split(": ")[1]).getTime();
-            const dateB = new Date(b.split(": ")[1]).getTime();
-            return dateA - dateB; // Sort ascending by timestamp
-        })
-        : [];
+    const {isPaused, speedMultiplier, currentTimeStepIndex} = useSelector((state: RootState) => state.simulation.timeState);
+    const timeStepKeys = useSelector(selectTimeStepKeys)
     const totalTimeSteps = timeStepKeys.length;
 
     // Animation loop
@@ -66,61 +53,26 @@ export default function Scene() {
                 // Update based on virtual FPS
                 const timeStepInterval = 1000 / SimConstants.FPS;
                 if (deltaTime >= timeStepInterval) {
-                    setCurrentTimeStepIndex((prevIndex) => {
-                        const nextIndex = (prevIndex + direction * stepsToMove + totalTimeSteps) % totalTimeSteps;
-                        console.log(`Updating to index: ${nextIndex}`); // Debug
-                        return nextIndex;
-                    });
+                    const nextIndex = (currentTimeStepIndex + direction * stepsToMove + totalTimeSteps) % totalTimeSteps;
+                    dispatch(setCurrentTimeStepIndex(nextIndex)); // Update Redux state
+                    console.log(`Updating to index: ${nextIndex}`); // Debug
                     lastTime = time;
                 }
             }
-
-            // Keep the loop running only if not paused
-            if (!isPaused) {
-                animationFrameId = requestAnimationFrame(update);
-            }
+            // Keep the loop running
+            animationFrameId = requestAnimationFrame(update);
         };
 
-        // Start the animation
-        if (!isPaused) {
-            animationFrameId = requestAnimationFrame(update);
-        }
+        // Start the animation loop
+        animationFrameId = requestAnimationFrame(update);
 
         return () => {
-            // Cleanup logic: cancel the animation frame
+            // Cleanup logic
             if (animationFrameId !== null) {
                 cancelAnimationFrame(animationFrameId);
             }
         };
-    }, [simulationData, totalTimeSteps, isPaused, speedMultiplier]);
-
-
-    //with looping
-    // useEffect(() => {
-    //     if (!simulationData || totalTimeSteps === 0 || isPaused) {
-    //         console.log("Animation loop paused.");
-    //         return; // Skip setting the interval if paused or no data
-    //     }
-    //
-    //     const interval = setInterval(() => {
-    //         setCurrentTimeStepIndex((prevIndex) => {
-    //             // Adjust the index based on the speed multiplier
-    //             const stepsToMove = Math.abs(speedMultiplier); // Number of steps to move
-    //             const direction = speedMultiplier > 0 ? 1 : -1; // Determine direction (forward or backward)
-    //             const nextIndex = (prevIndex + direction * stepsToMove + totalTimeSteps) % totalTimeSteps;
-    //             console.log(`Updating to index: ${nextIndex}`); // Debug
-    //             return nextIndex;
-    //         });
-    //     }, 1000 / SimConstants.FPS); // Fixed interval based on FPS
-    //
-    //     // Cleanup the interval when the component unmounts or dependencies change
-    //     return () => {
-    //         console.log("Cleaning up interval.");
-    //         clearInterval(interval);
-    //     };
-    // }, [simulationData, totalTimeSteps, isPaused, speedMultiplier]);
-
-
+    }, [simulationData, totalTimeSteps, isPaused, speedMultiplier, currentTimeStepIndex, dispatch]);
 
     if (!simulationData || !simulationData.data) {
         console.log("Simulation data is not loaded yet or is invalid.");
@@ -138,7 +90,6 @@ export default function Scene() {
 
     // Current celestial bodies
     const currentTimeStep = timeStepKeys[currentTimeStepIndex];
-    // console.log("current timestep: ", currentTimeStep);
     const celestialBodies =
         currentTimeStep && simulationData.data[currentTimeStep] ? simulationData.data[currentTimeStep] : [];
 
@@ -177,3 +128,4 @@ export default function Scene() {
     );
 }
 
+export default Scene;
