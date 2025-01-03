@@ -38,7 +38,8 @@ public class SimulationFactory {
             List<String> celestialBodyNames,
             String frameStr,
             String integratorStr,
-            AbsoluteDate simStartDate
+            AbsoluteDate simStartDate,
+            String timeStepUnit
     ) {
 
         // using singleton DI instead of static method
@@ -56,7 +57,8 @@ public class SimulationFactory {
                 celestialBodies,
                 frame,
                 integrator,
-                simStartDate
+                simStartDate,
+                timeStepUnit
         );
     }
 }

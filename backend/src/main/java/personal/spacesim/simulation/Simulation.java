@@ -31,6 +31,7 @@
         private AbsoluteDate simStartDate;
         private AbsoluteDate simCurrentDate;
         private Integrator integrator;
+        private String timeStepUnit;
         private static final int TIMESTEPS_TO_RUN = 10000;
 
         public Simulation(
@@ -38,7 +39,8 @@
                 List<CelestialBodyWrapper> celestialBodies,
                 Frame frame,
                 Integrator integrator,
-                AbsoluteDate simStartDate
+                AbsoluteDate simStartDate,
+                String timeStepUnit
                 ) {
             this.sessionID = sessionID;
             this.frame = frame;
@@ -46,10 +48,11 @@
             this.integrator = integrator;
             this.simStartDate = simStartDate;
             this.simCurrentDate = simStartDate;
+            this.timeStepUnit = timeStepUnit;
         }
 
-        private void update(String timeStep) {
-            double deltaTimeSeconds = convertTimeStep(timeStep);
+        private void update() {
+            double deltaTimeSeconds = convertTimeStep(timeStepUnit);
 
             simCurrentDate = simCurrentDate.shiftedBy(deltaTimeSeconds);
 
@@ -75,7 +78,7 @@
 //            }
         }
 
-        public WebSocketResponseDTO run(String timeStep) {
+        public WebSocketResponseDTO run() {
             long startTime = System.nanoTime();
             int currentTimeStep = 0;
             Map<AbsoluteDate, List<CelestialBodySnapshot>> results = new LinkedHashMap<>();
@@ -85,7 +88,7 @@
                 if (currentTimeStep == 0) {
                     results.put(simStartDate, snapshotCelestialBodies(celestialBodies));
                 } else {
-                    update(timeStep);
+                    update();
                     results.put(simCurrentDate, snapshotCelestialBodies(celestialBodies));
                 }
                 currentTimeStep ++;
@@ -95,7 +98,8 @@
             long endTime = System.nanoTime();
             double totalTimeSeconds = (endTime - startTime) / 1_000_000_000.0;
 
-            logger.info("Simulation completed for {} {} in {} seconds.", TIMESTEPS_TO_RUN, timeStep, totalTimeSeconds);
+            logger.info("Simulation completed for {} {} in {} seconds.", TIMESTEPS_TO_RUN, timeStepUnit,
+                        totalTimeSeconds);
             logger.info("Simulation ran using frame: {}", frame.getName());
 
             WebSocketResponseDTO responsePayload = new WebSocketResponseDTO();
@@ -116,8 +120,8 @@
             return copy;
         }
 
-        private double convertTimeStep(String timeStep) {
-            switch (timeStep.toLowerCase()) {
+        private double convertTimeStep(String timeStepUnit) {
+            switch (timeStepUnit.toLowerCase()) {
                 case "seconds":
                     return 1;
                 case "hours":
@@ -127,7 +131,7 @@
                 case "weeks":
                     return PhysicsConstants.SECONDS_PER_WEEK;
                 default:
-                    throw new IllegalArgumentException("Unsupported time step unit: " + timeStep);
+                    throw new IllegalArgumentException("Unsupported time step unit: " + timeStepUnit);
             }
         }
     }

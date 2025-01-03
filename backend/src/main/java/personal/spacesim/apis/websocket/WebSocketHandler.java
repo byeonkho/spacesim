@@ -74,18 +74,17 @@ public class WebSocketHandler extends TextWebSocketHandler {
                     message.getPayload(),
                     WebsocketRequestDTO.class
             );
-            String sessionID = request.getSessionID();
-            String timeStep = request.getTimeStep();
 
-            if (sessionID == null || timeStep == null) {
+            String sessionID = request.getSessionID();
+
+            if (sessionID == null) {
                 session.sendMessage(new TextMessage("Invalid payload"));
                 return;
             }
 
             // run the simulation and construct the response
             WebSocketResponseDTO responseDTO = simulationSessionService.runSimulation(
-                    sessionID,
-                    timeStep
+                    sessionID
             );
 
             responseDTO.setMessageType("SIM_DATA");

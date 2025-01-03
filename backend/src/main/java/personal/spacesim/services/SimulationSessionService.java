@@ -37,7 +37,8 @@ public class SimulationSessionService {
             List<String> celestialBodyNames,
             String frameStr,
             String integratorStr,
-            AbsoluteDate simStartDate
+            AbsoluteDate simStartDate,
+            String timeStep
     ) {
         String sessionID = UUID.randomUUID().toString();
         Simulation simulation = simulationFactory.createSimulation(
@@ -45,7 +46,8 @@ public class SimulationSessionService {
                 celestialBodyNames,
                 frameStr,
                 integratorStr,
-                simStartDate
+                simStartDate,
+                timeStep
         );
         simulationMap.put(
                 sessionID,
@@ -82,13 +84,12 @@ public class SimulationSessionService {
     }
 
     public WebSocketResponseDTO runSimulation(
-            String sessionID,
-            String timeStep
+            String sessionID
     ) {
         Simulation simulation = getSimulation(sessionID);
         if (simulation != null) {
             try {
-                return simulation.run(timeStep);
+                return simulation.run();
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException("Error running simulation", e);

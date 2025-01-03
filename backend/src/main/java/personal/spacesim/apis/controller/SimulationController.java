@@ -48,13 +48,15 @@ public class SimulationController {
         List<String> celestialBodyNames = request.getCelestialBodyNames();
         String frame = request.getFrame();
         String integrator = request.getIntegrator();
+        String timeStepUnit = request.getTimeStepUnit();
 
         // calling the service
         String sessionID = simulationSessionService.createSimulation(
                 celestialBodyNames,
                 frame,
                 integrator,
-                date
+                date,
+                timeStepUnit
         );
 
         // building response object

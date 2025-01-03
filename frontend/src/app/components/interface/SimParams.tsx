@@ -27,7 +27,7 @@ const SimParams: React.FC = () => {
     const [date, setDate] = useState<string>('2024-06-05T00:00:00.000');
     const [frame, setFrame] = useState<string>('Heliocentric');
     const [integrator, setIntegrator] = useState<string>('euler');
-    const [timeStep, setTimeStep] = useState<string>("Hours");
+    const [timeStepUnit, setTimeStep] = useState<string>("Hours");
 
 
     const handleCelestialBodyNamesChange = (event: SelectChangeEvent<string[]>) => {
@@ -46,9 +46,9 @@ const SimParams: React.FC = () => {
 
         try {
             // Validate input
-            validateString(timeStep);
+            validateString(timeStepUnit);
 
-            console.log("Input is valid:", timeStep);
+            console.log("Input is valid:", timeStepUnit);
 
             // Step 1: Initialize celestial bodies
             const requestBody = {
@@ -56,6 +56,7 @@ const SimParams: React.FC = () => {
                 date,
                 frame,
                 integrator,
+                timeStepUnit
             };
 
             console.log("Initializing celestial bodies...");
@@ -68,7 +69,6 @@ const SimParams: React.FC = () => {
 
             // Step 3: Send WebSocket message
             const requestData = {
-                timeStep,
                 sessionID,
             };
             console.log("Sending WebSocket request:", requestData);
@@ -109,7 +109,7 @@ const SimParams: React.FC = () => {
     // };
 
 
-    const handleTimeStepChange = (e: SelectChangeEvent<string>) => {
+    const handleTimeStepUnitChange = (e: SelectChangeEvent<string>) => {
         setTimeStep(e.target.value);
     };
 
@@ -226,8 +226,8 @@ const SimParams: React.FC = () => {
                             <InputLabel id="time-unit-label">Time Unit</InputLabel>
                             <Select
                                 labelId="time-unit-label"
-                                value={timeStep}
-                                onChange={handleTimeStepChange}
+                                value={timeStepUnit}
+                                onChange={handleTimeStepUnitChange}
                             >
                                 <MenuItem value="Seconds">Seconds</MenuItem>
                                 <MenuItem value="Hours">Hours</MenuItem>

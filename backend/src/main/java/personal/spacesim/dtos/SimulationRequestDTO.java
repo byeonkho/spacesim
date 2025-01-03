@@ -10,4 +10,5 @@ public class SimulationRequestDTO {
     private String date;
     private String frame;
     private String integrator;
+    private String timeStepUnit;
 }
