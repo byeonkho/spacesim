@@ -10,9 +10,7 @@ import {selectTimeStepKeys, setCurrentTimeStepIndex} from "@/app/store/slices/Si
 
 extend({ OrbitControls });
 
-
-//TODO use const
-export default function Scene() {
+const Scene = () => {
     const dispatch = useDispatch();
     const simulationData = useSelector((state: RootState) => state.simulation.simulationData);
     const {isPaused, speedMultiplier, currentTimeStepIndex} = useSelector((state: RootState) => state.simulation.timeState);
@@ -130,3 +128,4 @@ export default function Scene() {
     );
 }
 
+export default Scene;

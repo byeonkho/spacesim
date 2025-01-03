@@ -1,6 +1,6 @@
 import React from 'react';
 import {Box, Typography} from '@mui/material';
-import UserParams from "@/app/components/interface/UserParams";
+import SimParams from "@/app/components/interface/SimParams";
 import {useSelector} from "react-redux";
 import {RootState} from "@/app/store/Store";
 import TimeControls from "@/app/components/interface/TimeControls";
@@ -35,9 +35,9 @@ const Layout: React.FC = () => {
                     </Typography>
                 </Box>
 
-                {/* UserParams (e.g., on the right side) */}
+                {/* SimParams (e.g., on the right side) */}
                 <Box sx={{ position: 'absolute', top: 20, right: 20, width: '25%', pointerEvents: 'auto' }}>
-                    <UserParams />
+                    <SimParams />
                 </Box>
             </Box>
         </Box>

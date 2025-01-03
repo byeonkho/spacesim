@@ -31,7 +31,7 @@
         private AbsoluteDate simStartDate;
         private AbsoluteDate simCurrentDate;
         private Integrator integrator;
-        public static final int TIMESTEPS_TO_RUN = 10000;
+        private static final int TIMESTEPS_TO_RUN = 10000;
 
         public Simulation(
                 String sessionID,
