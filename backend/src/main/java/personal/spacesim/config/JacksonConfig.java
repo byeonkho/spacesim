@@ -8,10 +8,7 @@ import org.orekit.time.AbsoluteDate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import personal.spacesim.dtos.WebSocketResponseDTO;
-import personal.spacesim.utils.serializers.AbsoluteDateDeserializer;
-import personal.spacesim.utils.serializers.AbsoluteDateSerializer;
-import personal.spacesim.utils.serializers.Vector3DSerializer;
-import personal.spacesim.utils.serializers.WebSocketResponseDTOSerializer;
+import personal.spacesim.utils.serializers.*;
 
 @Configuration
 public class JacksonConfig {

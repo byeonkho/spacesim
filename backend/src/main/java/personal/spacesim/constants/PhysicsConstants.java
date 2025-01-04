@@ -11,8 +11,8 @@ public class PhysicsConstants {
     public static final double SECONDS_PER_HOUR = 3600;
     public static final double SECONDS_PER_DAY = 86400;
     public static final double SECONDS_PER_WEEK = 604800;
-    public static final Map<String, Double> RADIUS_MAP = new HashMap<>();
 
+    public static final Map<String, Double> RADIUS_MAP = new HashMap<>();
     static {
         RADIUS_MAP.put("EARTH", Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
         RADIUS_MAP.put("MARS", 3_389_500.0);

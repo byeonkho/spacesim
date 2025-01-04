@@ -1,5 +1,6 @@
     package personal.spacesim.simulation;
 
+    import com.fasterxml.jackson.databind.ObjectMapper;
     import lombok.Getter;
     import lombok.Setter;
     import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -7,12 +8,15 @@
     import org.orekit.time.AbsoluteDate;
     import org.slf4j.Logger;
     import org.slf4j.LoggerFactory;
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.stereotype.Component;
     import personal.spacesim.constants.PhysicsConstants;
     import personal.spacesim.dtos.WebSocketResponseDTO;
     import personal.spacesim.simulation.body.CelestialBodySnapshot;
     import personal.spacesim.simulation.body.CelestialBodyWrapper;
     import personal.spacesim.utils.math.functions.Gravity;
     import personal.spacesim.utils.math.integrators.Integrator;
+    import personal.spacesim.utils.serializers.WebSocketResponseSizeSerializer;
 
     import java.util.ArrayList;
     import java.util.LinkedHashMap;
@@ -24,6 +28,7 @@
     public class Simulation {
 
         private final Logger logger = LoggerFactory.getLogger(Simulation.class);
+        private final WebSocketResponseSizeSerializer responseSizeSerializer;
 
         private final String sessionID;
         private Frame frame;
@@ -34,13 +39,15 @@
         private String timeStepUnit;
         private static final int TIMESTEPS_TO_RUN = 10000;
 
+
         public Simulation(
                 String sessionID,
                 List<CelestialBodyWrapper> celestialBodies,
                 Frame frame,
                 Integrator integrator,
                 AbsoluteDate simStartDate,
-                String timeStepUnit
+                String timeStepUnit,
+                WebSocketResponseSizeSerializer responseSizeSerializer
                 ) {
             this.sessionID = sessionID;
             this.frame = frame;
@@ -49,6 +56,7 @@
             this.simStartDate = simStartDate;
             this.simCurrentDate = simStartDate;
             this.timeStepUnit = timeStepUnit;
+            this.responseSizeSerializer = responseSizeSerializer;
         }
 
         private void update() {
@@ -103,6 +111,7 @@
 
             WebSocketResponseDTO responsePayload = new WebSocketResponseDTO();
             responsePayload.setData(results);
+            responseSizeSerializer.printResponseSize(responsePayload);
             return responsePayload;
         }
 

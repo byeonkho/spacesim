@@ -6,6 +6,8 @@ import {RootState} from "@/app/store/Store";
 import TimeControls from "@/app/components/interface/TimeControls";
 import Scene from "@/app/components/scene/Scene";
 import ProgressBar from "@/app/components/interface/ProgressBar";
+import DataSizeDisplay from "@/app/components/interface/DataSizeDisplay";
+import UpdateModal from "@/app/components/interface/UpdateModal";
 
 const Layout: React.FC = () => {
     const sessionID = useSelector((state: RootState) => state.simulation.simulationParameters?.simulationMetaData.sessionID);
@@ -22,9 +24,11 @@ const Layout: React.FC = () => {
 
             {/* Parent box to ensure UI fills whole view; z layer 2 */}
             <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 2, pointerEvents: 'none' }}>
+                <UpdateModal />
                 {/* Time Controls */}
                 <Box sx={{ position: 'absolute', top: 20, left: 20, pointerEvents: 'auto' }}>
                     <ProgressBar />
+                    <DataSizeDisplay />
                     <TimeControls />
                 </Box>
 

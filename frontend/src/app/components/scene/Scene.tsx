@@ -13,32 +13,10 @@ extend({ OrbitControls });
 const Scene = () => {
     const dispatch = useDispatch();
     const simulationData = useSelector((state: RootState) => state.simulation.simulationData);
-    const {isPaused, speedMultiplier, currentTimeStepIndex} = useSelector((state: RootState) => state.simulation.timeState);
+    const {isPaused, speedMultiplier, currentTimeStepIndex, isUpdating} = useSelector((state: RootState) => state.simulation.timeState);
     const timeStepKeys = useSelector(selectTimeStepKeys)
     const totalTimeSteps = timeStepKeys.length;
 
-    // Animation loop
-    // useEffect(() => {
-    //     if (!simulationData || totalTimeSteps === 0) return;
-    //
-    //     const interval = setInterval(() => {
-    //         setCurrentTimeStepIndex((prevIndex) => {
-    //             if (prevIndex + 1 < totalTimeSteps) {
-    //                 console.log(`Updating to index: ${prevIndex + 1}`); // Debug
-    //                 return prevIndex + 1;
-    //             } else {
-    //                 console.log("Reached the end of timesteps, stopping animation."); // Debug
-    //                 clearInterval(interval); // This needs to be handled correctly
-    //                 return prevIndex; // Keep it at the last index
-    //             }
-    //         });
-    //     }, 1000 / 30); // Adjust speed (e.g., 30 FPS)
-    //
-    //     // Cleanup the interval when the component unmounts or dependencies change
-    //     return () => clearInterval(interval);
-    // }, [simulationData, totalTimeSteps]);
-
-    //with looping
     useEffect(() => {
         let lastTime = performance.now();
         let animationFrameId: number | null = null;
@@ -46,7 +24,7 @@ const Scene = () => {
         const update = (time: number) => {
             const deltaTime = time - lastTime;
 
-            if (!isPaused && simulationData && totalTimeSteps > 0) {
+            if (!isPaused && !isUpdating && simulationData && totalTimeSteps > 0) {
                 const stepsToMove = Math.abs(speedMultiplier);
                 const direction = speedMultiplier > 0 ? 1 : -1;
 
@@ -72,7 +50,7 @@ const Scene = () => {
                 cancelAnimationFrame(animationFrameId);
             }
         };
-    }, [simulationData, totalTimeSteps, isPaused, speedMultiplier, currentTimeStepIndex, dispatch]);
+    }, [simulationData, totalTimeSteps, isPaused, isUpdating, speedMultiplier, currentTimeStepIndex, dispatch]);
 
     if (!simulationData) {
         console.log("Simulation data is not loaded yet or is invalid.");
@@ -112,16 +90,17 @@ const Scene = () => {
                 }
 
                 return (
-                    <Sphere
-                        key={body.name}
-                        name={body.name}
-                        position={[body.position.x / SimConstants.SCALE_FACTOR,
-                            body.position.y / SimConstants.SCALE_FACTOR,
-                            body.position.z / SimConstants.SCALE_FACTOR,]}
-                        // args={[body.radius / (SimConstants.RADIUS_SCALE_FACTOR), 32, 16]} // params: radius,
-                        // widthSegments,
-                        // heightSegments
-                    />
+                        <Sphere
+                            key={body.name}
+                            name={body.name}
+                            position={[body.position.x / SimConstants.SCALE_FACTOR,
+                                body.position.y / SimConstants.SCALE_FACTOR,
+                                body.position.z / SimConstants.SCALE_FACTOR,]}
+                            // args={[body.radius / (SimConstants.RADIUS_SCALE_FACTOR), 32, 16]} // params: radius,
+                            // widthSegments,
+                            // heightSegments
+                        />
+
                 );
             })}
         </Canvas>

@@ -3,8 +3,13 @@ import {Vector3} from "three";
 import {RootState} from "@/app/store/Store";
 import {requestRunSimulation} from "@/app/store/middleware/webSocketMiddleware";
 
+const MAX_TIMESTEPS = 30_000;
+const TIMESTEP_CHUNK_SIZE = 10_000;
+const MAX_SPEED_MULTIPLIER = 128; // exponent of 2
+
 interface TimeState {
     isPaused: boolean;
+    isUpdating: boolean;
     progress: number; // percentage 0 - 100
     speedMultiplier: number;
     currentTimeStepIndex: number;
@@ -49,6 +54,7 @@ const initialState: SimulationState = {
     simulationData: null,
     timeState: {
         isPaused: true,
+        isUpdating: false,
         progress: 0,
         speedMultiplier: 1,
         currentTimeStepIndex: 0
@@ -60,32 +66,55 @@ export const simulationSlice = createSlice({
     initialState,
     reducers: {
         setActiveCelestialBodyName: (state, action: PayloadAction<string | null>) => {
-            state.activeCelestialBodyName = action.payload; // redux toolkit creates a new state object, this
-            // doesn't mutate it directly.
+            state.activeCelestialBodyName = action.payload;
         },
 
         loadSimulation: (state, action: PayloadAction<SimulationParameters>) => {
-            console.log("Payload received in reducer:", action.payload);
             state.simulationParameters = action.payload;
-            console.log("Updated state in reducer:", state.simulationParameters);
         },
 
         updateDataReceived: (state, action: PayloadAction<{ data: SimulationData }>) => {
+
+            // lock rendering loop in Scene
+            state.timeState.isUpdating = true;
+
             if (!state.simulationData) {
                 state.simulationData = action.payload.data;
             } else {
-                state.simulationData = {
-                    ...state.simulationData,
-                    ...action.payload.data,
-                };
+                const updatedData = {...state.simulationData, ...action.payload.data};
+                const timeStepKeys = Object.keys(updatedData).sort((a, b) => {
+                    const dateA = new Date(a.split(": ")[1]).getTime();
+                    const dateB = new Date(b.split(": ")[1]).getTime();
+                    return dateA - dateB; // Sort ascending by timestamp; // Sort by keys (dates)
+                })
+
+                if (timeStepKeys.length > MAX_TIMESTEPS) {
+                    const excessCount = TIMESTEP_CHUNK_SIZE;
+
+                    // Remove the earliest indices
+                    timeStepKeys.splice(0, excessCount).forEach((key) => {
+                        console.log("DELETING EXCESS: ", excessCount)
+                        delete updatedData[key];
+                    });
+
+                    // don't use the reducer here; gets intercepted by middleware used by Scene rendering
+                    state.timeState.currentTimeStepIndex = (Math.max(0, state.timeState.currentTimeStepIndex - excessCount))
+                }
+
+                state.simulationData = updatedData;
+
+                console.log("Simulation data updated:", state.simulationData);
             }
-            if (state.timeState.isPaused) {
-                state.timeState.isPaused = false;
-            }
-            console.log("Simulation data updated:", state.simulationData);
+
+            // unlock rendering loop
+            toggleUpdating(state)
+            togglePause(state)
         },
         togglePause: (state) => {
             state.timeState.isPaused = !state.timeState.isPaused;
+        },
+        toggleUpdating: (state) => {
+            state.timeState.isUpdating = !state.timeState.isUpdating;
         },
         setProgress: (state, action: PayloadAction<number>) => {
             state.timeState.progress = action.payload;
@@ -115,15 +144,17 @@ export const simulationSlice = createSlice({
                     newMultiplier = speedMultiplier * 2
                 }
             }
-
-            state.timeState.speedMultiplier = Math.min(Math.max(newMultiplier, -128), 128);
-            console.log("new speed: " + state.timeState.speedMultiplier);
+            state.timeState.speedMultiplier = Math.min(Math.max(newMultiplier, -MAX_SPEED_MULTIPLIER), MAX_SPEED_MULTIPLIER);
         }
     },
 });
 
 ///////////////////////////////////////////// MIDDLEWARE /////////////////////////////////////////////
+
+
 export const simulationMiddleware = store => next => action => {
+
+    // intercepts the rendering loop; runs logic to get new data batch if < n iterations left
     if (action.type === 'simulation/setCurrentTimeStepIndex') {
         const state = store.getState();
 
@@ -137,7 +168,6 @@ export const simulationMiddleware = store => next => action => {
         const currentTimeStepIndex = action.payload;
         const remainingIndexes = totalTimeSteps - currentTimeStepIndex;
 
-        console.log("Simulation Data:", simulationData);
         console.log("Total Time Steps:", totalTimeSteps);
         console.log("Current Time Step Index:", currentTimeStepIndex);
         console.log("Remaining Indexes:", remainingIndexes);
@@ -155,7 +185,6 @@ export const simulationMiddleware = store => next => action => {
             store.dispatch(requestRunSimulation(requestData));
         }
     }
-
     return next(action);
 };
 
@@ -175,6 +204,19 @@ export const selectTimeStepKeys = createSelector(
     }
 );
 
+export const selectSimulationDataSize = createSelector(
+    (state: RootState) => state.simulation.simulationData,
+    (simulationData) => {
+        if (!simulationData) return 0;
+        const jsonString = JSON.stringify(simulationData);
+        return new Blob([jsonString]).size; // Size in bytes
+    }
+);
+
+export const selectCurrentTimeStepIndex = (state: RootState) => state.simulation.timeState.currentTimeStepIndex;
+
+export const selectIsUpdating = (state: RootState) => state.simulation.timeState.isUpdating;
+
 export const selectSessionID = (state: RootState) =>
     state.simulation.simulationParameters?.simulationMetaData?.sessionID;
 
@@ -187,6 +229,7 @@ export const {
     loadSimulation,
     updateDataReceived,
     togglePause,
+    toggleUpdating,
     setProgress,
     setSpeedMultiplier,
     setCurrentTimeStepIndex

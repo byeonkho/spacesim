@@ -11,6 +11,7 @@ import personal.spacesim.dtos.WebSocketResponseDTO;
 import personal.spacesim.simulation.Simulation;
 import personal.spacesim.simulation.SimulationFactory;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
+import personal.spacesim.utils.serializers.WebSocketResponseSizeSerializer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,12 +26,15 @@ public class SimulationSessionService {
     // TODO logic for memory management (max size of map)
     private final ConcurrentHashMap<String, Simulation> simulationMap;
     private final SimulationFactory simulationFactory;
+    private final WebSocketResponseSizeSerializer webSocketResponseSizeSerializer;
 
     @Autowired
-    public SimulationSessionService(SimulationFactory simulationFactory
+    public SimulationSessionService(SimulationFactory simulationFactory,
+                                    WebSocketResponseSizeSerializer webSocketResponseSizeSerializer
     ) {
         this.simulationFactory = simulationFactory;
         this.simulationMap = new ConcurrentHashMap<>();
+        this.webSocketResponseSizeSerializer = webSocketResponseSizeSerializer;
     }
 
     public String createSimulation(
@@ -47,7 +51,8 @@ public class SimulationSessionService {
                 frameStr,
                 integratorStr,
                 simStartDate,
-                timeStep
+                timeStep,
+                webSocketResponseSizeSerializer
         );
         simulationMap.put(
                 sessionID,

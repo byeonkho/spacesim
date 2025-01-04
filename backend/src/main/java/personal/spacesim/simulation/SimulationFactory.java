@@ -9,6 +9,7 @@ import personal.spacesim.simulation.body.CelestialBodyWrapperFactory;
 import personal.spacesim.simulation.frame.CustomFrameFactory;
 import personal.spacesim.utils.math.integrators.Integrator;
 import personal.spacesim.utils.math.integrators.IntegratorFactory;
+import personal.spacesim.utils.serializers.WebSocketResponseSizeSerializer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,16 +22,18 @@ public class SimulationFactory {
     private final IntegratorFactory integratorFactory;
     private final CelestialBodyWrapperFactory celestialBodyWrapperFactory;
     private final CustomFrameFactory customFrameFactory;
+    private final WebSocketResponseSizeSerializer webSocketResponseSizeSerializer;
 
     @Autowired
     public SimulationFactory(IntegratorFactory integratorFactory,
                              CelestialBodyWrapperFactory celestialBodyWrapperFactory,
-                             CustomFrameFactory customFrameFactory
-                            ) {
+                             CustomFrameFactory customFrameFactory,
+                             WebSocketResponseSizeSerializer webSocketResponseSizeSerializer
+    ) {
         this.integratorFactory = integratorFactory;
         this.celestialBodyWrapperFactory = celestialBodyWrapperFactory;
         this.customFrameFactory = customFrameFactory;
-
+        this.webSocketResponseSizeSerializer = webSocketResponseSizeSerializer;
     }
 
     public Simulation createSimulation(
@@ -39,7 +42,8 @@ public class SimulationFactory {
             String frameStr,
             String integratorStr,
             AbsoluteDate simStartDate,
-            String timeStepUnit
+            String timeStepUnit,
+            WebSocketResponseSizeSerializer webSocketResponseSizeSerializer
     ) {
 
         // using singleton DI instead of static method
@@ -58,7 +62,8 @@ public class SimulationFactory {
                 frame,
                 integrator,
                 simStartDate,
-                timeStepUnit
+                timeStepUnit,
+                webSocketResponseSizeSerializer
         );
     }
 }
