@@ -15,14 +15,11 @@ import personal.spacesim.constants.PhysicsConstants;
 // we can't just use CelestialBody because to retrieve the PV coordinates we need a specific datetime; by wrapping it
 // here we can update the PV state through our manual compute.
 
-// TODO do we need the CelestialBody instance still after construction? we can possibly refactor to eliminate
-//  CelestialBodySnapshot.
 @Getter
 @Setter
 @ToString
 public class CelestialBodyWrapper {
-    @JsonIgnore
-    private final CelestialBody body;
+
     private final double mass;
     private final double radius;
     private final String name;
@@ -35,10 +32,10 @@ public class CelestialBodyWrapper {
             Frame frame,
             AbsoluteDate date
     ) {
-        this.body = CelestialBodyFactory.getBody(name);
+        CelestialBody body = CelestialBodyFactory.getBody(name);
 
         this.name = name;
-        this.mass = getMassConstant();
+        this.mass = body.getGM() / PhysicsConstants.GRAVITATIONAL_CONSTANT;
         Double radiusValue = PhysicsConstants.RADIUS_MAP.get(name.toUpperCase());
         if (radiusValue == null) {
             throw new IllegalArgumentException("Unknown celestial body: " + name);
@@ -52,10 +49,6 @@ public class CelestialBodyWrapper {
                 date,
                 frame
         ).getVelocity();
-    }
-
-    private double getMassConstant() {
-        return body.getGM() / PhysicsConstants.GRAVITATIONAL_CONSTANT;
     }
 }
 

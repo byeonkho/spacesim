@@ -10,8 +10,6 @@ if (!backendUrl) {
 
 export const initializeCelestialBodies = async (dispatch: AppDispatch, requestBody: any) => {
     try {
-        console.log(`Sending request to: ${backendUrl}/initialize`);
-        console.log('Request body:', requestBody);
 
         const response = await fetch(`${backendUrl}/initialize`, {
             method: 'POST',
@@ -21,15 +19,11 @@ export const initializeCelestialBodies = async (dispatch: AppDispatch, requestBo
             body: JSON.stringify(requestBody),
         });
 
-
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data: SimulationParameters = await response.json();
-
-        console.log('Response data:', data);
-        console.log('sessionID:', data.simulationMetaData.sessionID);
 
         // Dispatch the loadSimulationData action with the fetched data
         dispatch(loadSimulation(data));

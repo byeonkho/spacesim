@@ -100,22 +100,23 @@ export const simulationSlice = createSlice({
                     // don't use the reducer here; gets intercepted by middleware used by Scene rendering
                     state.timeState.currentTimeStepIndex = (Math.max(0, state.timeState.currentTimeStepIndex - excessCount))
                 }
-
                 state.simulationData = updatedData;
-
                 console.log("Simulation data updated:", state.simulationData);
             }
-
             // unlock rendering loop
-            toggleUpdating(state)
-            togglePause(state)
+            state.timeState.isUpdating = false;
+            state.timeState.isPaused = false;
         },
         togglePause: (state) => {
             state.timeState.isPaused = !state.timeState.isPaused;
         },
-        toggleUpdating: (state) => {
-            state.timeState.isUpdating = !state.timeState.isUpdating;
+        setIsUpdating: (state, action: PayloadAction<boolean>) => {
+            state.timeState.isUpdating = action.payload;
         },
+        setIsPaused: (state, action: PayloadAction<boolean>) => {
+            state.timeState.isPaused = action.payload;
+        },
+
         setProgress: (state, action: PayloadAction<number>) => {
             state.timeState.progress = action.payload;
         },
@@ -229,7 +230,8 @@ export const {
     loadSimulation,
     updateDataReceived,
     togglePause,
-    toggleUpdating,
+    setIsUpdating,
+    setIsPaused,
     setProgress,
     setSpeedMultiplier,
     setCurrentTimeStepIndex

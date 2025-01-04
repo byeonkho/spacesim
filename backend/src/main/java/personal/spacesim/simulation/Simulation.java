@@ -122,7 +122,6 @@
                 snapshot.setPosition(body.getPosition());
                 snapshot.setVelocity(body.getVelocity());
                 snapshot.setName(body.getName());
-                snapshot.setRadius(body.getRadius());
                 copy.add(snapshot);
             }
             return copy;

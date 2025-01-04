@@ -84,30 +84,6 @@ const SimParams: React.FC = () => {
         }
     };
 
-    // const waitForSessionID = (): Promise<void> => {
-    //     return new Promise((resolve, reject) => {
-    //         const timeout = 5000; // Maximum wait time in milliseconds
-    //         const interval = 50; // Check every 50ms
-    //         let elapsed = 0;
-    //
-    //         const intervalId = setInterval(() => {
-    //             const currentSessionID = store.getState().simulation.simulationParameters?.simulationMetaData?.sessionID; // Access updated state
-    //
-    //             console.log("Debug sessionID:", currentSessionID);
-    //             if (currentSessionID) {
-    //                 clearInterval(intervalId);
-    //                 resolve();
-    //             } else {
-    //                 elapsed += interval;
-    //                 if (elapsed >= timeout) {
-    //                     clearInterval(intervalId);
-    //                     reject(new Error("Session ID not initialized within the timeout period."));
-    //                 }
-    //             }
-    //         }, interval);
-    //     });
-    // };
-
 
     const handleTimeStepUnitChange = (e: SelectChangeEvent<string>) => {
         setTimeStep(e.target.value);
