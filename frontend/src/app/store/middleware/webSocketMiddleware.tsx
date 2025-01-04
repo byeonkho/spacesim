@@ -1,5 +1,5 @@
 import {Action, Dispatch, Middleware, MiddlewareAPI} from 'redux';
-import {updateDataReceived} from "@/app/store/slices/SimulationSlice";
+import {setIsUpdating, updateDataReceived} from "@/app/store/slices/SimulationSlice";
 import {connected, disconnected, setRequestInProgress, setErrorMessage} from "@/app/store/slices/WebSocketSlice";
 
 interface ConnectAction {
@@ -100,7 +100,8 @@ export const webSocketMiddleware: Middleware =
 
                     case 'webSocket/requestRunSimulation':
                         if (socket !== null && socket.readyState === WebSocket.OPEN) {
-                            console.log("SENDING WEBSOCKET: REQUESTRUNSIMULATION", action.payload)
+                            // lock rendering loop
+                            store.dispatch(setIsUpdating(true))
                             store.dispatch(setRequestInProgress(true));
                             socket!.send(JSON.stringify(action.payload)); // Non-null assertion
                         } else {

@@ -8,6 +8,7 @@ import Scene from "@/app/components/scene/Scene";
 import ProgressBar from "@/app/components/interface/ProgressBar";
 import DataSizeDisplay from "@/app/components/interface/DataSizeDisplay";
 import UpdateModal from "@/app/components/interface/UpdateModal";
+import CurrentTimeStepDisplay from "@/app/components/interface/CurrentTimeStepDisplay";
 
 const Layout: React.FC = () => {
     const sessionID = useSelector((state: RootState) => state.simulation.simulationParameters?.simulationMetaData.sessionID);
@@ -28,6 +29,7 @@ const Layout: React.FC = () => {
                 {/* Time Controls */}
                 <Box sx={{ position: 'absolute', top: 20, left: 20, pointerEvents: 'auto' }}>
                     <ProgressBar />
+                    <CurrentTimeStepDisplay />
                     <DataSizeDisplay />
                     <TimeControls />
                 </Box>

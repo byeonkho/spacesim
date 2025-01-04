@@ -13,6 +13,7 @@ interface TimeState {
     progress: number; // percentage 0 - 100
     speedMultiplier: number;
     currentTimeStepIndex: number;
+    currentTimeStepKey: string;
 }
 
 interface Vector3 {
@@ -41,7 +42,7 @@ export interface SimulationParameters {
 }
 
 interface SimulationState {
-    activeCelestialBodyName: string | null; // state is set on browser click
+    activeCelestialBodyName: string | null;
     simulationParameters: SimulationParameters | null;
     simulationData: SimulationData | null;
     timeState: TimeState | null;
@@ -57,7 +58,8 @@ const initialState: SimulationState = {
         isUpdating: false,
         progress: 0,
         speedMultiplier: 1,
-        currentTimeStepIndex: 0
+        currentTimeStepIndex: 0,
+        currentTimeStepKey: ""
     }
 };
 
@@ -74,9 +76,6 @@ export const simulationSlice = createSlice({
         },
 
         updateDataReceived: (state, action: PayloadAction<{ data: SimulationData }>) => {
-
-            // lock rendering loop in Scene
-            state.timeState.isUpdating = true;
 
             if (!state.simulationData) {
                 state.simulationData = action.payload.data;
@@ -123,6 +122,9 @@ export const simulationSlice = createSlice({
         setCurrentTimeStepIndex: (state, action: PayloadAction<number>) => {
             state.timeState.currentTimeStepIndex = action.payload;
         },
+        setCurrentTimeStepKey: (state, action: PayloadAction<number>) => {
+            state.timeState.currentTimeStepKey = action.payload;
+        },
         setSpeedMultiplier: (state, action: PayloadAction<string>) => {
             console.log("payload: " + action.payload)
             let { speedMultiplier } = state.timeState;
@@ -152,7 +154,6 @@ export const simulationSlice = createSlice({
 
 ///////////////////////////////////////////// MIDDLEWARE /////////////////////////////////////////////
 
-
 export const simulationMiddleware = store => next => action => {
 
     // intercepts the rendering loop; runs logic to get new data batch if < n iterations left
@@ -169,13 +170,12 @@ export const simulationMiddleware = store => next => action => {
         const currentTimeStepIndex = action.payload;
         const remainingIndexes = totalTimeSteps - currentTimeStepIndex;
 
-        console.log("Total Time Steps:", totalTimeSteps);
-        console.log("Current Time Step Index:", currentTimeStepIndex);
-        console.log("Remaining Indexes:", remainingIndexes);
+        // console.log("Total Time Steps:", totalTimeSteps);
+        // console.log("Current Time Step Index:", currentTimeStepIndex);
+        // console.log("Remaining Indexes:", remainingIndexes);
+
 
         if (remainingIndexes <= 9000 && !state.webSocket.isRequestInProgress) {
-
-            console.log("DEBUG TRIGGERING DISPATCH")// Trigger when remaining indexes fall below 5000
             const sessionID = selectSessionID(state);
             if (!sessionID) {
                 console.warn("Session ID is not defined. Cannot send request.");
@@ -216,6 +216,8 @@ export const selectSimulationDataSize = createSelector(
 
 export const selectCurrentTimeStepIndex = (state: RootState) => state.simulation.timeState.currentTimeStepIndex;
 
+export const selectCurrentTimeStepKey = (state: RootState) => state.simulation.timeState.currentTimeStepKey;
+
 export const selectIsUpdating = (state: RootState) => state.simulation.timeState.isUpdating;
 
 export const selectSessionID = (state: RootState) =>
@@ -231,10 +233,12 @@ export const {
     updateDataReceived,
     togglePause,
     setIsUpdating,
+    setCurrentTimeStepKey,
     setIsPaused,
     setProgress,
     setSpeedMultiplier,
     setCurrentTimeStepIndex
+
 } = simulationSlice.actions;
 
 export default simulationSlice.reducer;

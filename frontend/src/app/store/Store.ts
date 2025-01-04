@@ -1,7 +1,7 @@
-import {configureStore} from '@reduxjs/toolkit';
-import simulationSliceReducer, {simulationMiddleware} from './slices/SimulationSlice';
+import { configureStore } from '@reduxjs/toolkit';
+import simulationSliceReducer, { simulationMiddleware } from './slices/SimulationSlice';
 import webSocketReducer from './slices/WebSocketSlice';
-import {webSocketMiddleware} from "@/app/store/middleware/webSocketMiddleware";
+import { webSocketMiddleware } from "@/app/store/middleware/webSocketMiddleware";
 
 export const store = configureStore({
     reducer: {
@@ -10,8 +10,9 @@ export const store = configureStore({
     },
 
     middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(webSocketMiddleware, simulationMiddleware),
-
+        getDefaultMiddleware({
+            serializableCheck: false, // Disable the SerializableStateInvariantMiddleware
+        }).concat(webSocketMiddleware, simulationMiddleware), // Add your custom middleware
 });
 
 export type RootState = ReturnType<typeof store.getState>;
