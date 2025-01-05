@@ -1,6 +1,5 @@
     package personal.spacesim.simulation;
 
-    import com.fasterxml.jackson.databind.ObjectMapper;
     import lombok.Getter;
     import lombok.Setter;
     import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -8,8 +7,6 @@
     import org.orekit.time.AbsoluteDate;
     import org.slf4j.Logger;
     import org.slf4j.LoggerFactory;
-    import org.springframework.beans.factory.annotation.Autowired;
-    import org.springframework.stereotype.Component;
     import personal.spacesim.constants.PhysicsConstants;
     import personal.spacesim.dtos.WebSocketResponseDTO;
     import personal.spacesim.simulation.body.CelestialBodySnapshot;
@@ -37,7 +34,7 @@
         private AbsoluteDate simCurrentDate;
         private Integrator integrator;
         private String timeStepUnit;
-        private static final int TIMESTEPS_TO_RUN = 10000;
+        private static final int TIMESTEPS_TO_RUN = 10_000;
 
 
         public Simulation(
@@ -78,12 +75,6 @@
                 // mutates the state (pos, vel) of all objects in the celestialBodies array
                 integrator.update(body, totalForce, deltaTimeSeconds, simCurrentDate, frame);
             }
-
-//            logger.info("Updated positions and velocities for date: {}", simCurrentDate);
-//            for (CelestialBodyWrapper body : celestialBodies) {
-//                logger.info("{} Position: {}, Velocity: {}", body.getName(), body.getPosition(),
-//                            body.getVelocity());
-//            }
         }
 
         public WebSocketResponseDTO run() {

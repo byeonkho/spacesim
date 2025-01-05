@@ -17,8 +17,6 @@ import java.util.List;
 @Component
 public class SimulationFactory {
 
-    // singleton DI configured in JacksonConfig; added Vector serialization
-
     private final IntegratorFactory integratorFactory;
     private final CelestialBodyWrapperFactory celestialBodyWrapperFactory;
     private final CustomFrameFactory customFrameFactory;

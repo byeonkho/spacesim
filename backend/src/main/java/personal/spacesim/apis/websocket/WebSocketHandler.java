@@ -12,7 +12,6 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import personal.spacesim.dtos.WebSocketResponseDTO;
 import personal.spacesim.dtos.WebsocketRequestDTO;
 import personal.spacesim.services.SimulationSessionService;
-import personal.spacesim.simulation.Simulation;
 import personal.spacesim.simulation.body.CelestialBodySnapshot;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
 

@@ -1,6 +1,5 @@
 package personal.spacesim.simulation.body;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;

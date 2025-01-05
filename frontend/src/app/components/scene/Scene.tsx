@@ -50,6 +50,7 @@ const Scene = () => {
         };
     }, [simulationData, totalTimeSteps, isPaused, isUpdating, speedMultiplier, currentTimeStepIndex, dispatch]);
 
+    // derive bodies at current timestep
     useEffect(() => {
         if (timeStepKeys.length > 0 && currentTimeStepIndex < timeStepKeys.length) {
             const currentTimeStep = timeStepKeys[currentTimeStepIndex];

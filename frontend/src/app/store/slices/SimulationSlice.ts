@@ -81,12 +81,7 @@ export const simulationSlice = createSlice({
                 state.simulationData = action.payload.data;
             } else {
                 const updatedData = {...state.simulationData, ...action.payload.data};
-                const timeStepKeys = Object.keys(updatedData).sort((a, b) => {
-                    const dateA = new Date(a.split(": ")[1]).getTime();
-                    const dateB = new Date(b.split(": ")[1]).getTime();
-                    return dateA - dateB; // Sort ascending by timestamp; // Sort by keys (dates)
-                })
-
+                const timeStepKeys = Object.keys(updatedData)
                 if (timeStepKeys.length > MAX_TIMESTEPS) {
                     const excessCount = TIMESTEP_CHUNK_SIZE;
 
@@ -197,11 +192,7 @@ export const selectTimeStepKeys = createSelector(
         if (!simulationData) {
             return [];
         }
-        return Object.keys(simulationData).sort((a, b) => {
-            const dateA = new Date(a.split(": ")[1]).getTime();
-            const dateB = new Date(b.split(": ")[1]).getTime();
-            return dateA - dateB; // Sort ascending by timestamp
-        });
+        return Object.keys(simulationData)
     }
 );
 

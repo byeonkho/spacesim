@@ -16,7 +16,6 @@ export default function App() {
         <Provider store={store}>
             <ThemeProvider theme={theme}>
                 <Layout />
-                {/*<Scene />*/}
             </ThemeProvider>
         </Provider>
     );

@@ -1,13 +1,11 @@
 package personal.spacesim.utils.serializers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.flogger.Flogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import personal.spacesim.dtos.WebSocketResponseDTO;
-import personal.spacesim.services.SimulationSessionService;
 
 @Component
 public class WebSocketResponseSizeSerializer {
