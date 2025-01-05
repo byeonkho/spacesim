@@ -1,6 +1,7 @@
-import {Action, Dispatch, Middleware, MiddlewareAPI} from 'redux';
-import {setIsUpdating, updateDataReceived} from "@/app/store/slices/SimulationSlice";
-import {connected, disconnected, setRequestInProgress, setErrorMessage} from "@/app/store/slices/WebSocketSlice";
+import { Action, Dispatch, Middleware, MiddlewareAPI } from 'redux';
+import { setIsUpdating, updateDataReceived } from "@/app/store/slices/SimulationSlice";
+import { connected, disconnected, setRequestInProgress, setErrorMessage } from "@/app/store/slices/WebSocketSlice";
+import { ZSTDDecoder } from "zstddec";
 
 interface ConnectAction {
     type: 'webSocket/connect';
@@ -32,86 +33,99 @@ export const requestRunSimulation = (message: any) => ({
 
 type WebSocketAction = ConnectAction | DisconnectAction | RequestRunSimulationAction;
 
-// the socket instance is housed in this class as Redux only allows for serializable objects to exist in store
 let socket: WebSocket | null = null;
-
 
 export const webSocketMiddleware: Middleware =
     (store: MiddlewareAPI) =>
         (next: Dispatch<Action>) =>
-            (action: WebSocketAction) => {
+            async (action: WebSocketAction) => {
                 switch (action.type) {
-                    case 'webSocket/connect':
-                        if (socket !== null) {
-                            // Close the existing connection if there is one
-                            socket.close();
+                    case 'webSocket/connect': {
+                        if (socket) {
+                            socket.close(); // Close any existing connection
                         }
-                        socket = new WebSocket(action.payload); // payload is the backend ws url;
-                        // defined in .env
+
+                        socket = new WebSocket(action.payload);
+                        socket.binaryType = "arraybuffer"; // Enable binary handling
 
                         socket.onopen = () => {
                             console.log('WebSocket connection established.');
-
+                            store.dispatch(connected());
                         };
 
-                        socket.onmessage = (event: MessageEvent) => {
+                        socket.onmessage = async (event: MessageEvent) => {
                             try {
-                                const messageData = JSON.parse(event.data);
-
-                                switch (messageData.messageType) {
-                                    case 'SIM_DATA':
-                                        store.dispatch(setRequestInProgress(false));
-                                        store.dispatch(updateDataReceived(messageData)); // store.dispatch used here
-                                        // instead of useDispatch() because middleware is not part of the React
-                                        // component tree; useDispatch() only works within components
-
-                                        break;
-
-                                    case 'CONNECTION_SUCCESSFUL':
+                                if (typeof event.data === "string") {
+                                    // Handle text messages
+                                    const messageData = JSON.parse(event.data);
+                                    if (messageData.messageType === 'CONNECTION_SUCCESSFUL') {
                                         console.log('Connection acknowledged by server.');
-                                        store.dispatch(connected());
-                                        break;
-                                    // case 'ERROR':
-                                    //     store.dispatch(error(messageData.payload));
-                                    //     break;
-
-                                    default:
+                                    } else {
                                         console.warn(`Unhandled message type: ${messageData.messageType}`);
+                                    }
+                                } else if (event.data instanceof ArrayBuffer) {
+                                    // Handle binary messages
+                                    const decoder = new ZSTDDecoder();
+                                    await decoder.init();
+
+                                    const arrayBuffer = event.data;
+
+                                    const dataView = new DataView(arrayBuffer);
+                                    const uncompressedSize = dataView.getUint32(0, true);
+                                    const compressedData = new Uint8Array(arrayBuffer, 4);
+
+                                    const decompressedArray = decoder.decode(compressedData, uncompressedSize);
+                                    const decompressedString = new TextDecoder("utf-8").decode(decompressedArray);
+
+                                    const messageData = JSON.parse(decompressedString);
+                                    if (messageData.messageType === 'SIM_DATA') {
+                                        store.dispatch(setRequestInProgress(false));
+                                        store.dispatch(updateDataReceived({ data: messageData.data }));
+                                    } else {
+                                        console.warn(`Unhandled binary message type: ${messageData.messageType}`);
+                                    }
                                 }
-                            } catch (err) {
-                                console.error("Failed to parse WebSocket message:", err);
+                            } catch (error) {
+                                console.error("Failed to process WebSocket message:", error);
                             }
                         };
+
                         socket.onerror = (event: ErrorEvent) => {
-                            store.dispatch(setErrorMessage(event.message))
+                            console.error("WebSocket error:", event.message);
+                            store.dispatch(setErrorMessage(event.message));
                         };
+
                         socket.onclose = () => {
+                            console.log("WebSocket connection closed.");
                             store.dispatch(disconnected());
-                            socket = null; // Ensure socket is set to null when it's closed
+                            socket = null;
                         };
-                        break;
 
-                    case 'webSocket/disconnect':
-                        if (socket !== null) {
+                        break;
+                    }
+
+                    case 'webSocket/disconnect': {
+                        if (socket) {
                             socket.close();
-                            socket = null; // Set socket to null after closing
+                            socket = null;
                         }
                         break;
+                    }
 
-                    case 'webSocket/requestRunSimulation':
-                        if (socket !== null && socket.readyState === WebSocket.OPEN) {
-                            // lock rendering loop
-                            store.dispatch(setIsUpdating(true))
+                    case 'webSocket/requestRunSimulation': {
+                        if (socket && socket.readyState === WebSocket.OPEN) {
+                            console.log("Sending WebSocket simulation request...");
+                            store.dispatch(setIsUpdating(true));
                             store.dispatch(setRequestInProgress(true));
-                            socket!.send(JSON.stringify(action.payload)); // Non-null assertion
+                            socket.send(JSON.stringify(action.payload));
                         } else {
-                            console.warn('Cannot send message: WebSocket is not open.');
+                            console.warn("Cannot send simulation request: WebSocket is not open.");
                         }
                         break;
+                    }
 
                     default:
-                        break;
+                        // Pass other actions down the middleware chain
+                        return next(action);
                 }
-
-                return next(action);
             };

@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -14,8 +15,10 @@ import personal.spacesim.dtos.WebsocketRequestDTO;
 import personal.spacesim.services.SimulationSessionService;
 import personal.spacesim.simulation.body.CelestialBodySnapshot;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
+import personal.spacesim.utils.ZstdCompressor;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 public class WebSocketHandler extends TextWebSocketHandler {
@@ -26,6 +29,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
     private final String CONNECTION_FAILED = "CONNECTION_FAILED";
     private final SimulationSessionService simulationSessionService;
     private final ObjectMapper objectMapper;
+    private final ZstdCompressor zstdCompressor;
 
 
     // TODO fill this up
@@ -37,10 +41,12 @@ public class WebSocketHandler extends TextWebSocketHandler {
     @Autowired
     public WebSocketHandler(
             SimulationSessionService simulationSessionService,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            ZstdCompressor zstdCompressor
     ) {
         this.simulationSessionService = simulationSessionService;
         this.objectMapper = objectMapper;
+        this.zstdCompressor = zstdCompressor;
     }
 
     /**
@@ -72,7 +78,6 @@ public class WebSocketHandler extends TextWebSocketHandler {
             TextMessage message
     ) throws Exception {
         try {
-
             // deserialize and get the request params
             WebsocketRequestDTO request = objectMapper.readValue(
                     message.getPayload(),
@@ -86,7 +91,6 @@ public class WebSocketHandler extends TextWebSocketHandler {
                 return;
             }
 
-            logger.info("received websocket message");
             // run the simulation and construct the response
             WebSocketResponseDTO responseDTO = simulationSessionService.runSimulation(
                     sessionID
@@ -94,7 +98,9 @@ public class WebSocketHandler extends TextWebSocketHandler {
 
             responseDTO.setMessageType("SIM_DATA");
 
-            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(responseDTO)));
+            String jsonString = objectMapper.writeValueAsString(responseDTO);
+            byte[] compressedData = zstdCompressor.compress(jsonString);
+            session.sendMessage(new BinaryMessage(compressedData));
         } catch (Exception e) {
             e.printStackTrace();
             session.sendMessage(new TextMessage("Error processing request"));
