@@ -27,9 +27,9 @@ public class WebSocketResponseDTOSerializer extends JsonSerializer<WebSocketResp
             gen.writeStartObject();
 
             for (Map.Entry<AbsoluteDate, List<CelestialBodySnapshot>> entry : payload.entrySet()) {
-                String fieldName = "date: " + entry.getKey()
+                String fieldName = entry.getKey()
                         .getDate()
-                        .toString();  // Prepend "date: " to the date string
+                        .toString();
                 gen.writeFieldName(fieldName);
                 gen.writeObject(entry.getValue());
             }

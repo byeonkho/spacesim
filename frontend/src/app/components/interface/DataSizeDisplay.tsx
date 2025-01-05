@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { selectSimulationDataSize } from '@/app/store/slices/SimulationSlice';
+import theme from "@/muiTheme";
 
 const DataSizeDisplay: React.FC = () => {
     const dataSize = useSelector(selectSimulationDataSize);
@@ -16,7 +17,8 @@ const DataSizeDisplay: React.FC = () => {
 
 
     return (
-        <div style={{ padding: '10px', backgroundColor: '#f9f9f9', border: '1px solid #ccc' }}>
+        <div style={{ padding: '10px', backgroundColor: theme.palette.background.default, border: '1px solid' +
+                ' #ccc' }}>
             <h4>State Size</h4>
             <p>{formatBytes(dataSize)}</p>
         </div>

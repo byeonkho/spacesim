@@ -11,7 +11,8 @@ export const store = configureStore({
 
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
-            serializableCheck: false, // Disable the SerializableStateInvariantMiddleware
+            serializableCheck: false, // Disable the SerializableStateInvariantMiddleware; high performance load due
+            // to checking large state in slice every update
         }).concat(webSocketMiddleware, simulationMiddleware), // Add your custom middleware
 });
 

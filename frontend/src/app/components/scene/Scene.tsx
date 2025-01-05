@@ -33,7 +33,7 @@ const Scene = () => {
                 // Update based on virtual FPS
                 const timeStepInterval = 1000 / SimConstants.FPS;
                 if (deltaTime >= timeStepInterval) {
-                    const nextIndex = (currentTimeStepIndex + direction * stepsToMove + totalTimeSteps) % totalTimeSteps;
+                    const nextIndex = Math.max(0, (currentTimeStepIndex + direction * stepsToMove))
                     dispatch(setCurrentTimeStepIndex(nextIndex)); // Update Redux state
                     lastTime = time;
                 }

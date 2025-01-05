@@ -76,7 +76,6 @@ export const simulationSlice = createSlice({
         },
 
         updateDataReceived: (state, action: PayloadAction<{ data: SimulationData }>) => {
-
             if (!state.simulationData) {
                 state.simulationData = action.payload.data;
             } else {
@@ -164,11 +163,6 @@ export const simulationMiddleware = store => next => action => {
         const totalTimeSteps = selectTotalTimeSteps(state);
         const currentTimeStepIndex = action.payload;
         const remainingIndexes = totalTimeSteps - currentTimeStepIndex;
-
-        // console.log("Total Time Steps:", totalTimeSteps);
-        // console.log("Current Time Step Index:", currentTimeStepIndex);
-        // console.log("Remaining Indexes:", remainingIndexes);
-
 
         if (remainingIndexes <= 9000 && !state.webSocket.isRequestInProgress) {
             const sessionID = selectSessionID(state);
