@@ -15,10 +15,9 @@ import personal.spacesim.dtos.WebsocketRequestDTO;
 import personal.spacesim.services.SimulationSessionService;
 import personal.spacesim.simulation.body.CelestialBodySnapshot;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
-import personal.spacesim.utils.ZstdCompressor;
+import personal.spacesim.utils.compressor.ZstdCompressor;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 @Component
 public class WebSocketHandler extends TextWebSocketHandler {

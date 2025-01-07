@@ -1,48 +1,39 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import {
-    Backdrop,
-    Box,
-    CircularProgress,
-    Modal,
-    Typography,
-} from "@mui/material";
-import {selectIsUpdating} from "@/app/store/slices/SimulationSlice";
+import { Box, CircularProgress, Typography } from "@mui/material";
+import { selectIsUpdating } from "@/app/store/slices/SimulationSlice";
 
-const style = {
-    position: "absolute" as const,
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 400,
-    bgcolor: "background.paper",
-    border: "2px solid #000",
-    boxShadow: 24,
-    p: 4,
-};
-
-const UpdateModal: React.FC = () => {
+const UpdateText: React.FC = () => {
     const isUpdating = useSelector(selectIsUpdating);
 
     return (
-        <Modal
-            open={isUpdating}
-            aria-labelledby="updating-modal-title"
-            aria-describedby="updating-modal-description"
-            closeAfterTransition
-            BackdropComponent={Backdrop}
-            BackdropProps={{
-                timeout: 500,
-            }}
-        >
-            <Box sx={style}>
-                <CircularProgress />
-                <Typography id="updating-modal-title" variant="h6" component="h2" sx={{ mt: 2 }}>
-                    Updating Data...
-                </Typography>
-            </Box>
-        </Modal>
+        <>
+            {isUpdating && (
+                <Box
+                    sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        bgcolor: "rgba(0, 0, 0, 0.7)", // Semi-transparent background
+                        color: "#fff", // White text
+                        padding: 3,
+                        borderRadius: 2,
+                        textAlign: "center",
+                        display: "flex", // Align spinner and text side by side
+                        alignItems: "center",
+                        gap: 2, // Space between spinner and text
+                        zIndex: 1000, // Ensure it's on top of other elements
+                    }}
+                >
+                    <CircularProgress size={24} color="inherit" />
+                    <Typography variant="h6">
+                        Fetching data...
+                    </Typography>
+                </Box>
+            )}
+        </>
     );
 };
 
-export default UpdateModal;
+export default UpdateText;

@@ -6,7 +6,13 @@ import {OrbitControls} from "three-stdlib";
 import {useDispatch, useSelector} from "react-redux";
 import {RootState} from "@/app/store/Store";
 import SimConstants from "@/app/constants/SimConstants";
-import {selectTimeStepKeys, setCurrentTimeStepIndex, setCurrentTimeStepKey} from "@/app/store/slices/SimulationSlice";
+import {
+    deleteExcessData,
+    selectCurrentTimeStepIndex,
+    selectTimeStepKeys,
+    setCurrentTimeStepIndex,
+    setCurrentTimeStepKey
+} from "@/app/store/slices/SimulationSlice";
 
 extend({ OrbitControls });
 
@@ -23,10 +29,14 @@ const Scene = () => {
         let lastTime = performance.now();
         let animationFrameId: number | null = null;
 
+
         const update = (time: number) => {
+
+            checkDeleteExcessData()
+
             const deltaTime = time - lastTime;
 
-            if (!isPaused && !isUpdating && simulationData && totalTimeSteps > 0) {
+            if (!isPaused && simulationData && totalTimeSteps > 0) {
                 const stepsToMove = Math.abs(speedMultiplier);
                 const direction = speedMultiplier > 0 ? 1 : -1;
 
@@ -48,7 +58,7 @@ const Scene = () => {
                 cancelAnimationFrame(animationFrameId);
             }
         };
-    }, [simulationData, totalTimeSteps, isPaused, isUpdating, speedMultiplier, currentTimeStepIndex, dispatch]);
+    }, [simulationData, isPaused, speedMultiplier, currentTimeStepIndex, dispatch]);
 
     // derive bodies at current timestep
     useEffect(() => {
@@ -60,6 +70,16 @@ const Scene = () => {
             setCelestialBodies(bodies); // Update local state
         }
     }, [currentTimeStepIndex, timeStepKeys, simulationData, dispatch]);
+
+    const checkDeleteExcessData = () => {
+        if (timeStepKeys.length > SimConstants.MAX_TIMESTEPS) {
+            const excessCount = SimConstants.TIMESTEP_CHUNK_SIZE
+            const payload = {
+                excessCount: excessCount,
+                timeStepKeys: timeStepKeys}
+            dispatch(deleteExcessData(payload))
+        }
+    }
 
     if (!simulationData) {
         return (

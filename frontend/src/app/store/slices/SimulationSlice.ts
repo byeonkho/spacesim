@@ -79,26 +79,27 @@ export const simulationSlice = createSlice({
             if (!state.simulationData) {
                 state.simulationData = action.payload.data;
             } else {
-                const updatedData = {...state.simulationData, ...action.payload.data};
-                const timeStepKeys = Object.keys(updatedData)
-                if (timeStepKeys.length > MAX_TIMESTEPS) {
-                    const excessCount = TIMESTEP_CHUNK_SIZE;
-
-                    // Remove the earliest indices
-                    timeStepKeys.splice(0, excessCount).forEach((key) => {
-                        console.log("DELETING EXCESS: ", excessCount)
-                        delete updatedData[key];
-                    });
-
-                    // don't use the reducer here; gets intercepted by middleware used by Scene rendering
-                    state.timeState.currentTimeStepIndex = (Math.max(0, state.timeState.currentTimeStepIndex - excessCount))
-                }
-                state.simulationData = updatedData;
+                state.simulationData = {...state.simulationData, ...action.payload.data};
                 console.log("Simulation data updated:", state.simulationData);
             }
             // unlock rendering loop
             state.timeState.isUpdating = false;
             state.timeState.isPaused = false;
+        },
+        deleteExcessData: (state, action: PayloadAction<{ excessCount: number, timeStepKeys: string[] }>) => {
+            const { excessCount, timeStepKeys } = action.payload;
+
+                // Remove the earliest indices
+                const keysToRemove = timeStepKeys.slice(0, excessCount);
+                keysToRemove.forEach((key) => {
+                    delete state.simulationData[key]; // Remove from the state
+                });
+
+                // Adjust currentTimeStepIndex
+                state.timeState.currentTimeStepIndex = Math.max(
+                    0,
+                    state.timeState.currentTimeStepIndex - excessCount
+                );
         },
         togglePause: (state) => {
             state.timeState.isPaused = !state.timeState.isPaused;
@@ -217,6 +218,7 @@ export const {
     loadSimulation,
     updateDataReceived,
     togglePause,
+    deleteExcessData,
     setIsUpdating,
     setCurrentTimeStepKey,
     setIsPaused,
