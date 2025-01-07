@@ -1,6 +1,6 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { selectSimulationDataSize } from '@/app/store/slices/SimulationSlice';
+import {useSelector} from 'react-redux';
+import {selectSimulationDataSize} from '@/app/store/slices/SimulationSlice';
 import theme from "@/muiTheme";
 
 const DataSizeDisplay: React.FC = () => {

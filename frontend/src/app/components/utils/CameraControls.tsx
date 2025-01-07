@@ -1,6 +1,6 @@
-import React, { useRef } from "react";
-import { useFrame, useThree, extend } from "@react-three/fiber";
-import { OrbitControls } from "three-stdlib";
+import React, {useRef} from "react";
+import {extend, useFrame, useThree} from "@react-three/fiber";
+import {OrbitControls} from "three-stdlib";
 
 extend({ OrbitControls });
 

@@ -1,7 +1,7 @@
 import React from "react";
-import { useSelector } from "react-redux";
-import { Box, CircularProgress, Typography } from "@mui/material";
-import { selectIsUpdating } from "@/app/store/slices/SimulationSlice";
+import {useSelector} from "react-redux";
+import {Box, CircularProgress, Typography} from "@mui/material";
+import {selectIsUpdating} from "@/app/store/slices/SimulationSlice";
 
 const UpdateText: React.FC = () => {
     const isUpdating = useSelector(selectIsUpdating);

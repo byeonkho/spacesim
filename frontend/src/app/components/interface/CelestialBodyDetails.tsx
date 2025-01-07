@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, Button } from "@mui/material";
+import {Box, Button, Typography} from "@mui/material";
 
 interface CelestialBodyDetailsProps {
     selectedBody: {

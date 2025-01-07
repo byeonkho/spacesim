@@ -6,7 +6,6 @@ import {RootState} from "@/app/store/Store";
 import TimeControls from "@/app/components/interface/TimeControls";
 import Scene from "@/app/components/scene/Scene";
 import ProgressBar from "@/app/components/interface/ProgressBar";
-import DataSizeDisplay from "@/app/components/interface/DataSizeDisplay";
 import UpdateModal from "@/app/components/interface/UpdateModal";
 import CurrentTimeStepDisplay from "@/app/components/interface/CurrentTimeStepDisplay";
 import DevMetrics from "@/app/components/interface/DevMetrics";

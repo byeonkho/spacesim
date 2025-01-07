@@ -2,14 +2,7 @@ import {createSelector, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {Vector3} from "three";
 import {RootState} from "@/app/store/Store";
 import {requestRunSimulation} from "@/app/store/middleware/webSocketMiddleware";
-
-const MAX_TIMESTEPS = 30_000;
-const TIMESTEP_CHUNK_SIZE = 10_000;
-const MAX_SPEED_MULTIPLIER = 128; // exponent of 2
-
-interface CurrentSnapshot {
-    bodies: CelestialBody[]
-}
+import SimConstants from "@/app/constants/SimConstants";
 
 interface TimeState {
     isPaused: boolean;
@@ -46,7 +39,7 @@ export interface SimulationParameters {
 }
 
 interface SimulationState {
-    currentSnapshot: CurrentSnapshot | null;
+    currentSnapshot: [];
     activeCelestialBodyName: string | null;
     simulationParameters: SimulationParameters | null;
     simulationData: SimulationData | null;
@@ -54,20 +47,20 @@ interface SimulationState {
 }
 
 // this is mandatory; passed to createSlice
-const initialState: SimulationState = {
-    currentSnapshot: null,
-    activeCelestialBodyName: null,
-    simulationParameters: null,
-    simulationData: null,
-    timeState: {
-        isPaused: true,
-        isUpdating: false,
-        progress: 0,
-        speedMultiplier: 1,
-        currentTimeStepIndex: 0,
-        currentTimeStepKey: ""
-    }
-};
+    const initialState: SimulationState = {
+        currentSnapshot: [],
+        activeCelestialBodyName: null,
+        simulationParameters: null,
+        simulationData: null,
+        timeState: {
+            isPaused: true,
+            isUpdating: false,
+            progress: 0,
+            speedMultiplier: 1,
+            currentTimeStepIndex: 0,
+            currentTimeStepKey: ""
+        }
+    };
 
 export const simulationSlice = createSlice({
     name: 'simulation',
@@ -84,7 +77,6 @@ export const simulationSlice = createSlice({
         updateDataReceived: (state, action: PayloadAction<{ data: SimulationData }>) => {
             if (!state.simulationData) {
                 state.simulationData = action.payload.data;
-                setCurrentTimeStepIndex(0) // trigger the first middleware snapshot state write
             } else {
                 state.simulationData = {...state.simulationData, ...action.payload.data};
                 console.log("Simulation data updated:", state.simulationData);
@@ -112,7 +104,7 @@ export const simulationSlice = createSlice({
             state.timeState.isPaused = !state.timeState.isPaused;
         },
         setCurrentSnapshot: (state, action: PayloadAction<any[]>) => {
-            state.currentSnapshot.bodies = action.payload;
+            state.currentSnapshot = Array.isArray(action.payload) ? action.payload : [];
         },
         setIsUpdating: (state, action: PayloadAction<boolean>) => {
             state.timeState.isUpdating = action.payload;
@@ -152,7 +144,7 @@ export const simulationSlice = createSlice({
                     newMultiplier = speedMultiplier * 2
                 }
             }
-            state.timeState.speedMultiplier = Math.min(Math.max(newMultiplier, -MAX_SPEED_MULTIPLIER), MAX_SPEED_MULTIPLIER);
+            state.timeState.speedMultiplier = Math.min(Math.max(newMultiplier, -SimConstants.MAX_SPEED_MULTIPLIER), SimConstants.MAX_SPEED_MULTIPLIER);
         }
     },
 });
@@ -191,10 +183,8 @@ export const simulationUpdateDataMiddleware = store => next => action => {
 
 export const simulationSetSnapshotMiddleware = store => next => action => {
 
-    // intercepts the rendering loop; runs logic to get new data batch if < n iterations left
     if (action.type === 'simulation/setCurrentTimeStepIndex') {
         const state = store.getState();
-
         const simulationData = state.simulation.simulationData;
         if (!simulationData) {
             console.warn("simulationData is not available yet.");
@@ -204,7 +194,7 @@ export const simulationSetSnapshotMiddleware = store => next => action => {
         const timeStepKeys = selectTimeStepKeys(state)
         const currentTimeStepKey = timeStepKeys[currentTimeStepIndex];
         const currentSnapshot = currentTimeStepKey && simulationData[currentTimeStepKey] ? simulationData[currentTimeStepKey] : [];
-        setCurrentSnapshot(currentSnapshot)
+        store.dispatch(setCurrentSnapshot(currentSnapshot))
     }
     return next(action);
 };

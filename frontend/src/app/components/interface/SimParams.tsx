@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
     Box,
     Button,
@@ -13,12 +13,12 @@ import {
     SelectChangeEvent,
     TextField
 } from '@mui/material';
-import { useDispatch } from 'react-redux';
+import {useDispatch} from 'react-redux';
 import MenuIcon from '@mui/icons-material/Menu';
-import { initializeCelestialBodies } from "@/app/utils/initializeCelestialBodies";
+import {initializeCelestialBodies} from "@/app/utils/initializeCelestialBodies";
 import theme from "@/muiTheme";
-import { store } from "@/app/store/Store";
-import { connect, disconnect, requestRunSimulation } from "@/app/store/middleware/webSocketMiddleware";
+import {store} from "@/app/store/Store";
+import {connect, requestRunSimulation} from "@/app/store/middleware/webSocketMiddleware";
 
 const SimParams: React.FC = () => {
     const dispatch = useDispatch();

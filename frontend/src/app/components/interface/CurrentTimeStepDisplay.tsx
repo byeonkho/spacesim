@@ -1,6 +1,5 @@
 import React from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "@/app/store/Store";
+import {useSelector} from "react-redux";
 import {selectCurrentTimeStepKey} from "@/app/store/slices/SimulationSlice";
 
 const CurrentTimestepDisplay: React.FC = () => {

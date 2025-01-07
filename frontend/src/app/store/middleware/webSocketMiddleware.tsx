@@ -1,7 +1,12 @@
-import { Action, Dispatch, Middleware, MiddlewareAPI } from 'redux';
-import { setIsUpdating, updateDataReceived } from "@/app/store/slices/SimulationSlice";
-import { connected, disconnected, setRequestInProgress, setErrorMessage } from "@/app/store/slices/WebSocketSlice";
-import { ZSTDDecoder } from "zstddec";
+import {Action, Dispatch, Middleware, MiddlewareAPI} from 'redux';
+import {
+    selectCurrentTimeStepIndex,
+    setCurrentTimeStepIndex,
+    setIsUpdating,
+    updateDataReceived
+} from "@/app/store/slices/SimulationSlice";
+import {connected, disconnected, setErrorMessage, setRequestInProgress} from "@/app/store/slices/WebSocketSlice";
+import {ZSTDDecoder} from "zstddec";
 
 interface ConnectAction {
     type: 'webSocket/connect';
@@ -46,6 +51,7 @@ export const webSocketMiddleware: Middleware =
                         }
 
                         socket = new WebSocket(action.payload);
+
                         socket.binaryType = "arraybuffer"; // Enable binary handling
 
                         socket.onopen = () => {
@@ -81,6 +87,14 @@ export const webSocketMiddleware: Middleware =
                                     if (messageData.messageType === 'SIM_DATA') {
                                         store.dispatch(setRequestInProgress(false));
                                         store.dispatch(updateDataReceived({ data: messageData.data }));
+
+                                        //  trigger first rendering iteration via simulationSnapshot side effect
+                                        // of this dispatch
+                                        const updatedState = store.getState();
+                                        if (selectCurrentTimeStepIndex(updatedState) == 0) {
+                                            store.dispatch(setCurrentTimeStepIndex(0));
+                                        }
+
                                     } else {
                                         console.warn(`Unhandled binary message type: ${messageData.messageType}`);
                                     }

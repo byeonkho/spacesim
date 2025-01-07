@@ -1,7 +1,7 @@
 import React from 'react';
-import { LinearProgress, Box, Typography } from '@mui/material';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/app/store/Store';
+import {Box, LinearProgress, Typography} from '@mui/material';
+import {useSelector} from 'react-redux';
+import {RootState} from '@/app/store/Store';
 
 const ProgressBar: React.FC = () => {
     const simulationData = useSelector((state: RootState) => state.simulation.simulationData);

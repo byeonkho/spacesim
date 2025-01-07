@@ -1,47 +1,39 @@
 import {Canvas, extend} from "@react-three/fiber";
 import CameraControls from "@/app/components/utils/CameraControls";
 import Sphere from "@/app/components/scene/Sphere";
-import React, {useEffect, useState} from "react";
+import React, {useEffect} from "react";
 import {OrbitControls} from "three-stdlib";
 import {useDispatch, useSelector} from "react-redux";
 import {RootState} from "@/app/store/Store";
 import SimConstants from "@/app/constants/SimConstants";
-import {
-    deleteExcessData,
-    selectCurrentTimeStepIndex,
-    selectTimeStepKeys,
-    setCurrentTimeStepIndex,
-    setCurrentTimeStepKey
-} from "@/app/store/slices/SimulationSlice";
+import {deleteExcessData, selectTimeStepKeys, setCurrentTimeStepIndex} from "@/app/store/slices/SimulationSlice";
 
 extend({ OrbitControls });
 
 const Scene = () => {
     const dispatch = useDispatch();
-    const simulationData = useSelector((state: RootState) => state.simulation.simulationData);
+    const simulationSnapshot = useSelector((state: RootState) => state.simulation.currentSnapshot);
     const { isPaused, speedMultiplier, currentTimeStepIndex, isUpdating } = useSelector((state: RootState) => state.simulation.timeState);
     const timeStepKeys = useSelector(selectTimeStepKeys);
     const totalTimeSteps = timeStepKeys.length;
 
-    const [celestialBodies, setCelestialBodies] = useState([]);
-
     useEffect(() => {
+
         let lastTime = performance.now();
         let animationFrameId: number | null = null;
 
-
         const update = (time: number) => {
-
             checkDeleteExcessData()
 
             const deltaTime = time - lastTime;
 
-            if (!isPaused && simulationData && totalTimeSteps > 0) {
+            if (!isPaused && simulationSnapshot && totalTimeSteps > 0) {
+
                 const stepsToMove = Math.abs(speedMultiplier);
                 const direction = speedMultiplier > 0 ? 1 : -1;
 
                 // Update based on virtual FPS
-                const timeStepInterval = 1000 / SimConstants.FPS;
+                const timeStepInterval = 1000 / SimConstants.FPS
                 if (deltaTime >= timeStepInterval) {
                     const nextIndex = Math.max(0, (currentTimeStepIndex + direction * stepsToMove))
                     dispatch(setCurrentTimeStepIndex(nextIndex)); // Update Redux state
@@ -58,18 +50,7 @@ const Scene = () => {
                 cancelAnimationFrame(animationFrameId);
             }
         };
-    }, [simulationData, isPaused, speedMultiplier, currentTimeStepIndex, dispatch]);
-
-    // derive bodies at current timestep
-    useEffect(() => {
-        if (timeStepKeys.length > 0 && currentTimeStepIndex < timeStepKeys.length) {
-            const currentTimeStep = timeStepKeys[currentTimeStepIndex];
-            const bodies = currentTimeStep && simulationData[currentTimeStep] ? simulationData[currentTimeStep] : [];
-
-            dispatch(setCurrentTimeStepKey(currentTimeStep)); // Update global state
-            setCelestialBodies(bodies); // Update local state
-        }
-    }, [currentTimeStepIndex, timeStepKeys, simulationData, dispatch]);
+    }, [simulationSnapshot, isPaused, speedMultiplier, currentTimeStepIndex, dispatch]);
 
     const checkDeleteExcessData = () => {
         if (timeStepKeys.length > SimConstants.MAX_TIMESTEPS) {
@@ -81,7 +62,7 @@ const Scene = () => {
         }
     }
 
-    if (!simulationData) {
+    if (!simulationSnapshot) {
         return (
             <Canvas style={{ width: "100vw", height: "100vh" }}>
                 <CameraControls />
@@ -103,7 +84,7 @@ const Scene = () => {
             <axesHelper args={[10000]} />
             <gridHelper args={[10000, 1000]} />
 
-            {celestialBodies.map((body) => (
+            {simulationSnapshot.map((body) => (
                 <Sphere
                     key={body.name}
                     name={body.name}

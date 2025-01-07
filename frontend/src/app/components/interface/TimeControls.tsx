@@ -1,8 +1,8 @@
 import React from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {RootState} from "@/app/store/Store";
-import {Box, IconButton, Slider, Typography} from "@mui/material";
-import {setProgress, setSpeedMultiplier, togglePause} from "@/app/store/slices/SimulationSlice";
+import {Box, IconButton, Typography} from "@mui/material";
+import {setSpeedMultiplier, togglePause} from "@/app/store/slices/SimulationSlice";
 import {FastForward, FastRewind, Pause, PlayArrow} from "@mui/icons-material";
 
 const TimeControls: React.FC = () => {

@@ -1,8 +1,7 @@
 import React from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "@/app/store/Store";
+import {useSelector} from "react-redux";
 import {selectCurrentTimeStepIndex, selectTotalTimeSteps} from "@/app/store/slices/SimulationSlice";
-import { Box, Typography, Paper } from "@mui/material";
+import {Box, Paper, Typography} from "@mui/material";
 import DataSizeDisplay from "@/app/components/interface/DataSizeDisplay";
 import theme from "@/muiTheme";
 
