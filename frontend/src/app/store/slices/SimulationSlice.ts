@@ -7,6 +7,10 @@ const MAX_TIMESTEPS = 30_000;
 const TIMESTEP_CHUNK_SIZE = 10_000;
 const MAX_SPEED_MULTIPLIER = 128; // exponent of 2
 
+interface CurrentSnapshot {
+    bodies: CelestialBody[]
+}
+
 interface TimeState {
     isPaused: boolean;
     isUpdating: boolean;
@@ -42,6 +46,7 @@ export interface SimulationParameters {
 }
 
 interface SimulationState {
+    currentSnapshot: CurrentSnapshot | null;
     activeCelestialBodyName: string | null;
     simulationParameters: SimulationParameters | null;
     simulationData: SimulationData | null;
@@ -50,6 +55,7 @@ interface SimulationState {
 
 // this is mandatory; passed to createSlice
 const initialState: SimulationState = {
+    currentSnapshot: null,
     activeCelestialBodyName: null,
     simulationParameters: null,
     simulationData: null,
@@ -78,6 +84,7 @@ export const simulationSlice = createSlice({
         updateDataReceived: (state, action: PayloadAction<{ data: SimulationData }>) => {
             if (!state.simulationData) {
                 state.simulationData = action.payload.data;
+                setCurrentTimeStepIndex(0) // trigger the first middleware snapshot state write
             } else {
                 state.simulationData = {...state.simulationData, ...action.payload.data};
                 console.log("Simulation data updated:", state.simulationData);
@@ -103,6 +110,9 @@ export const simulationSlice = createSlice({
         },
         togglePause: (state) => {
             state.timeState.isPaused = !state.timeState.isPaused;
+        },
+        setCurrentSnapshot: (state, action: PayloadAction<any[]>) => {
+            state.currentSnapshot.bodies = action.payload;
         },
         setIsUpdating: (state, action: PayloadAction<boolean>) => {
             state.timeState.isUpdating = action.payload;
@@ -149,7 +159,7 @@ export const simulationSlice = createSlice({
 
 ///////////////////////////////////////////// MIDDLEWARE /////////////////////////////////////////////
 
-export const simulationMiddleware = store => next => action => {
+export const simulationUpdateDataMiddleware = store => next => action => {
 
     // intercepts the rendering loop; runs logic to get new data batch if < n iterations left
     if (action.type === 'simulation/setCurrentTimeStepIndex') {
@@ -179,6 +189,25 @@ export const simulationMiddleware = store => next => action => {
     return next(action);
 };
 
+export const simulationSetSnapshotMiddleware = store => next => action => {
+
+    // intercepts the rendering loop; runs logic to get new data batch if < n iterations left
+    if (action.type === 'simulation/setCurrentTimeStepIndex') {
+        const state = store.getState();
+
+        const simulationData = state.simulation.simulationData;
+        if (!simulationData) {
+            console.warn("simulationData is not available yet.");
+            return next(action);
+        }
+        const currentTimeStepIndex = action.payload;
+        const timeStepKeys = selectTimeStepKeys(state)
+        const currentTimeStepKey = timeStepKeys[currentTimeStepIndex];
+        const currentSnapshot = currentTimeStepKey && simulationData[currentTimeStepKey] ? simulationData[currentTimeStepKey] : [];
+        setCurrentSnapshot(currentSnapshot)
+    }
+    return next(action);
+};
 
 ///////////////////////////////////////////// SELECTORS /////////////////////////////////////////////
 export const selectTimeStepKeys = createSelector(
@@ -219,6 +248,7 @@ export const {
     updateDataReceived,
     togglePause,
     deleteExcessData,
+    setCurrentSnapshot,
     setIsUpdating,
     setCurrentTimeStepKey,
     setIsPaused,
