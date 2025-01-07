@@ -1,9 +1,11 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
     Box,
     Button,
+    Checkbox,
     Drawer,
     FormControl,
+    FormControlLabel,
     IconButton,
     InputLabel,
     MenuItem,
@@ -11,119 +13,116 @@ import {
     SelectChangeEvent,
     TextField
 } from '@mui/material';
-import {useDispatch, useSelector} from 'react-redux';
+import { useDispatch } from 'react-redux';
 import MenuIcon from '@mui/icons-material/Menu';
-import {initializeCelestialBodies} from "@/app/utils/initializeCelestialBodies";
+import { initializeCelestialBodies } from "@/app/utils/initializeCelestialBodies";
 import theme from "@/muiTheme";
-import {RootState, store} from "@/app/store/Store";
-import {connect, disconnect, requestRunSimulation} from "@/app/store/middleware/webSocketMiddleware";
-import SimulationSlice, {selectSessionID} from "@/app/store/slices/SimulationSlice";
+import { store } from "@/app/store/Store";
+import { connect, disconnect, requestRunSimulation } from "@/app/store/middleware/webSocketMiddleware";
 
 const SimParams: React.FC = () => {
     const dispatch = useDispatch();
     const [drawerOpen, setDrawerOpen] = useState(false);
 
-    const [celestialBodyNames, setCelestialBodyNames] = useState<string[]>([])
+    const [celestialBodyNames, setCelestialBodyNames] = useState<string[]>([]);
+    const [selectAll, setSelectAll] = useState<boolean>(false); // State for "Select All" checkbox
+    const celestialBodies = [
+        "Sun",
+        "Earth",
+        "Moon",
+        "Mars",
+        "Venus",
+        "Jupiter",
+        "Mercury",
+        "Saturn",
+        "Uranus",
+        "Neptune",
+    ];
+
     const [date, setDate] = useState<string>('2024-06-05T00:00:00.000');
     const [frame, setFrame] = useState<string>('Heliocentric');
     const [integrator, setIntegrator] = useState<string>('euler');
     const [timeStepUnit, setTimeStep] = useState<string>("Hours");
-
 
     const handleCelestialBodyNamesChange = (event: SelectChangeEvent<string[]>) => {
         const {
             target: { value },
         } = event;
         setCelestialBodyNames(
-            // On autofill we get a stringified value.
             typeof value === 'string' ? value.split(',') : value
         );
     };
 
-    // Handle form submission
+    const handleSelectAllChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const checked = event.target.checked;
+        setSelectAll(checked);
+        setCelestialBodyNames(checked ? celestialBodies : []);
+    };
+
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
 
         try {
-            // Validate input
             validateString(timeStepUnit);
 
-            console.log("Input is valid:", timeStepUnit);
-
-            // Step 1: Initialize celestial bodies
             const requestBody = {
                 celestialBodyNames,
                 date,
                 frame,
                 integrator,
-                timeStepUnit
+                timeStepUnit,
             };
 
-            console.log("Initializing celestial bodies...");
             await initializeCelestialBodies(dispatch, requestBody);
-            console.log("Celestial bodies initialized successfully.");
 
             const sessionID = store.getState().simulation.simulationParameters?.simulationMetaData?.sessionID;
-            // Step 2: Init websocket
-            await initializeWebSocket()
 
-            // Step 3: Send WebSocket message
+            await initializeWebSocket();
+
             const requestData = {
                 sessionID,
             };
-            console.log("Sending WebSocket request:", requestData);
+
             dispatch(requestRunSimulation(requestData));
         } catch (error) {
-            // Log or handle errors
             if (error instanceof Error) {
                 console.error("Form submission error:", error.message);
-                alert(error.message); // Optionally show an alert to the user
+                alert(error.message);
             } else {
                 console.error("An unknown error occurred during form submission.");
             }
         }
     };
 
-
-    const handleTimeStepUnitChange = (e: SelectChangeEvent<string>) => {
-        setTimeStep(e.target.value);
-    };
-
-    function validateString(input: string) {
+    const validateString = (input: string) => {
         const validOptions = ["Seconds", "Hours", "Days", "Weeks"];
         if (!validOptions.includes(input)) {
             throw new Error(`Invalid time step. Please select one of: ${validOptions.join(", ")}.`);
         }
-        return true; // If all validations pass
-    }
+        return true;
+    };
 
-    // TODO use .env
     const initializeWebSocket = (): Promise<void> => {
         return new Promise((resolve, reject) => {
             const url = 'ws://localhost:8080/ws';
             dispatch(connect(url));
 
             const interval = setInterval(() => {
-                const isConnected = store.getState().webSocket.isConnected
+                const isConnected = store.getState().webSocket.isConnected;
                 if (isConnected) {
                     clearInterval(interval);
-                    resolve(); // Resolve the promise once connected
+                    resolve();
                 }
-            }, 50); // Poll every 50ms
+            }, 50);
 
-            // Timeout after 5 seconds if the connection isn't established
             setTimeout(() => {
-                const isConnected = store.getState().webSocket.isConnected
+                const isConnected = store.getState().webSocket.isConnected;
                 clearInterval(interval);
                 if (!isConnected) {
                     reject(new Error('Failed to establish WebSocket connection within the timeout period.'));
                 }
             }, 5000);
         });
-    };
-
-    const handleCloseWebSocket = () => {
-        dispatch(disconnect());
     };
 
     const toggleDrawer = (open: boolean) => (event: React.MouseEvent) => {
@@ -137,7 +136,7 @@ const SimParams: React.FC = () => {
                 color="default"
                 aria-label="open drawer"
                 onClick={toggleDrawer(true)}
-                sx={{ marginLeft: 'auto' }} // Adjust to position the button
+                sx={{ marginLeft: 'auto' }}
             >
                 <MenuIcon />
             </IconButton>
@@ -146,19 +145,27 @@ const SimParams: React.FC = () => {
                 anchor="right"
                 open={drawerOpen}
                 onClose={toggleDrawer(false)}
+                sx={{
+                    '& .MuiDrawer-paper': {
+                        maxWidth: '25vw', // Set the max width
+                        width: '100%',     // Allow it to shrink if smaller than maxWidth
+                    },
+                }}
             >
                 <Box
                     sx={{
                         height: '100%',
+                        width: '100%',
                         padding: 2,
                         backgroundColor: theme.palette.background.paper,
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: 2,
+                        // gap: 2,
                     }}
                     role="presentation"
                 >
-                    <FormControl fullWidth>
+
+                    <FormControl>
                         <InputLabel>Celestial Bodies</InputLabel>
                         <Select
                             multiple
@@ -166,14 +173,26 @@ const SimParams: React.FC = () => {
                             onChange={handleCelestialBodyNamesChange}
                             label="Celestial Bodies"
                         >
-                            <MenuItem value="Earth">Earth</MenuItem>
-                            <MenuItem value="Mars">Mars</MenuItem>
-                            <MenuItem value="Venus">Venus</MenuItem>
-                            <MenuItem value="Jupiter">Jupiter</MenuItem>
-                            <MenuItem value="Sun">Sun</MenuItem>
-                            {/* Add more celestial bodies as needed */}
+                            {celestialBodies.map((body) => (
+                                <MenuItem key={body} value={body}>
+                                    {body}
+                                </MenuItem>
+                            ))}
                         </Select>
                     </FormControl>
+
+                    <FormControlLabel
+                        sx={{
+                            mb: 3
+                        }}
+                        control={
+                            <Checkbox
+                                checked={selectAll}
+                                onChange={handleSelectAllChange}
+                            />
+                        }
+                        label="Select All"
+                    />
 
                     <TextField
                         label="Date"
@@ -203,7 +222,7 @@ const SimParams: React.FC = () => {
                             <Select
                                 labelId="time-unit-label"
                                 value={timeStepUnit}
-                                onChange={handleTimeStepUnitChange}
+                                onChange={(e) => setTimeStep(e.target.value)}
                             >
                                 <MenuItem value="Seconds">Seconds</MenuItem>
                                 <MenuItem value="Hours">Hours</MenuItem>
@@ -221,7 +240,6 @@ const SimParams: React.FC = () => {
                         Submit
                     </Button>
                 </Box>
-
             </Drawer>
         </div>
     );
