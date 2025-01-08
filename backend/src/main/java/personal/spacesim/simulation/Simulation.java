@@ -62,7 +62,7 @@
             simCurrentDate = simCurrentDate.shiftedBy(deltaTimeSeconds);
 
             for (CelestialBodyWrapper body : celestialBodies) {
-                if (body.getName().equals("SUN")) {
+                if (body.getName().equalsIgnoreCase(("sun"))) {
                     continue; // Skip the Sun for simplicity. // TODO future refactor for more accurate modelling?
                 }
                 Vector3D totalForce = new Vector3D(0, 0, 0);

@@ -7,7 +7,6 @@ import SimConstants from "@/app/constants/SimConstants";
 interface TimeState {
     isPaused: boolean;
     isUpdating: boolean;
-    progress: number; // percentage 0 - 100
     speedMultiplier: number;
     currentTimeStepIndex: number;
     currentTimeStepKey: string;
@@ -103,7 +102,7 @@ export const simulationSlice = createSlice({
         togglePause: (state) => {
             state.timeState.isPaused = !state.timeState.isPaused;
         },
-        setCurrentSnapshot: (state, action: PayloadAction<any[]>) => {
+        setCurrentSnapshot: (state, action: PayloadAction<CelestialBody[]>) => {
             state.currentSnapshot = Array.isArray(action.payload) ? action.payload : [];
         },
         setIsUpdating: (state, action: PayloadAction<boolean>) => {
@@ -113,9 +112,6 @@ export const simulationSlice = createSlice({
             state.timeState.isPaused = action.payload;
         },
 
-        setProgress: (state, action: PayloadAction<number>) => {
-            state.timeState.progress = action.payload;
-        },
         setCurrentTimeStepIndex: (state, action: PayloadAction<number>) => {
             state.timeState.currentTimeStepIndex = action.payload;
         },
@@ -123,7 +119,6 @@ export const simulationSlice = createSlice({
             state.timeState.currentTimeStepKey = action.payload;
         },
         setSpeedMultiplier: (state, action: PayloadAction<string>) => {
-            console.log("payload: " + action.payload)
             let { speedMultiplier } = state.timeState;
             let newMultiplier;
             if (action.payload === "increase") {
@@ -151,9 +146,8 @@ export const simulationSlice = createSlice({
 
 ///////////////////////////////////////////// MIDDLEWARE /////////////////////////////////////////////
 
+// intercepts the rendering loop as 1st step; runs logic to get new data batch if < n iterations left
 export const simulationUpdateDataMiddleware = store => next => action => {
-
-    // intercepts the rendering loop; runs logic to get new data batch if < n iterations left
     if (action.type === 'simulation/setCurrentTimeStepIndex') {
         const state = store.getState();
 
@@ -181,6 +175,7 @@ export const simulationUpdateDataMiddleware = store => next => action => {
     return next(action);
 };
 
+// intercepts rendering loop as 2nd step; derives and sets current simulationSnapshot
 export const simulationSetSnapshotMiddleware = store => next => action => {
 
     if (action.type === 'simulation/setCurrentTimeStepIndex') {
@@ -242,7 +237,6 @@ export const {
     setIsUpdating,
     setCurrentTimeStepKey,
     setIsPaused,
-    setProgress,
     setSpeedMultiplier,
     setCurrentTimeStepIndex
 

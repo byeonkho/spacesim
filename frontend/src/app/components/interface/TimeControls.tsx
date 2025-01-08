@@ -11,16 +11,6 @@ const TimeControls: React.FC = () => {
 
     return (
         <Box sx={{ width: '100%', maxWidth: 500, margin: '0 auto', textAlign: 'center', padding: 2 }}>
-            {/*<Typography variant="h6">*/}
-            {/*    Simulation Progress*/}
-            {/*</Typography>*/}
-            {/*<Slider*/}
-            {/*    value={progress || 0}*/}
-            {/*    onChange={handleProgressChange}*/}
-            {/*    aria-labelledby="simulation-progress"*/}
-            {/*    valueLabelDisplay="auto"*/}
-            {/*    sx={{ marginTop: 2 }}*/}
-            {/*/>*/}
 
             <Typography variant="body1" sx={{ marginTop: 2 }}>
                 Current Speed: {speedMultiplier}x

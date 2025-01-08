@@ -13,7 +13,7 @@ extend({ OrbitControls });
 const Scene = () => {
     const dispatch = useDispatch();
     const simulationSnapshot = useSelector((state: RootState) => state.simulation.currentSnapshot);
-    const { isPaused, speedMultiplier, currentTimeStepIndex, isUpdating } = useSelector((state: RootState) => state.simulation.timeState);
+    const { isPaused, speedMultiplier, currentTimeStepIndex } = useSelector((state: RootState) => state.simulation.timeState);
     const timeStepKeys = useSelector(selectTimeStepKeys);
     const totalTimeSteps = timeStepKeys.length;
 
