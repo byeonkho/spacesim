@@ -233,8 +233,19 @@ export const selectSimulationDataSize = createSelector(
   },
 );
 
+export const selectTotalTimeSteps = createSelector(
+  (state: RootState) => state.simulation.simulationData,
+  (simulationData) => (simulationData ? Object.keys(simulationData).length : 0),
+);
+
 export const selectCurrentTimeStepIndex = (state: RootState) =>
   state.simulation.timeState.currentTimeStepIndex;
+
+export const selectIsPaused = (state: RootState) =>
+  state.simulation.timeState.isPaused;
+
+export const selectSpeedMultiplier = (state: RootState) =>
+  state.simulation.timeState.speedMultiplier;
 
 export const selectCurrentTimeStepKey = (state: RootState) =>
   state.simulation.timeState.currentTimeStepKey;
@@ -245,10 +256,8 @@ export const selectIsUpdating = (state: RootState) =>
 export const selectSessionID = (state: RootState) =>
   state.simulation.simulationParameters?.simulationMetaData?.sessionID;
 
-export const selectTotalTimeSteps = createSelector(
-  (state: RootState) => state.simulation.simulationData,
-  (simulationData) => (simulationData ? Object.keys(simulationData).length : 0),
-);
+export const selectSimulationSnapshot = (state: RootState) =>
+  state.simulation.currentSnapshot;
 
 export const {
   setActiveCelestialBodyName,
