@@ -7,6 +7,7 @@ import {
   FormControlLabel,
   InputLabel,
   MenuItem,
+  Paper,
   Select,
   SelectChangeEvent,
   TextField,
@@ -40,7 +41,7 @@ const SimParams: React.FC = () => {
   const [date, setDate] = useState<string>("2024-06-05T00:00:00.000");
   const [frame, setFrame] = useState<string>("Heliocentric");
   const [integrator, setIntegrator] = useState<string>("euler");
-  const [timeStepUnit, setTimeStep] = useState<string>("Hours");
+  const [timeStepUnit, setTimeStepUnit] = useState<string>("Hours");
 
   const handleCelestialBodyNamesChange = (
     event: SelectChangeEvent<string[]>,
@@ -134,7 +135,7 @@ const SimParams: React.FC = () => {
   };
 
   return (
-    <Box
+    <Paper
       sx={{
         width: "100%",
         padding: 2,
@@ -142,6 +143,7 @@ const SimParams: React.FC = () => {
         display: "flex",
         flexDirection: "column",
         gap: 2,
+        // overflowY: "auto",
         boxSizing: "border-box",
       }}
     >
@@ -196,7 +198,7 @@ const SimParams: React.FC = () => {
         <Select
           labelId="time-unit-label"
           value={timeStepUnit}
-          onChange={(e) => setTimeStep(e.target.value)}
+          onChange={(e: SelectChangeEvent) => setTimeStepUnit(e.target.value)}
         >
           <MenuItem value="Seconds">Seconds</MenuItem>
           <MenuItem value="Hours">Hours</MenuItem>
@@ -214,7 +216,7 @@ const SimParams: React.FC = () => {
       >
         Submit
       </Button>
-    </Box>
+    </Paper>
   );
 };
 

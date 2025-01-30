@@ -2,6 +2,7 @@
 
     import lombok.Getter;
     import lombok.Setter;
+    import lombok.extern.slf4j.Slf4j;
     import org.hipparchus.geometry.euclidean.threed.Vector3D;
     import org.orekit.frames.Frame;
     import org.orekit.time.AbsoluteDate;
@@ -22,9 +23,9 @@
 
     @Getter
     @Setter
+    @Slf4j
     public class Simulation {
 
-        private final Logger logger = LoggerFactory.getLogger(Simulation.class);
         private final WebSocketResponseSizeSerializer responseSizeSerializer;
 
         private final String sessionID;
@@ -65,16 +66,21 @@
                 if (body.getName().equalsIgnoreCase(("sun"))) {
                     continue; // Skip the Sun for simplicity. // TODO future refactor for more accurate modelling?
                 }
-                Vector3D totalForce = new Vector3D(0, 0, 0);
-                for (CelestialBodyWrapper otherBody : celestialBodies) {
-                    if (!body.equals(otherBody)) {
-                        totalForce = totalForce.add(Gravity.calculateGravitationalForce(body, otherBody));
-                    }
-                }
+                Vector3D totalForce = computeTotalForce(body);
 
                 // mutates the state (pos, vel) of all objects in the celestialBodies array
                 integrator.update(body, totalForce, deltaTimeSeconds, simCurrentDate, frame);
             }
+        }
+
+        private Vector3D computeTotalForce(CelestialBodyWrapper body) {
+            Vector3D totalForce = new Vector3D(0, 0, 0);
+            for (CelestialBodyWrapper otherBody : celestialBodies) {
+                if (!body.equals(otherBody)) {
+                    totalForce = totalForce.add(Gravity.calculateGravitationalForce(body, otherBody));
+                }
+            }
+            return totalForce;
         }
 
         public WebSocketResponseDTO run() {
@@ -96,9 +102,9 @@
             long endTime = System.nanoTime();
             double totalTimeSeconds = (endTime - startTime) / 1_000_000_000.0;
 
-            logger.info("Simulation completed for {} {} in {} seconds.", TIMESTEPS_TO_RUN, timeStepUnit,
+            log.info("Simulation completed for {} {} in {} seconds.", TIMESTEPS_TO_RUN, timeStepUnit,
                         totalTimeSeconds);
-            logger.info("Simulation ran using frame: {}", frame.getName());
+            log.info("Simulation ran using frame: {}", frame.getName());
 
             WebSocketResponseDTO responsePayload = new WebSocketResponseDTO();
             responsePayload.setData(results);

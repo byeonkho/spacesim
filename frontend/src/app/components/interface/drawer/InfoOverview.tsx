@@ -20,13 +20,13 @@ const InfoOverview: React.FC = () => {
   );
 
   return (
-    <Box
+    <Paper
       sx={{
         width: "100%",
         height: "100%",
         padding: 2,
         backgroundColor: theme.palette.background.default,
-        // overflowY: "auto",
+        overflowY: "auto",
         boxSizing: "border-box",
       }}
     >
@@ -94,7 +94,7 @@ const InfoOverview: React.FC = () => {
           No snapshot data available.
         </Typography>
       )}
-    </Box>
+    </Paper>
   );
 };
 
