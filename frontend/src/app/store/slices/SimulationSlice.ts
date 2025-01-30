@@ -24,6 +24,12 @@ interface CelestialBody {
   velocity: Vector3;
 }
 
+interface CelestialBodyWrapper {
+  mass: number;
+  radius: number;
+  name: string;
+}
+
 interface SimulationMetadata {
   sessionID: string;
 }
@@ -33,7 +39,7 @@ export interface SimulationData {
 }
 
 export interface SimulationParameters {
-  celestialBodyList: CelestialBody[];
+  celestialBodyWrapperList: CelestialBodyWrapper[];
   simulationMetaData: SimulationMetadata;
 }
 
@@ -74,6 +80,10 @@ export const simulationSlice = createSlice({
 
     loadSimulation: (state, action: PayloadAction<SimulationParameters>) => {
       state.simulationParameters = action.payload;
+      console.log(
+        "load sim: ",
+        state.simulationParameters.celestialBodyWrapperList,
+      );
     },
 
     updateDataReceived: (
@@ -240,6 +250,9 @@ export const selectTotalTimeSteps = createSelector(
 
 export const selectCurrentTimeStepIndex = (state: RootState) =>
   state.simulation.timeState.currentTimeStepIndex;
+
+export const selectCelestialBodyList = (state: RootState) =>
+  state.simulation.simulationParameters?.celestialBodyWrapperList;
 
 export const selectIsPaused = (state: RootState) =>
   state.simulation.timeState.isPaused;
