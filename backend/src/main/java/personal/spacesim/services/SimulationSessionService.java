@@ -39,8 +39,8 @@ public class SimulationSessionService {
 
     public String createSimulation(
             List<String> celestialBodyNames,
-            String frameStr,
-            String integratorStr,
+            String frame,
+            String integrator,
             AbsoluteDate simStartDate,
             String timeStep
     ) {
@@ -48,8 +48,8 @@ public class SimulationSessionService {
         Simulation simulation = simulationFactory.createSimulation(
                 sessionID,
                 celestialBodyNames,
-                frameStr,
-                integratorStr,
+                frame,
+                integrator,
                 simStartDate,
                 timeStep,
                 webSocketResponseSizeSerializer

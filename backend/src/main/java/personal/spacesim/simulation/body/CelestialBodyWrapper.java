@@ -1,5 +1,6 @@
 package personal.spacesim.simulation.body;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -22,9 +23,10 @@ public class CelestialBodyWrapper {
     private final double mass;
     private final double radius;
     private final String name;
+    @JsonIgnore
     private Vector3D position;
+    @JsonIgnore
     private Vector3D velocity;
-
 
     public CelestialBodyWrapper(
             String name,

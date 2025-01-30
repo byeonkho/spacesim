@@ -7,13 +7,13 @@ import java.util.List;
 
 @Data
 public class SimulationResponseDTO {
-    private List<CelestialBodyWrapper> celestialBodyList;
+    private List<CelestialBodyWrapper> celestialBodyWrapperList;
     private SimulationResponseMetadata simulationMetaData;
 
-    public SimulationResponseDTO (List<CelestialBodyWrapper> celestialBodyList,
+    public SimulationResponseDTO (List<CelestialBodyWrapper> celestialBodyWrapperList,
                                   SimulationResponseMetadata simulationResponseMetadata
                                  ) {
-        this.celestialBodyList = celestialBodyList;
+        this.celestialBodyWrapperList = celestialBodyWrapperList;
         this.simulationMetaData = simulationResponseMetadata;
     }
 }

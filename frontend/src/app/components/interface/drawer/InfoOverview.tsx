@@ -71,14 +71,14 @@ const InfoOverview: React.FC = () => {
                     <Typography variant="body2">{body.name}</Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2">
+                    <Typography variant="body3">
                       ({body.position.x.toFixed(2)},{" "}
                       {body.position.y.toFixed(2)}, {body.position.z.toFixed(2)}
                       )
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2">
+                    <Typography variant="body3">
                       ({body.velocity.x.toFixed(2)},{" "}
                       {body.velocity.y.toFixed(2)}, {body.velocity.z.toFixed(2)}
                       )

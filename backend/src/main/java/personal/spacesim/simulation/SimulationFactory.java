@@ -20,18 +20,15 @@ public class SimulationFactory {
     private final IntegratorFactory integratorFactory;
     private final CelestialBodyWrapperFactory celestialBodyWrapperFactory;
     private final CustomFrameFactory customFrameFactory;
-    private final WebSocketResponseSizeSerializer webSocketResponseSizeSerializer;
 
     @Autowired
     public SimulationFactory(IntegratorFactory integratorFactory,
                              CelestialBodyWrapperFactory celestialBodyWrapperFactory,
-                             CustomFrameFactory customFrameFactory,
-                             WebSocketResponseSizeSerializer webSocketResponseSizeSerializer
+                             CustomFrameFactory customFrameFactory
     ) {
         this.integratorFactory = integratorFactory;
         this.celestialBodyWrapperFactory = celestialBodyWrapperFactory;
         this.customFrameFactory = customFrameFactory;
-        this.webSocketResponseSizeSerializer = webSocketResponseSizeSerializer;
     }
 
     public Simulation createSimulation(
