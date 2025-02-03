@@ -156,6 +156,8 @@ const SimParams: React.FC = () => {
           label="Celestial Bodies"
           MenuProps={{
             disablePortal: true, // Renders dropdown within the same container
+            anchorOrigin: { vertical: "bottom", horizontal: "left" },
+            transformOrigin: { vertical: "top", horizontal: "center" },
           }}
         >
           {celestialBodies.map((body) => (
@@ -199,6 +201,11 @@ const SimParams: React.FC = () => {
           labelId="time-unit-label"
           value={timeStepUnit}
           onChange={(e: SelectChangeEvent) => setTimeStepUnit(e.target.value)}
+          MenuProps={{
+            disablePortal: true, // Renders dropdown within the same container
+            anchorOrigin: { vertical: "bottom", horizontal: "left" },
+            transformOrigin: { vertical: "top", horizontal: "center" },
+          }}
         >
           <MenuItem value="Seconds">Seconds</MenuItem>
           <MenuItem value="Hours">Hours</MenuItem>

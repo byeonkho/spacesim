@@ -214,6 +214,7 @@ export const simulationSetSnapshotMiddleware =
       const currentTimeStepIndex = action.payload;
       const timeStepKeys = selectTimeStepKeys(state);
       const currentTimeStepKey = timeStepKeys[currentTimeStepIndex];
+      store.dispatch(setCurrentTimeStepKey(currentTimeStepKey));
       const currentSnapshot =
         currentTimeStepKey && simulationData[currentTimeStepKey]
           ? simulationData[currentTimeStepKey]

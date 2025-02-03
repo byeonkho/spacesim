@@ -1,3 +1,5 @@
+"use client";
+
 import { Canvas, extend } from "@react-three/fiber";
 import CameraControls from "@/app/components/utils/CameraControls";
 import Sphere from "@/app/components/scene/Sphere";
@@ -17,6 +19,7 @@ import {
   setCurrentTimeStepIndex,
 } from "@/app/store/slices/SimulationSlice";
 import { number, string } from "prop-types";
+import { Color } from "three";
 
 extend({ OrbitControls });
 
@@ -107,7 +110,13 @@ const Scene = () => {
 
   if (!simulationSnapshot) {
     return (
-      <Canvas style={{ width: "100vw", height: "100vh" }}>
+      <Canvas
+        style={{ width: "100%", height: "100%" }}
+        gl={{ clearColor: "black" }}
+        onCreated={({ scene }) => {
+          scene.background = new Color("black");
+        }}
+      >
         <CameraControls />
         <ambientLight intensity={Math.PI / 2} />
         <spotLight
@@ -125,7 +134,13 @@ const Scene = () => {
   }
 
   return (
-    <Canvas style={{ width: "100%", height: "100%" }}>
+    <Canvas
+      style={{ width: "100%", height: "100%" }}
+      gl={{ clearColor: "black" }}
+      onCreated={({ scene }) => {
+        scene.background = new Color("black");
+      }}
+    >
       <CameraControls />
       <ambientLight intensity={Math.PI / 2} />
       <spotLight

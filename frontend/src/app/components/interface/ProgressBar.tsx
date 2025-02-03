@@ -18,7 +18,7 @@ const ProgressBar: React.FC = () => {
 
   return (
     <Box sx={{ width: "100%", padding: 2 }}>
-      <Typography variant="subtitle1" gutterBottom>
+      <Typography variant="subtitle1" gutterBottom color="white">
         Simulation Progress: {Math.round(progress)}%
       </Typography>
       <LinearProgress variant="determinate" value={progress} />

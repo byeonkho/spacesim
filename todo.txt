@@ -1,26 +1,23 @@
 /////////
 1.0
 
-UI element - planet info
+UI element - planet info (Relative speed, distance for planet info)
 logic for non-first sim request -> let old sim continue existing, but return new sim
 Accurate radii for celestial bodies
 Create interface for DTOs?
 Celestial body textures
-docker, kubernetes deployment
+docker, kubernetes deployment\
 web worker for decompression
-immer object.assign for data state appending
 do we need to return celestialbodylist for simulationresponsedto?
 unit tests (lol)
 
 bugs
 Object.keys doesn't count duplicate keys - n > 1 iterations of data response are size 9999 as a result
-fix time unit ui element; clcikthrough broken + should use same style as celestial bodies
-paper component works weird with formcontrol (see: simparams -> celestialbodies)
 
 /////////
 
+orbital path drawing
 Camera tracking on active planet
-
 Implement OpenAPI?
 frontend performance optimisation
 consider network rate limiting logic

@@ -1,11 +1,3 @@
-/**
- * Layout.tsx
- *
- * Demonstrates a parent layout using a normal flex flow,
- * with the MiniDrawer in the layout's main flow,
- * and a main content area that contains the Scene and UI overlays.
- */
-
 import React from "react";
 import { Box, Typography } from "@mui/material";
 import { useSelector } from "react-redux";
@@ -17,7 +9,7 @@ import MiniDrawer from "@/app/components/interface/drawer/MiniDrawer";
 import ProgressBar from "@/app/components/interface/ProgressBar";
 import TimeControls from "@/app/components/interface/TimeControls";
 import CurrentTimeStepDisplay from "@/app/components/interface/CurrentTimeStepDisplay";
-import DevMetrics from "@/app/components/interface/drawer/DevMetrics";
+import DevMetrics from "@/app/components/interface/drawer/components/DevMetrics";
 import UpdateModal from "@/app/components/interface/UpdateModal";
 
 const Layout: React.FC = () => {
@@ -51,6 +43,7 @@ const Layout: React.FC = () => {
             left: 0,
             width: "100%",
             height: "100%",
+            backgroundColor: "black",
           }}
         >
           <Scene />

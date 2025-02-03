@@ -18,11 +18,11 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import SettingsIcon from "@mui/icons-material/Settings";
 import InfoIcon from "@mui/icons-material/Info";
-import SimParams from "@/app/components/interface/drawer/SimParams";
-import InfoOverview from "@/app/components/interface/drawer/InfoOverview";
+import SimParams from "@/app/components/interface/drawer/components/SimParams";
+import InfoOverview from "@/app/components/interface/drawer/components/InfoOverview";
 import { Button, ClickAwayListener, Slide } from "@mui/material";
 import { TransitionGroup } from "react-transition-group";
-import DevMetrics from "@/app/components/interface/drawer/DevMetrics";
+import DevMetrics from "@/app/components/interface/drawer/components/DevMetrics";
 
 const drawerWidth = 200;
 
@@ -114,7 +114,11 @@ export default function MiniDrawer() {
   const handleComponentSelect = (
     component: "simParams" | "infoOverview" | "devMetrics",
   ) => {
-    setSelectedComponent(component);
+    if (selectedComponent == component) {
+      setSelectedComponent(null);
+    } else {
+      setSelectedComponent(component);
+    }
     // setOpen(true); // optional if you want the drawer to open automatically
   };
 
