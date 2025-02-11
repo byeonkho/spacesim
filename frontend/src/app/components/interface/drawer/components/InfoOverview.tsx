@@ -16,7 +16,7 @@ import theme from "@/muiTheme";
 
 const InfoOverview: React.FC = () => {
   const currentSnapshot = useSelector(
-    (state: RootState) => state.simulation.currentSnapshot,
+    (state: RootState) => state.simulation.currentSimulationSnapshot,
   );
 
   return (

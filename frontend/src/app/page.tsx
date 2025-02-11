@@ -4,7 +4,7 @@
 import React from "react";
 import { store } from "@/app/store/Store";
 import { Provider } from "react-redux";
-import Layout from "@/app/components/interface/Layout";
+import Layout from "@/app/components/scene/Layout";
 import { ThemeProvider } from "@mui/system";
 import theme from "@/muiTheme";
 

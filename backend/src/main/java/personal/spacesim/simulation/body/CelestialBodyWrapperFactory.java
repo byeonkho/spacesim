@@ -7,6 +7,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class CelestialBodyWrapperFactory {
     public CelestialBodyWrapper createCelestialBodyWrapper(String name, Frame frame, AbsoluteDate date) {
-        return new CelestialBodyWrapper(name, frame, date);
+        CelestialBodyWrapper celestialBodyWrapper = new CelestialBodyWrapper(name, frame, date);
+
+        if (name.equalsIgnoreCase("MOON")) {
+            celestialBodyWrapper.setOrbitingBody("EARTH");
+        }  else {
+            celestialBodyWrapper.setOrbitingBody("SUN");
+        }
+
+        return celestialBodyWrapper;
     }
 }

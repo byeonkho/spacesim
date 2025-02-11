@@ -13,12 +13,15 @@ import {
   selectCelestialBodyList,
   selectCurrentTimeStepIndex,
   selectIsPaused,
-  selectSimulationSnapshot,
+  selectCurrentSimulationSnapshot,
   selectSpeedMultiplier,
   selectTimeStepKeys,
   setCurrentTimeStepIndex,
+  selectIsBodyActive,
+  updateActiveBodyState,
 } from "@/app/store/slices/SimulationSlice";
 import { useTheme } from "@mui/material/styles";
+import PlanetInfoOverlay from "@/app/components/scene/PlanetInfoOverlay";
 
 extend({ OrbitControls });
 
@@ -29,8 +32,9 @@ const Scene = () => {
   const [celestialBodyRadiusMap, setCelestialBodyRadiusMap] = useState(
     new Map<string, number>(),
   );
-  const simulationSnapshot = useSelector(selectSimulationSnapshot);
+  const simulationSnapshot = useSelector(selectCurrentSimulationSnapshot);
   const isPaused = useSelector(selectIsPaused);
+  const isBodyActive = useSelector(selectIsBodyActive);
   const speedMultiplier = useSelector(selectSpeedMultiplier);
   const currentTimeStepIndex = useSelector(selectCurrentTimeStepIndex);
   const timeStepKeys = useSelector(selectTimeStepKeys);
@@ -55,6 +59,7 @@ const Scene = () => {
     setCelestialBodyRadiusMap(celestialBodyRadiusMap);
   }, [celestialBodyList]);
 
+  // main rendering loop
   useEffect(() => {
     let lastTime = performance.now();
     let animationFrameId: number | null = null;
@@ -62,13 +67,19 @@ const Scene = () => {
     const update = (time: number) => {
       checkDeleteExcessData();
 
+      if (isBodyActive) {
+        dispatch(updateActiveBodyState());
+      }
+
       const deltaTime = time - lastTime;
 
       if (!isPaused && simulationSnapshot && totalTimeSteps > 0) {
+        // update active body for UI rendering
+
         const stepsToMove = Math.abs(speedMultiplier);
         const direction = speedMultiplier > 0 ? 1 : -1;
 
-        // Update based on virtual FPS
+        // update based on virtual FPS
         const timeStepInterval = 1000 / SimConstants.FPS;
         if (deltaTime >= timeStepInterval) {
           const nextIndex = Math.max(
@@ -108,20 +119,6 @@ const Scene = () => {
     }
   };
 
-  const drawRoundedRect = (ctx, x, y, width, height, radius) => {
-    ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
-    ctx.closePath();
-  };
-
   return (
     <Canvas
       style={{ width: "100%", height: "100%" }}
@@ -158,8 +155,8 @@ const Scene = () => {
     >
       <CameraControls />
       <ambientLight intensity={Math.PI / 2} />
-      {/*<axesHelper args={[10000]} />*/}
-      {/*<gridHelper args={[10000, 1000]} />*/}
+      <axesHelper args={[10000]} />
+      <gridHelper args={[10000, 1000]} />
 
       {simulationSnapshot.map((body) => {
         const radius = celestialBodyRadiusMap.get(body.name) ?? 1; // Default to 1 if not found
@@ -179,6 +176,7 @@ const Scene = () => {
           />
         );
       })}
+      <PlanetInfoOverlay />
     </Canvas>
   );
 };

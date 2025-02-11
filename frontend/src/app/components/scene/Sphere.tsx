@@ -3,7 +3,7 @@ import React, { useRef, useState } from "react";
 import * as THREE from "three";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/app/store/Store";
-import { setActiveCelestialBodyName } from "@/app/store/slices/SimulationSlice";
+import { setActiveBodyName } from "@/app/store/slices/SimulationSlice";
 
 interface CelestialBodyProps extends MeshProps {
   name: string;
@@ -22,23 +22,13 @@ const Sphere: React.FC<CelestialBodyProps> = ({
   const [hovered, setHovered] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
 
-  const activeCelestialBodyName = useSelector(
-    (state: RootState) => state.simulation.activeCelestialBodyName,
-  );
-
   return (
     <mesh
       {...props}
       position={position}
       ref={meshRef}
-      scale={activeCelestialBodyName === name ? 1.5 : 1}
-      onClick={() =>
-        dispatch(
-          setActiveCelestialBodyName(
-            activeCelestialBodyName === name ? null : name,
-          ),
-        )
-      }
+      // scale={activeCelestialBodyName === name ? 1.5 : 1}
+      onClick={() => dispatch(setActiveBodyName(name))}
       onPointerOver={() => setHovered(true)}
       onPointerOut={() => setHovered(false)}
     >

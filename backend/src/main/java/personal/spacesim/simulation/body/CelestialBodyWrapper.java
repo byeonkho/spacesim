@@ -23,6 +23,8 @@ public class CelestialBodyWrapper {
     private final double mass;
     private final double radius;
     private final String name;
+    private String orbitingBody;
+
     @JsonIgnore
     private Vector3D position;
     @JsonIgnore
@@ -33,6 +35,7 @@ public class CelestialBodyWrapper {
             Frame frame,
             AbsoluteDate date
     ) {
+
         CelestialBody body = CelestialBodyFactory.getBody(name);
 
         this.name = name;

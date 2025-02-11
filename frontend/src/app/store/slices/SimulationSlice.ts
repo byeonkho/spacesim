@@ -3,6 +3,7 @@ import { Vector3 } from "three";
 import { RootState } from "@/app/store/Store";
 import { requestRunSimulation } from "@/app/store/middleware/webSocketMiddleware";
 import SimConstants from "@/app/constants/SimConstants";
+import { actionsReducer } from "@reduxjs/toolkit/src/tests/utils/helpers";
 
 interface TimeState {
   isPaused: boolean;
@@ -19,7 +20,7 @@ interface Vector3 {
 }
 
 interface CelestialBody {
-  bodyName: string;
+  name: string;
   position: Vector3;
   velocity: Vector3;
 }
@@ -28,10 +29,16 @@ interface CelestialBodyWrapper {
   mass: number;
   radius: number;
   name: string;
+  orbitingBody: string;
 }
 
 interface SimulationMetadata {
   sessionID: string;
+}
+
+interface ActiveBodyState {
+  isBodyActive: boolean;
+  activeBodyName: string | null;
 }
 
 export interface SimulationData {
@@ -44,8 +51,8 @@ export interface SimulationParameters {
 }
 
 interface SimulationState {
-  currentSnapshot: [];
-  activeCelestialBodyName: string | null;
+  currentSimulationSnapshot: CelestialBody[] | [];
+  activeBodyState: ActiveBodyState | null;
   simulationParameters: SimulationParameters | null;
   simulationData: SimulationData | null;
   timeState: TimeState | null;
@@ -53,8 +60,11 @@ interface SimulationState {
 
 // this is mandatory; passed to createSlice
 const initialState: SimulationState = {
-  currentSnapshot: [],
-  activeCelestialBodyName: null,
+  currentSimulationSnapshot: [],
+  activeBodyState: {
+    isBodyActive: false,
+    activeBodyName: null,
+  },
   simulationParameters: null,
   simulationData: null,
   timeState: {
@@ -71,13 +81,6 @@ export const simulationSlice = createSlice({
   name: "simulation",
   initialState,
   reducers: {
-    setActiveCelestialBodyName: (
-      state,
-      action: PayloadAction<string | null>,
-    ) => {
-      state.activeCelestialBodyName = action.payload;
-    },
-
     loadSimulation: (state, action: PayloadAction<SimulationParameters>) => {
       state.simulationParameters = action.payload;
       console.log(
@@ -124,8 +127,11 @@ export const simulationSlice = createSlice({
     togglePause: (state) => {
       state.timeState.isPaused = !state.timeState.isPaused;
     },
-    setCurrentSnapshot: (state, action: PayloadAction<CelestialBody[]>) => {
-      state.currentSnapshot = Array.isArray(action.payload)
+    setCurrentSimulationSnapshot: (
+      state,
+      action: PayloadAction<CelestialBody[]>,
+    ) => {
+      state.currentSimulationSnapshot = Array.isArray(action.payload)
         ? action.payload
         : [];
     },
@@ -166,6 +172,21 @@ export const simulationSlice = createSlice({
         Math.max(newMultiplier, -SimConstants.MAX_SPEED_MULTIPLIER),
         SimConstants.MAX_SPEED_MULTIPLIER,
       );
+    },
+    updateActiveBodyState: (state) => {
+      const activeBodyName = state.activeBodyState.activeBodyName;
+      // Find the active celestial body by name in the snapshot array
+      // Update the state with the found object
+      state.activeBodyState.activeBody = state.currentSimulationSnapshot.find(
+        (body) => {
+          return body.name === activeBodyName;
+        },
+      );
+    },
+    setActiveBodyName: (state, action: PayloadAction<string>) => {
+      state.activeBodyState.activeBodyName = action.payload;
+      state.activeBodyState.isBodyActive = true;
+      console.log("activeBody", state.activeBodyState.activeBodyName);
     },
   },
 });
@@ -219,7 +240,7 @@ export const simulationSetSnapshotMiddleware =
         currentTimeStepKey && simulationData[currentTimeStepKey]
           ? simulationData[currentTimeStepKey]
           : [];
-      store.dispatch(setCurrentSnapshot(currentSnapshot));
+      store.dispatch(setCurrentSimulationSnapshot(currentSnapshot));
     }
     return next(action);
   };
@@ -249,6 +270,12 @@ export const selectTotalTimeSteps = createSelector(
   (simulationData) => (simulationData ? Object.keys(simulationData).length : 0),
 );
 
+export const selectActiveBody = (state: RootState) =>
+  state.simulation.activeBodyState.activeBody;
+
+export const selectIsBodyActive = (state: RootState) =>
+  state.simulation.activeBodyState.isBodyActive;
+
 export const selectCurrentTimeStepIndex = (state: RootState) =>
   state.simulation.timeState.currentTimeStepIndex;
 
@@ -270,21 +297,22 @@ export const selectIsUpdating = (state: RootState) =>
 export const selectSessionID = (state: RootState) =>
   state.simulation.simulationParameters?.simulationMetaData?.sessionID;
 
-export const selectSimulationSnapshot = (state: RootState) =>
-  state.simulation.currentSnapshot;
+export const selectCurrentSimulationSnapshot = (state: RootState) =>
+  state.simulation.currentSimulationSnapshot;
 
 export const {
-  setActiveCelestialBodyName,
+  updateActiveBodyState,
   loadSimulation,
   updateDataReceived,
   togglePause,
   deleteExcessData,
-  setCurrentSnapshot,
+  setCurrentSimulationSnapshot,
   setIsUpdating,
   setCurrentTimeStepKey,
   setIsPaused,
   setSpeedMultiplier,
   setCurrentTimeStepIndex,
+  setActiveBodyName,
 } = simulationSlice.actions;
 
 export default simulationSlice.reducer;

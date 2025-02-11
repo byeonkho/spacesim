@@ -1,13 +1,13 @@
 /////////
 1.0
 
+radii needs adjusting; moon lives in earth
+setActiveBody = false when clicked away
+Camera tracking on active planet
 UI element - planet info (Relative speed, distance for planet info)
 logic for non-first sim request -> let old sim continue existing, but return new sim
-Accurate radii for celestial bodies
 Create interface for DTOs?
-
 web worker for decompression
-do we need to return celestialbodylist for simulationresponsedto?
 unit tests (lol)
 
 major:
@@ -26,7 +26,6 @@ Object.keys doesn't count duplicate keys - n > 1 iterations of data response are
 /////////
 
 orbital path drawing
-Camera tracking on active planet
 Implement OpenAPI?
 frontend performance optimisation
 consider network rate limiting logic

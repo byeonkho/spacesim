@@ -11,6 +11,7 @@ import TimeControls from "@/app/components/interface/TimeControls";
 import CurrentTimeStepDisplay from "@/app/components/interface/CurrentTimeStepDisplay";
 import DevMetrics from "@/app/components/interface/drawer/components/DevMetrics";
 import UpdateModal from "@/app/components/interface/UpdateModal";
+import PlanetInfoOverlay from "@/app/components/scene/PlanetInfoOverlay";
 
 const Layout: React.FC = () => {
   // Example: retrieving a session ID from Redux state

@@ -1,4 +1,5 @@
 import { createTheme, ThemeOptions } from "@mui/material/styles";
+import "@fontsource/space-grotesk";
 
 const themeOptions: ThemeOptions = {
   palette: {
@@ -27,7 +28,7 @@ const themeOptions: ThemeOptions = {
     success: { main: "#00e676" },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Space Grotesk", "Roboto", "Helvetica", "Arial", sans-serif',
     // Standard variants
     h1: {
       fontSize: "3rem",
