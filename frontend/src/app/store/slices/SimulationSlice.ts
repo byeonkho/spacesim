@@ -1,9 +1,7 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Vector3 } from "three";
 import { RootState } from "@/app/store/Store";
 import { requestRunSimulation } from "@/app/store/middleware/webSocketMiddleware";
 import SimConstants from "@/app/constants/SimConstants";
-import { actionsReducer } from "@reduxjs/toolkit/src/tests/utils/helpers";
 
 interface TimeState {
   isPaused: boolean;
@@ -13,16 +11,16 @@ interface TimeState {
   currentTimeStepKey: string;
 }
 
-interface Vector3 {
+export interface Vector3Simple {
   x: number;
   y: number;
   z: number;
 }
 
-interface CelestialBody {
+export interface CelestialBody {
   name: string;
-  position: Vector3;
-  velocity: Vector3;
+  position: Vector3Simple;
+  velocity: Vector3Simple;
 }
 
 interface CelestialBodyWrapper {
@@ -38,7 +36,7 @@ interface SimulationMetadata {
 
 interface ActiveBodyState {
   isBodyActive: boolean;
-  activeBodyName: string | null;
+  activeBody: CelestialBody | null;
 }
 
 export interface SimulationData {
@@ -63,7 +61,7 @@ const initialState: SimulationState = {
   currentSimulationSnapshot: [],
   activeBodyState: {
     isBodyActive: false,
-    activeBodyName: null,
+    activeBody: null,
   },
   simulationParameters: null,
   simulationData: null,
@@ -173,20 +171,19 @@ export const simulationSlice = createSlice({
         SimConstants.MAX_SPEED_MULTIPLIER,
       );
     },
-    updateActiveBodyState: (state) => {
-      const activeBodyName = state.activeBodyState.activeBodyName;
+    updateActiveBody: (state: RootState): void => {
+      const activeBodyName: string = state.activeBodyState.activeBody.name;
       // Find the active celestial body by name in the snapshot array
       // Update the state with the found object
       state.activeBodyState.activeBody = state.currentSimulationSnapshot.find(
-        (body) => {
+        (body: CelestialBody) => {
           return body.name === activeBodyName;
         },
       );
     },
-    setActiveBodyName: (state, action: PayloadAction<string>) => {
-      state.activeBodyState.activeBodyName = action.payload;
+    setActiveBody: (state: RootState, action: PayloadAction<CelestialBody>) => {
+      state.activeBodyState.activeBody = action.payload;
       state.activeBodyState.isBodyActive = true;
-      console.log("activeBody", state.activeBodyState.activeBodyName);
     },
   },
 });
@@ -232,7 +229,7 @@ export const simulationSetSnapshotMiddleware =
         console.warn("simulationData is not available yet.");
         return next(action);
       }
-      const currentTimeStepIndex = action.payload;
+      const currentTimeStepIndex: number = action.payload;
       const timeStepKeys = selectTimeStepKeys(state);
       const currentTimeStepKey = timeStepKeys[currentTimeStepIndex];
       store.dispatch(setCurrentTimeStepKey(currentTimeStepKey));
@@ -248,7 +245,7 @@ export const simulationSetSnapshotMiddleware =
 ///////////////////////////////////////////// SELECTORS /////////////////////////////////////////////
 export const selectTimeStepKeys = createSelector(
   (state: RootState) => state.simulation.simulationData,
-  (simulationData) => {
+  (simulationData: SimulationData) => {
     if (!simulationData) {
       return [];
     }
@@ -258,16 +255,49 @@ export const selectTimeStepKeys = createSelector(
 
 export const selectSimulationDataSize = createSelector(
   (state: RootState) => state.simulation.simulationData,
-  (simulationData) => {
+  (simulationData: SimulationData): number => {
     if (!simulationData) return 0;
     const jsonString = JSON.stringify(simulationData);
     return new Blob([jsonString]).size; // Size in bytes
   },
 );
 
+// get the body that the input body is orbiting (e.g input Moon -> returns Earth)
+export const selectDerivedOrbitingBody = createSelector(
+  [
+    (state: RootState) =>
+      state.simulation.simulationParameters?.celestialBodyWrapperList,
+    (state: RootState) => state.simulation.currentSimulationSnapshot,
+    (state: RootState, props: { bodyName: string }) => props.bodyName,
+  ],
+  (
+    celestialBodyWrapperList: CelestialBodyWrapper[],
+    currentSimulationSnapshot: CelestialBody[],
+    bodyName: string,
+  ): CelestialBody | undefined => {
+    if (!celestialBodyWrapperList) return undefined;
+    // Find the celestial body wrapper that matches the provided bodyName.
+    const celestialBodyWrapper: CelestialBodyWrapper | undefined =
+      celestialBodyWrapperList.find(
+        (cb: CelestialBodyWrapper): boolean =>
+          cb.name.trim().toLowerCase() === bodyName.trim().toLowerCase(),
+      );
+    if (!celestialBodyWrapper) return undefined;
+
+    const orbitingBodyName: string = celestialBodyWrapper.orbitingBody;
+
+    return currentSimulationSnapshot.find(
+      (body: CelestialBody): boolean =>
+        body.name.trim().toLowerCase() ===
+        orbitingBodyName.trim().toLowerCase(),
+    );
+  },
+);
+
 export const selectTotalTimeSteps = createSelector(
   (state: RootState) => state.simulation.simulationData,
-  (simulationData) => (simulationData ? Object.keys(simulationData).length : 0),
+  (simulationData: SimulationData): number =>
+    simulationData ? Object.keys(simulationData).length : 0,
 );
 
 export const selectActiveBody = (state: RootState) =>
@@ -301,7 +331,7 @@ export const selectCurrentSimulationSnapshot = (state: RootState) =>
   state.simulation.currentSimulationSnapshot;
 
 export const {
-  updateActiveBodyState,
+  updateActiveBody,
   loadSimulation,
   updateDataReceived,
   togglePause,
@@ -313,6 +343,7 @@ export const {
   setSpeedMultiplier,
   setCurrentTimeStepIndex,
   setActiveBodyName,
+  setActiveBody,
 } = simulationSlice.actions;
 
 export default simulationSlice.reducer;

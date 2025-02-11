@@ -18,7 +18,7 @@ import {
   selectTimeStepKeys,
   setCurrentTimeStepIndex,
   selectIsBodyActive,
-  updateActiveBodyState,
+  updateActiveBody,
 } from "@/app/store/slices/SimulationSlice";
 import { useTheme } from "@mui/material/styles";
 import PlanetInfoOverlay from "@/app/components/scene/PlanetInfoOverlay";
@@ -68,7 +68,7 @@ const Scene = () => {
       checkDeleteExcessData();
 
       if (isBodyActive) {
-        dispatch(updateActiveBodyState());
+        dispatch(updateActiveBody());
       }
 
       const deltaTime = time - lastTime;
@@ -167,6 +167,7 @@ const Scene = () => {
           <Sphere
             key={body.name}
             name={body.name}
+            body={body}
             position={[
               body.position.x / SimConstants.SCALE_FACTOR,
               body.position.y / SimConstants.SCALE_FACTOR,

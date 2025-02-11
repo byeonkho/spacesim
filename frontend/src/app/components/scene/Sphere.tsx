@@ -3,12 +3,17 @@ import React, { useRef, useState } from "react";
 import * as THREE from "three";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/app/store/Store";
-import { setActiveBodyName } from "@/app/store/slices/SimulationSlice";
+import {
+  CelestialBody,
+  setActiveBody,
+  setActiveBodyName,
+} from "@/app/store/slices/SimulationSlice";
 
 interface CelestialBodyProps extends MeshProps {
   name: string;
   color?: THREE.ColorRepresentation;
-  radius?: number;
+  radius: number;
+  body: CelestialBody;
 }
 
 const Sphere: React.FC<CelestialBodyProps> = ({
@@ -16,6 +21,7 @@ const Sphere: React.FC<CelestialBodyProps> = ({
   position,
   name,
   color = "orange",
+  body,
   ...props
 }) => {
   const meshRef = useRef<THREE.Mesh>(null!);
@@ -28,7 +34,7 @@ const Sphere: React.FC<CelestialBodyProps> = ({
       position={position}
       ref={meshRef}
       // scale={activeCelestialBodyName === name ? 1.5 : 1}
-      onClick={() => dispatch(setActiveBodyName(name))}
+      onClick={() => dispatch(setActiveBody(body))}
       onPointerOver={() => setHovered(true)}
       onPointerOut={() => setHovered(false)}
     >

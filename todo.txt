@@ -4,6 +4,7 @@
 radii needs adjusting; moon lives in earth
 setActiveBody = false when clicked away
 Camera tracking on active planet
+ui element for selecting planets directly
 UI element - planet info (Relative speed, distance for planet info)
 logic for non-first sim request -> let old sim continue existing, but return new sim
 Create interface for DTOs?
@@ -18,7 +19,7 @@ data size optimisation:
 - use interpolation on frontend (spline? see: CatmullRomCurve3 + give linear option
 
 docker, kubernetes deployment
-
+switch to fully websocket data flow?
 
 bugs
 Object.keys doesn't count duplicate keys - n > 1 iterations of data response are size 9999 as a result
