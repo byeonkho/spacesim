@@ -71,14 +71,18 @@ const themeOptions: ThemeOptions = {
   shape: {
     borderRadius: 8,
   },
+  canvas: {
+    canvasMain: "#00060c",
+    canvasGradientEdge: "#00060c",
+  },
   mixins: {
     glass: {
       backgroundColor: "rgba(255, 255, 255, 0.05)",
       backdropFilter: "blur(4px)",
       border: "1px solid rgba(255, 255, 255, 0.1)",
       boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.3)",
-      borderRadius: 8,
-      padding: 16,
+      borderRadius: 2,
+      padding: 2,
     },
   },
   components: {

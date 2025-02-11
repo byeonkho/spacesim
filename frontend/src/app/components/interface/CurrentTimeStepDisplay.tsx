@@ -8,15 +8,10 @@ const CurrentTimestepDisplay: React.FC = () => {
 
   return (
     <Box
-      sx={{
-        p: 2,
-        borderRadius: 2,
-        maxWidth: "300px",
-        backgroundColor: "rgba(255, 255, 255, 0.05)", // very subtle light overlay
-        backdropFilter: "blur(4px)", // glassmorphism effect
-        border: "1px solid rgba(255, 255, 255, 0.1)",
-        boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.3)",
-      }}
+      sx={(theme) => ({
+        ...theme.mixins.glass, // Apply your glass mixin styles
+        // maxWidth: "100px", // Additional styles can be added here
+      })}
     >
       <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
         Current Timestep

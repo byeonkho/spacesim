@@ -5,11 +5,20 @@ UI element - planet info (Relative speed, distance for planet info)
 logic for non-first sim request -> let old sim continue existing, but return new sim
 Accurate radii for celestial bodies
 Create interface for DTOs?
-Celestial body textures
-docker, kubernetes deployment\
+
 web worker for decompression
 do we need to return celestialbodylist for simulationresponsedto?
 unit tests (lol)
+
+major:
+Celestial body textures
+
+data size optimisation:
+- send delta updates instead of entire vectors from backend to save data
+- use interpolation on frontend (spline? see: CatmullRomCurve3 + give linear option
+
+docker, kubernetes deployment
+
 
 bugs
 Object.keys doesn't count duplicate keys - n > 1 iterations of data response are size 9999 as a result

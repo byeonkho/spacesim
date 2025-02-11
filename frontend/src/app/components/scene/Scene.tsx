@@ -6,8 +6,8 @@ import Sphere from "@/app/components/scene/Sphere";
 import React, { useEffect, useState } from "react";
 import { OrbitControls } from "three-stdlib";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/app/store/Store";
 import SimConstants from "@/app/constants/SimConstants";
+import * as THREE from "three";
 import {
   deleteExcessData,
   selectCelestialBodyList,
@@ -18,12 +18,12 @@ import {
   selectTimeStepKeys,
   setCurrentTimeStepIndex,
 } from "@/app/store/slices/SimulationSlice";
-import { number, string } from "prop-types";
-import { Color } from "three";
+import { useTheme } from "@mui/material/styles";
 
 extend({ OrbitControls });
 
 const Scene = () => {
+  const theme = useTheme();
   const dispatch = useDispatch();
   const celestialBodyList = useSelector(selectCelestialBodyList);
   const [celestialBodyRadiusMap, setCelestialBodyRadiusMap] = useState(
@@ -108,51 +108,58 @@ const Scene = () => {
     }
   };
 
-  if (!simulationSnapshot) {
-    return (
-      <Canvas
-        style={{ width: "100%", height: "100%" }}
-        gl={{ clearColor: "black" }}
-        onCreated={({ scene }) => {
-          scene.background = new Color("black");
-        }}
-      >
-        <CameraControls />
-        <ambientLight intensity={Math.PI / 2} />
-        <spotLight
-          position={[10, 10, 10]}
-          angle={0.15}
-          penumbra={1}
-          decay={0}
-          intensity={Math.PI}
-        />
-        <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
-        <axesHelper args={[10000]} />
-        <gridHelper args={[10000, 1000]} />
-      </Canvas>
-    );
-  }
+  const drawRoundedRect = (ctx, x, y, width, height, radius) => {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+  };
 
   return (
     <Canvas
       style={{ width: "100%", height: "100%" }}
-      gl={{ clearColor: "black" }}
       onCreated={({ scene }) => {
-        scene.background = new Color("black");
+        const canvas = document.createElement("canvas");
+        canvas.width = 1024;
+        canvas.height = 1024;
+        const context = canvas.getContext("2d");
+
+        const gradient = context.createLinearGradient(0, 0, canvas.width, 0);
+        gradient.addColorStop(0, theme.canvas.canvasMain);
+        gradient.addColorStop(0.5, theme.canvas.canvasGradientEdge);
+        gradient.addColorStop(1, theme.canvas.canvasGradientEdge);
+
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+
+        const numStars = 500;
+        for (let i = 0; i < numStars; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const minRadius = 0.05;
+          const maxRadius = 0.1;
+          const radius = minRadius + Math.random() * (maxRadius - minRadius);
+          const opacity = 0.5 + Math.random() * 0.5;
+          context.beginPath();
+          context.arc(x, y, radius, 0, Math.PI * 2);
+          context.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+          context.fill();
+        }
+
+        scene.background = new THREE.CanvasTexture(canvas);
       }}
     >
       <CameraControls />
       <ambientLight intensity={Math.PI / 2} />
-      <spotLight
-        position={[10, 10, 10]}
-        angle={0.15}
-        penumbra={1}
-        decay={0}
-        intensity={Math.PI}
-      />
-      <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
-      <axesHelper args={[10000]} />
-      <gridHelper args={[10000, 1000]} />
+      {/*<axesHelper args={[10000]} />*/}
+      {/*<gridHelper args={[10000, 1000]} />*/}
 
       {simulationSnapshot.map((body) => {
         const radius = celestialBodyRadiusMap.get(body.name) ?? 1; // Default to 1 if not found
