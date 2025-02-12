@@ -31,16 +31,12 @@ const planetIcons: Record<string, StaticImageData> = {
   SUN: SunIcon as StaticImageData,
 };
 
-const PlanetSelector: React.FC = () => {
+const BodySelector: React.FC = () => {
   const dispatch = useDispatch();
   const bodies =
     useSelector(
       (state: RootState) => state.simulation.currentSimulationSnapshot,
     ) || [];
-
-  useEffect(() => {
-    console.log("PlanetSelector - current bodies snapshot:", bodies);
-  }, [bodies]);
 
   return (
     <Box
@@ -60,16 +56,11 @@ const PlanetSelector: React.FC = () => {
     >
       {bodies.map((body) => {
         const iconData = planetIcons[body.name.toUpperCase()];
-        console.log(
-          `PlanetSelector - rendering icon for: ${body.name}`,
-          iconData,
-        );
 
         return (
           <IconButton
             key={body.name}
             onClick={() => {
-              console.log("PlanetSelector - clicked body:", body);
               dispatch(setActiveBody(body));
             }}
             sx={{
@@ -96,4 +87,4 @@ const PlanetSelector: React.FC = () => {
   );
 };
 
-export default PlanetSelector;
+export default BodySelector;

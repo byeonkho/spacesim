@@ -14,15 +14,15 @@ public class PhysicsConstants {
 
     public static final Map<String, Double> RADIUS_MAP = new HashMap<>();
     static {
-        RADIUS_MAP.put("EARTH", Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
-        RADIUS_MAP.put("MARS", 3_389_500.0);
-        RADIUS_MAP.put("MOON", Constants.MOON_EQUATORIAL_RADIUS);
-        RADIUS_MAP.put("SUN", Constants.SUN_RADIUS);
-        RADIUS_MAP.put("VENUS", 6_051_800.0);
-        RADIUS_MAP.put("MERCURY", 2_439_700.0);
-        RADIUS_MAP.put("JUPITER", Constants.IAU_2015_NOMINAL_JUPITER_EQUATORIAL_RADIUS);
-        RADIUS_MAP.put("SATURN", 58_232_000.0);
-        RADIUS_MAP.put("URANUS", 25_362_000.0);
+        RADIUS_MAP.put("EARTH",    6_378_136.3);
+        RADIUS_MAP.put("MARS",     3_389_500.0);
+        RADIUS_MAP.put("MOON",     1_737_400.0);
+        RADIUS_MAP.put("SUN",    695_700_000.0);
+        RADIUS_MAP.put("VENUS",    6_051_800.0);
+        RADIUS_MAP.put("MERCURY",  2_439_700.0);
+        RADIUS_MAP.put("JUPITER", 71_492_000.0);
+        RADIUS_MAP.put("SATURN",  58_232_000.0);
+        RADIUS_MAP.put("URANUS",  25_362_000.0);
         RADIUS_MAP.put("NEPTUNE", 24_622_000.0);
     }
 

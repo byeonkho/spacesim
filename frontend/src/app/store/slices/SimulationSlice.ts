@@ -309,6 +309,26 @@ export const selectTotalTimeSteps = createSelector(
     simulationData ? Object.keys(simulationData).length : 0,
 );
 
+export const selectBodyRadiusFromName = createSelector(
+  [
+    (state: RootState) =>
+      state.simulation.simulationParameters.celestialBodyWrapperList,
+    (state: RootState, props: { bodyName: string }) => props.bodyName,
+  ],
+  (
+    celestialBodyWrapperList: CelestialBodyWrapper[],
+    bodyName: string,
+  ): number | undefined => {
+    if (!celestialBodyWrapperList) return undefined;
+    const celestialBodyWrapper: CelestialBodyWrapper | undefined =
+      celestialBodyWrapperList.find(
+        (cb: CelestialBodyWrapper): boolean =>
+          cb.name.trim().toLowerCase() === bodyName.trim().toLowerCase(),
+      );
+    return celestialBodyWrapper?.radius;
+  },
+);
+
 export const selectActiveBody = (state: RootState) =>
   state.simulation.activeBodyState.activeBody;
 

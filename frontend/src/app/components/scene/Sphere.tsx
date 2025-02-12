@@ -6,7 +6,6 @@ import { AppDispatch, RootState } from "@/app/store/Store";
 import {
   CelestialBody,
   setActiveBody,
-  setActiveBodyName,
 } from "@/app/store/slices/SimulationSlice";
 
 interface CelestialBodyProps extends MeshProps {
