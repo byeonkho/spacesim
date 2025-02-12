@@ -12,6 +12,7 @@ import CurrentTimeStepDisplay from "@/app/components/interface/CurrentTimeStepDi
 import DevMetrics from "@/app/components/interface/drawer/components/DevMetrics";
 import UpdateModal from "@/app/components/interface/UpdateModal";
 import PlanetInfoOverlay from "@/app/components/scene/PlanetInfoOverlay";
+import BodySelector from "@/app/components/interface/BodySelector";
 
 const Layout: React.FC = () => {
   // Example: retrieving a session ID from Redux state
@@ -60,6 +61,7 @@ const Layout: React.FC = () => {
             width: "100%",
           }}
         >
+          <BodySelector />
           <UpdateModal />
           <MiniDrawer />
 

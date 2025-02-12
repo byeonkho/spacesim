@@ -125,17 +125,12 @@
         }
 
         private double convertTimeStep(String timeStepUnit) {
-            switch (timeStepUnit.toLowerCase()) {
-                case "seconds":
-                    return 1;
-                case "hours":
-                    return PhysicsConstants.SECONDS_PER_HOUR;
-                case "days":
-                    return PhysicsConstants.SECONDS_PER_DAY;
-                case "weeks":
-                    return PhysicsConstants.SECONDS_PER_WEEK;
-                default:
-                    throw new IllegalArgumentException("Unsupported time step unit: " + timeStepUnit);
-            }
+            return switch (timeStepUnit.toLowerCase()) {
+                case "seconds" -> 1;
+                case "hours" -> PhysicsConstants.SECONDS_PER_HOUR;
+                case "days" -> PhysicsConstants.SECONDS_PER_DAY;
+                case "weeks" -> PhysicsConstants.SECONDS_PER_WEEK;
+                default -> throw new IllegalArgumentException("Unsupported time step unit: " + timeStepUnit);
+            };
         }
     }

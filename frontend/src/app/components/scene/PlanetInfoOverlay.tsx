@@ -5,34 +5,47 @@ import {
   CelestialBody,
   selectActiveBody,
   selectDerivedOrbitingBody,
+  selectIsBodyActive,
+  Vector3Simple,
 } from "@/app/store/slices/SimulationSlice";
 import SimConstants from "@/app/constants/SimConstants";
 import { RootState } from "@/app/store/Store";
-import { calculateDistance, toTitleCase } from "@/app/utils/helpers";
+import {
+  calculateDistance,
+  calculateMagnitude,
+  formatToKM,
+  subtractVectors,
+  toTitleCase,
+} from "@/app/utils/helpers";
+import MathConstants from "@/app/constants/MathConstants";
 
 const PlanetInfoOverlay = () => {
-  const activeBody = useSelector(selectActiveBody);
-  let distanceFromOrbitingBody: number | undefined;
+  const activeBody: CelestialBody = useSelector(selectActiveBody);
+  const isBodyActive: boolean = useSelector(selectIsBodyActive);
 
-  const orbitingBody = useSelector((state: RootState) =>
-    activeBody
-      ? (
-          selectDerivedOrbitingBody as (
-            // we cast to function type here as TS reads it as 1 input param otherwise; throws IDE error but compile and
-            // runtime is fine
-            state: RootState,
-            props: { bodyName: string },
-          ) => CelestialBody
-        )(
-          // tells TS it returns CelestialBody
-          state,
-          { bodyName: activeBody.name }, // call the function
-        )
-      : undefined,
+  let distanceFromOrbitingBody: string;
+  let relativeVelocity: number;
+
+  const orbitingBody: CelestialBody | undefined = useSelector(
+    (state: RootState) =>
+      activeBody
+        ? (
+            selectDerivedOrbitingBody as (
+              // we cast to function type here as TS reads it as 1 input param otherwise; throws IDE error but compile and
+              // runtime is fine
+              state: RootState,
+              props: { bodyName: string },
+            ) => CelestialBody
+          )(
+            // tells TS it returns CelestialBody
+            state,
+            { bodyName: activeBody.name }, // call the function
+          )
+        : undefined,
   );
 
   // do not shift this return earlier; React expects all hooks to run every render
-  if (!activeBody) {
+  if (!activeBody || !isBodyActive) {
     return null;
   }
 
@@ -48,7 +61,14 @@ const PlanetInfoOverlay = () => {
     distanceFromOrbitingBody = calculateDistance(
       activeBody.position,
       orbitingBody.position,
+      "AU", // TODO make this dynamic for future
     );
+
+    const velocityDelta = subtractVectors(
+      activeBody.velocity,
+      orbitingBody.velocity,
+    );
+    relativeVelocity = calculateMagnitude(velocityDelta);
   }
 
   // Divider dimensions (in pixels)
@@ -127,21 +147,13 @@ const PlanetInfoOverlay = () => {
           <p style={{ margin: "2px 0" }}>
             {orbitingBody?.name && (
               <>
-                Distance to {toTitleCase(orbitingBody.name)} : {""}
+                Distance to {toTitleCase(orbitingBody.name)}: {""}
               </>
             )}
-            {distanceFromOrbitingBody} km
+            {distanceFromOrbitingBody}
           </p>
-          {/*<p style={{ margin: "2px 0" }}>Relative Velocity:</p>*/}
-          {/*<p style={{ margin: "2px 0" }}>*/}
-          {/*  x: {activeBody.velocity.x.toFixed(2)} km/s*/}
-          {/*</p>*/}
-          {/*<p style={{ margin: "2px 0" }}>*/}
-          {/*  y: {activeBody.velocity.y.toFixed(2)} km/s*/}
-          {/*</p>*/}
-          {/*<p style={{ margin: "2px 0" }}>*/}
-          {/*  z: {activeBody.velocity.z.toFixed(2)} km/s*/}
-          {/*</p>*/}
+          <p style={{ margin: "2px 0" }}>Relative Velocity:</p>
+          {formatToKM(relativeVelocity)}
         </div>
       </div>
     </Html>

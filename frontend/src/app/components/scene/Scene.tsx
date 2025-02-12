@@ -19,6 +19,7 @@ import {
   setCurrentTimeStepIndex,
   selectIsBodyActive,
   updateActiveBody,
+  setIsBodyActive,
 } from "@/app/store/slices/SimulationSlice";
 import { useTheme } from "@mui/material/styles";
 import PlanetInfoOverlay from "@/app/components/scene/PlanetInfoOverlay";
@@ -121,6 +122,9 @@ const Scene = () => {
 
   return (
     <Canvas
+      onPointerMissed={(e: MouseEvent) => {
+        dispatch(setIsBodyActive(false));
+      }}
       style={{ width: "100%", height: "100%" }}
       onCreated={({ scene }) => {
         const canvas = document.createElement("canvas");

@@ -49,8 +49,8 @@ export interface SimulationParameters {
 }
 
 interface SimulationState {
-  currentSimulationSnapshot: CelestialBody[] | [];
-  activeBodyState: ActiveBodyState | null;
+  currentSimulationSnapshot: CelestialBody[];
+  activeBodyState: ActiveBodyState;
   simulationParameters: SimulationParameters | null;
   simulationData: SimulationData | null;
   timeState: TimeState | null;
@@ -171,19 +171,28 @@ export const simulationSlice = createSlice({
         SimConstants.MAX_SPEED_MULTIPLIER,
       );
     },
-    updateActiveBody: (state: RootState): void => {
+    updateActiveBody: (state: SimulationState): void => {
+      if (!state.activeBodyState || !state.activeBodyState.activeBody) return;
       const activeBodyName: string = state.activeBodyState.activeBody.name;
-      // Find the active celestial body by name in the snapshot array
-      // Update the state with the found object
-      state.activeBodyState.activeBody = state.currentSimulationSnapshot.find(
-        (body: CelestialBody) => {
-          return body.name === activeBodyName;
-        },
-      );
+      state.activeBodyState.activeBody =
+        state.currentSimulationSnapshot.find(
+          (body: CelestialBody) => body.name === activeBodyName,
+        ) || null;
     },
-    setActiveBody: (state: RootState, action: PayloadAction<CelestialBody>) => {
+
+    setActiveBody: (
+      state: SimulationState,
+      action: PayloadAction<CelestialBody>,
+    ) => {
       state.activeBodyState.activeBody = action.payload;
       state.activeBodyState.isBodyActive = true;
+    },
+    setIsBodyActive: (
+      state: SimulationState,
+      action: PayloadAction<boolean>,
+    ) => {
+      console.log("payload: ", action.payload);
+      state.activeBodyState.isBodyActive = action.payload;
     },
   },
 });
@@ -342,8 +351,8 @@ export const {
   setIsPaused,
   setSpeedMultiplier,
   setCurrentTimeStepIndex,
-  setActiveBodyName,
   setActiveBody,
+  setIsBodyActive,
 } = simulationSlice.actions;
 
 export default simulationSlice.reducer;
