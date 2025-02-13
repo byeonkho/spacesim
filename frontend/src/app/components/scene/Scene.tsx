@@ -1,12 +1,12 @@
 "use client";
 
 import { Canvas, extend } from "@react-three/fiber";
-import CameraControls from "@/app/components/utils/CameraControls";
+import CameraControls from "@/app/components/scene/CameraControls";
 import Sphere from "@/app/components/scene/Sphere";
 import React, { useEffect, useState } from "react";
 import { OrbitControls } from "three-stdlib";
 import { useDispatch, useSelector } from "react-redux";
-import SimConstants from "@/app/constants/SimConstants";
+import SimConstants, { bodyProperties } from "@/app/constants/SimConstants";
 import * as THREE from "three";
 import {
   deleteExcessData,
@@ -20,9 +20,13 @@ import {
   selectIsBodyActive,
   updateActiveBody,
   setIsBodyActive,
+  CelestialBody,
+  Vector3Simple,
 } from "@/app/store/slices/SimulationSlice";
 import { useTheme } from "@mui/material/styles";
 import PlanetInfoOverlay from "@/app/components/scene/PlanetInfoOverlay";
+
+import { scaleDistance } from "@/app/utils/helpers";
 
 extend({ OrbitControls });
 
@@ -33,13 +37,15 @@ const Scene = () => {
   const [celestialBodyRadiusMap, setCelestialBodyRadiusMap] = useState(
     new Map<string, number>(),
   );
-  const simulationSnapshot = useSelector(selectCurrentSimulationSnapshot);
-  const isPaused = useSelector(selectIsPaused);
-  const isBodyActive = useSelector(selectIsBodyActive);
-  const speedMultiplier = useSelector(selectSpeedMultiplier);
-  const currentTimeStepIndex = useSelector(selectCurrentTimeStepIndex);
+  const simulationSnapshot: CelestialBody[] = useSelector(
+    selectCurrentSimulationSnapshot,
+  );
+  const isPaused: boolean = useSelector(selectIsPaused);
+  const isBodyActive: boolean = useSelector(selectIsBodyActive);
+  const speedMultiplier: number = useSelector(selectSpeedMultiplier);
+  const currentTimeStepIndex: number = useSelector(selectCurrentTimeStepIndex);
   const timeStepKeys = useSelector(selectTimeStepKeys);
-  const totalTimeSteps = timeStepKeys.length;
+  const totalTimeSteps: number = timeStepKeys.length;
 
   // get radii of bodies; this is in a separate one-time useEffect because we only send the radius data in the initial
   // REST response
@@ -162,22 +168,81 @@ const Scene = () => {
       <axesHelper args={[10000]} />
       <gridHelper args={[10000, 1000]} />
 
-      {simulationSnapshot.map((body) => {
-        const radius = celestialBodyRadiusMap.get(body.name) ?? 1; // Default to 1 if not found
+      {simulationSnapshot.map((body: CelestialBody) => {
+        const radius: number = celestialBodyRadiusMap.get(body.name) ?? 1; // Default to 1 if not found
+        let orbitingBody: CelestialBody | undefined;
 
-        // console.log("radius: " + radius);
+        if (body.name.toUpperCase() === "SUN") {
+          return (
+            <React.Fragment key={body.name}>
+              <pointLight
+                key="sun-light"
+                position={[body.position.x, body.position.y, body.position.z]}
+                intensity={SimConstants.SCALE_FACTOR * 0.0001} // adjust the intensity as needed
+                distance={SimConstants.SCALE_FACTOR} // adjust the distance so the light falls off
+                // appropriately
+                color={0xffffff} // typically white light for the sun
+              />
+              <Sphere
+                key={body.name}
+                name={body.name}
+                body={body}
+                position={[
+                  body.position.x / SimConstants.SCALE_FACTOR,
+                  body.position.y / SimConstants.SCALE_FACTOR,
+                  body.position.z / SimConstants.SCALE_FACTOR,
+                ]}
+                radius={radius} // Pass radius to Sphere component
+                textureUrl={
+                  bodyProperties[body.name.toUpperCase()]?.texture.src ||
+                  bodyProperties["FALLBACK"].texture.src
+                }
+              />
+            </React.Fragment>
+          );
+        }
+
+        // prepare orbitingBody if current body needs to be distance scaled
+        if (bodyProperties[body.name.toUpperCase()].positionScale !== 1) {
+          const orbitingBodyName: string =
+            bodyProperties[body.name.toUpperCase()].orbitingBody;
+          if (orbitingBodyName) {
+            orbitingBody = simulationSnapshot.find(
+              (b) => b.name.toUpperCase() === orbitingBodyName.toUpperCase(),
+            );
+          }
+        }
 
         return (
           <Sphere
             key={body.name}
             name={body.name}
             body={body}
-            position={[
-              body.position.x / SimConstants.SCALE_FACTOR,
-              body.position.y / SimConstants.SCALE_FACTOR,
-              body.position.z / SimConstants.SCALE_FACTOR,
-            ]}
+            position={
+              orbitingBody
+                ? (() => {
+                    const scaled: Vector3Simple = scaleDistance(
+                      body.position,
+                      orbitingBody.position,
+                      bodyProperties[body.name.toUpperCase()].positionScale,
+                    );
+                    return [
+                      scaled.x / SimConstants.SCALE_FACTOR,
+                      scaled.y / SimConstants.SCALE_FACTOR,
+                      scaled.z / SimConstants.SCALE_FACTOR,
+                    ] as [number, number, number];
+                  })()
+                : [
+                    body.position.x / SimConstants.SCALE_FACTOR,
+                    body.position.y / SimConstants.SCALE_FACTOR,
+                    body.position.z / SimConstants.SCALE_FACTOR,
+                  ]
+            }
             radius={radius} // Pass radius to Sphere component
+            textureUrl={
+              bodyProperties[body.name.toUpperCase()]?.texture.src ||
+              bodyProperties["FALLBACK"].texture.src
+            }
           />
         );
       })}

@@ -1,0 +1,120 @@
+import React, { useEffect, useRef } from "react";
+import { extend, useFrame, useThree } from "@react-three/fiber";
+import { OrbitControls } from "three-stdlib";
+import { useSelector } from "react-redux";
+import {
+  CelestialBody,
+  selectActiveBody,
+  selectIsBodyActive,
+  selectBodyRadiusFromName,
+} from "@/app/store/slices/SimulationSlice";
+import * as THREE from "three";
+import SimConstants from "@/app/constants/SimConstants";
+import { RootState } from "@/app/store/Store";
+
+extend({ OrbitControls });
+
+const CameraControls: React.FC = () => {
+  const { camera, gl } = useThree();
+  const controlsRef = useRef<OrbitControls>(null!);
+  const activeBody: CelestialBody = useSelector(selectActiveBody);
+  const isBodyActive: boolean = useSelector(selectIsBodyActive);
+  let radius: number | undefined;
+
+  // Retrieve the active body's radius (if active) and scale it.
+  radius =
+    useSelector((state: RootState): number | undefined =>
+      activeBody && isBodyActive
+        ? (
+            selectBodyRadiusFromName as (
+              state: RootState,
+              props: { bodyName: string },
+            ) => number
+          )(state, { bodyName: activeBody.name })
+        : undefined,
+    )! / SimConstants.RADIUS_SCALE_FACTOR;
+
+  // A ref for the tracking zoom level, which can be adjusted by mouse scroll.
+  const trackingZoomRef = useRef<number>(
+    radius
+      ? radius * 1
+      : camera.position.distanceTo(
+          controlsRef.current?.target || new THREE.Vector3(),
+        ),
+  );
+
+  // Listen for mouse wheel events to adjust the tracking zoom.
+  useEffect(() => {
+    const onWheel = (e: WheelEvent) => {
+      console.log("zoom level: ", trackingZoomRef.current);
+      e.preventDefault(); // Prevent page scroll.
+      // Adjust trackingZoomRef: positive deltaY zooms out, negative zooms in.
+      trackingZoomRef.current *= 1 + e.deltaY * 0.001;
+      // Clamp the value to a reasonable range.
+      trackingZoomRef.current = THREE.MathUtils.clamp(
+        trackingZoomRef.current,
+        0.00001,
+        1e20,
+      );
+    };
+
+    gl.domElement.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      gl.domElement.removeEventListener("wheel", onWheel);
+    };
+  }, [gl.domElement]);
+
+  // A ref to smooth the computed radius.
+  const smoothRadiusRef = useRef<number>(
+    camera.position.distanceTo(
+      controlsRef.current?.target || new THREE.Vector3(),
+    ),
+  );
+
+  useFrame(() => {
+    if (isBodyActive && activeBody) {
+      // 1. Compute the new target position based on the active body's scaled position.
+      const newTarget = new THREE.Vector3(
+        activeBody.position.x / SimConstants.SCALE_FACTOR,
+        activeBody.position.y / SimConstants.SCALE_FACTOR,
+        activeBody.position.z / SimConstants.SCALE_FACTOR,
+      );
+      // Smoothly update the OrbitControls target.
+      controlsRef.current.target.lerp(newTarget, 0.01);
+
+      // 2. Get the current relative vector from the camera to the old target.
+      //    Convert that vector to spherical coordinates.
+      const relVec = camera.position.clone().sub(controlsRef.current.target);
+      const spherical = new THREE.Spherical().setFromVector3(relVec);
+
+      // 3. Update the radius (zoom) using the trackingZoomRef.
+      // Smooth the radius to avoid abrupt changes.
+      smoothRadiusRef.current = THREE.MathUtils.lerp(
+        smoothRadiusRef.current,
+        trackingZoomRef.current,
+        0.5,
+      );
+      spherical.radius = smoothRadiusRef.current;
+
+      // 4. Reconstruct the camera's desired position using the unchanged spherical angles.
+      const newRelVec = new THREE.Vector3().setFromSpherical(spherical);
+      const desiredPosition = controlsRef.current.target.clone().add(newRelVec);
+
+      // Smoothly update the camera position.
+      camera.position.lerp(desiredPosition, 0.01);
+    }
+    controlsRef.current.update();
+  });
+
+  return (
+    <orbitControls
+      ref={controlsRef}
+      args={[camera, gl.domElement]}
+      enableDamping={true}
+      dampingFactor={0.01} // smaller values = more damping
+      // maxPolarAngle={Math.PI / 2}
+    />
+  );
+};
+
+export default CameraControls;

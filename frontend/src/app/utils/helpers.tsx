@@ -1,5 +1,6 @@
 import { Vector3Simple } from "@/app/store/slices/SimulationSlice";
 import MathConstants from "@/app/constants/MathConstants";
+import * as THREE from "three";
 
 export const toTitleCase = (str: string): string => {
   return str.toLowerCase().replace(/\b\w/g, (match) => match.toUpperCase());
@@ -64,3 +65,38 @@ export const formatToKM = (n: number): string => {
     }) + " km/s"
   );
 };
+
+export const roundToTwoDecimals = (value: number): number => {
+  return Math.round(value * 10) / 10;
+};
+
+export function scaleDistance(
+  primary: Vector3Simple,
+  orbiting: Vector3Simple,
+  scaleFactor: number,
+): Vector3Simple {
+  // Convert simple vectors to THREE.Vector3.
+  const primaryVec = toTHREE(primary);
+  const orbitingVec = toTHREE(orbiting);
+
+  // Compute the relative vector from the orbiting body to the primary body.
+  const relative = primaryVec.clone().sub(orbitingVec);
+  // Scale that relative vector.
+  relative.multiplyScalar(scaleFactor);
+  // Compute the new position by adding the scaled relative vector to the orbiting body's position.
+  const newPosition = orbitingVec.clone().add(relative);
+
+  // Convert the result back to your simple vector format.
+  return toSimple(newPosition);
+}
+
+// Convert a simple vector to a THREE.Vector3.
+const toTHREE = (v: Vector3Simple): THREE.Vector3 =>
+  new THREE.Vector3(v.x, v.y, v.z);
+
+// Convert a THREE.Vector3 back to a simple vector.
+const toSimple = (v: THREE.Vector3): Vector3Simple => ({
+  x: v.x,
+  y: v.y,
+  z: v.z,
+});

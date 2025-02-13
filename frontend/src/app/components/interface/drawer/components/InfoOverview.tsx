@@ -13,6 +13,7 @@ import {
   Paper,
 } from "@mui/material";
 import theme from "@/muiTheme";
+import SimConstants from "@/app/constants/SimConstants";
 
 const InfoOverview: React.FC = () => {
   const currentSnapshot = useSelector(
@@ -72,9 +73,9 @@ const InfoOverview: React.FC = () => {
                   </TableCell>
                   <TableCell>
                     <Typography variant="body3">
-                      ({body.position.x.toFixed(2)},{" "}
-                      {body.position.y.toFixed(2)}, {body.position.z.toFixed(2)}
-                      )
+                      ({body.position.x / SimConstants.SCALE_FACTOR},{" "}
+                      {body.position.y / SimConstants.SCALE_FACTOR},{" "}
+                      {body.position.z / SimConstants.SCALE_FACTOR})
                     </Typography>
                   </TableCell>
                   <TableCell>

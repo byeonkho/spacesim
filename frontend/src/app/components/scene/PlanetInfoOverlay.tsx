@@ -4,69 +4,87 @@ import { useSelector } from "react-redux";
 import {
   CelestialBody,
   selectActiveBody,
-  selectDerivedOrbitingBody,
+  selectCurrentSimulationSnapshot,
   selectIsBodyActive,
   Vector3Simple,
 } from "@/app/store/slices/SimulationSlice";
-import SimConstants from "@/app/constants/SimConstants";
-import { RootState } from "@/app/store/Store";
+import SimConstants, { bodyProperties } from "@/app/constants/SimConstants";
+
 import {
   calculateDistance,
   calculateMagnitude,
   formatToKM,
+  scaleDistance,
   subtractVectors,
   toTitleCase,
 } from "@/app/utils/helpers";
-import MathConstants from "@/app/constants/MathConstants";
 
 const PlanetInfoOverlay = () => {
   const activeBody: CelestialBody = useSelector(selectActiveBody);
   const isBodyActive: boolean = useSelector(selectIsBodyActive);
+  const simulationSnapshot: CelestialBody[] = useSelector(
+    selectCurrentSimulationSnapshot,
+  );
 
   let distanceFromOrbitingBody: string;
   let relativeVelocity: number;
-
-  const orbitingBody: CelestialBody | undefined = useSelector(
-    (state: RootState) =>
-      activeBody
-        ? (
-            selectDerivedOrbitingBody as (
-              // we cast to function type here as TS reads it as 1 input param otherwise; throws IDE error but compile and
-              // runtime is fine
-              state: RootState,
-              props: { bodyName: string },
-            ) => CelestialBody
-          )(
-            // tells TS it returns CelestialBody
-            state,
-            { bodyName: activeBody.name }, // call the function
-          )
-        : undefined,
-  );
+  let position: number[];
+  let orbitingBodySnapshot: CelestialBody | undefined;
+  let activeBodySnapshot: CelestialBody | undefined;
 
   // do not shift this return earlier; React expects all hooks to run every render
   if (!activeBody || !isBodyActive) {
     return null;
   }
 
+  // get the orbiting body and active body from single source of truth
+  const orbitingBodyName: string =
+    bodyProperties[activeBody.name.toUpperCase()].orbitingBody;
+  orbitingBodySnapshot = simulationSnapshot.find(
+    (body: CelestialBody) =>
+      body.name.trim().toUpperCase() === orbitingBodyName.trim().toUpperCase(),
+  );
+  activeBodySnapshot = simulationSnapshot.find(
+    (body: CelestialBody) =>
+      body.name.trim().toUpperCase() === activeBody.name.trim().toUpperCase(),
+  );
+
   // the coordinates we pass to Drei's Html component to transform 3d -> 2d; we anchor the UI element to
   // the derived position
-  const position: number[] = [
-    activeBody.position.x / SimConstants.SCALE_FACTOR,
-    activeBody.position.y / SimConstants.SCALE_FACTOR,
-    activeBody.position.z / SimConstants.SCALE_FACTOR,
-  ];
+  if (
+    bodyProperties[activeBody.name.toUpperCase()].positionScale != 1 &&
+    activeBodySnapshot &&
+    orbitingBodySnapshot
+  ) {
+    // if position requires scaling (e.g Moon)
+    const scaled: Vector3Simple = scaleDistance(
+      activeBodySnapshot.position,
+      orbitingBodySnapshot.position,
+      bodyProperties[activeBody.name.toUpperCase()].positionScale,
+    );
+    position = [
+      scaled.x / SimConstants.SCALE_FACTOR,
+      scaled.y / SimConstants.SCALE_FACTOR,
+      scaled.z / SimConstants.SCALE_FACTOR,
+    ];
+  } else {
+    position = [
+      activeBody.position.x / SimConstants.SCALE_FACTOR,
+      activeBody.position.y / SimConstants.SCALE_FACTOR,
+      activeBody.position.z / SimConstants.SCALE_FACTOR,
+    ];
+  }
 
-  if (activeBody && orbitingBody) {
+  if (activeBodySnapshot && orbitingBodySnapshot) {
     distanceFromOrbitingBody = calculateDistance(
-      activeBody.position,
-      orbitingBody.position,
+      activeBodySnapshot.position,
+      orbitingBodySnapshot.position,
       "AU", // TODO make this dynamic for future
     );
 
     const velocityDelta = subtractVectors(
-      activeBody.velocity,
-      orbitingBody.velocity,
+      activeBodySnapshot.velocity,
+      orbitingBodySnapshot.velocity,
     );
     relativeVelocity = calculateMagnitude(velocityDelta);
   }
@@ -145,9 +163,9 @@ const PlanetInfoOverlay = () => {
           }}
         >
           <p style={{ margin: "2px 0" }}>
-            {orbitingBody?.name && (
+            {orbitingBodySnapshot?.name && (
               <>
-                Distance to {toTitleCase(orbitingBody.name)}: {""}
+                Distance to {toTitleCase(orbitingBodySnapshot.name)}: {""}
               </>
             )}
             {distanceFromOrbitingBody}

@@ -1,18 +1,19 @@
-import { MeshProps } from "@react-three/fiber";
+import { MeshProps, useLoader } from "@react-three/fiber";
 import React, { useRef, useState } from "react";
-import * as THREE from "three";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/app/store/Store";
 import {
   CelestialBody,
   setActiveBody,
 } from "@/app/store/slices/SimulationSlice";
+import * as THREE from "three";
 
 interface CelestialBodyProps extends MeshProps {
   name: string;
   color?: THREE.ColorRepresentation;
   radius: number;
   body: CelestialBody;
+  textureUrl?: string;
 }
 
 const Sphere: React.FC<CelestialBodyProps> = ({
@@ -21,27 +22,26 @@ const Sphere: React.FC<CelestialBodyProps> = ({
   name,
   color = "orange",
   body,
+  textureUrl,
   ...props
 }) => {
   const meshRef = useRef<THREE.Mesh>(null!);
-  const [hovered, setHovered] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
+
+  const texture = useLoader(
+    THREE.TextureLoader as any,
+    textureUrl || "/path/to/placeholder.png",
+  );
 
   return (
     <mesh
       {...props}
       position={position}
       ref={meshRef}
-      // scale={activeCelestialBodyName === name ? 1.5 : 1}
       onClick={() => dispatch(setActiveBody(body))}
-      onPointerOver={() => setHovered(true)}
-      onPointerOut={() => setHovered(false)}
     >
       <sphereGeometry args={[radius, 32, 32]} />
-      <meshStandardMaterial
-        color={hovered ? "hotpink" : color}
-        wireframe={true}
-      />
+      <meshStandardMaterial map={textureUrl ? texture : undefined} />
     </mesh>
   );
 };
