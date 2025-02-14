@@ -36,55 +36,63 @@ interface BodyProperties {
   isBright?: boolean;
   hasAtmosphere?: boolean;
   texture: StaticImageData;
-  orbitingBody?: string; // mandatory for bodies that needs to be position scaled
+  orbitingBody?: string;
 }
 
 export const bodyProperties: Record<string, BodyProperties> = {
   MERCURY: {
     positionScale: 1,
     hasAtmosphere: false,
+    orbitingBody: "SUN",
     texture: MercuryTexture as StaticImageData,
   },
   VENUS: {
     positionScale: 1,
     hasAtmosphere: true,
     isBright: false,
+    orbitingBody: "SUN",
     texture: VenusTexture as StaticImageData,
   },
   EARTH: {
     positionScale: 1,
     hasAtmosphere: true,
     isBright: false,
+    orbitingBody: "SUN",
     texture: EarthTexture as StaticImageData,
   },
   MARS: {
     positionScale: 1,
     hasAtmosphere: true,
     isBright: false,
+    orbitingBody: "SUN",
     texture: MarsTexture as StaticImageData,
   },
   JUPITER: {
     positionScale: 1,
     hasAtmosphere: true,
     isBright: false,
+    orbitingBody: "SUN",
     texture: JupiterTexture as StaticImageData,
   },
   SATURN: {
     positionScale: 1,
     hasAtmosphere: true,
     isBright: false,
+    orbitingBody: "SUN",
     texture: SaturnTexture as StaticImageData,
   },
   URANUS: {
     positionScale: 1,
     hasAtmosphere: true,
     isBright: false,
+    orbitingBody: "SUN",
     texture: UranusTexture as StaticImageData,
   },
   NEPTUNE: {
     positionScale: 1,
     hasAtmosphere: true,
     isBright: false,
+    orbitingBody: "SUN",
     texture: NeptuneTexture as StaticImageData,
   },
   MOON: {
@@ -98,6 +106,7 @@ export const bodyProperties: Record<string, BodyProperties> = {
     positionScale: 1,
     hasAtmosphere: false,
     isBright: true,
+    orbitingBody: "SUN",
     texture: SunTexture as StaticImageData,
   },
   FALLBACK: {

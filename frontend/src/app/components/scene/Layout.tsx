@@ -13,6 +13,7 @@ import DevMetrics from "@/app/components/interface/drawer/components/DevMetrics"
 import UpdateModal from "@/app/components/interface/UpdateModal";
 import PlanetInfoOverlay from "@/app/components/scene/PlanetInfoOverlay";
 import BodySelector from "@/app/components/interface/BodySelector";
+import CurrentTimeStep from "@/app/components/interface/CurrentTimeStep";
 
 const Layout: React.FC = () => {
   // Example: retrieving a session ID from Redux state
@@ -57,28 +58,49 @@ const Layout: React.FC = () => {
             position: "absolute",
             top: 0,
             left: 0,
-            zIndex: 2, // Above the scene
+            zIndex: 1, // Above the scene
             width: "100%",
+            height: "100%",
+            pointerEvents: "none",
           }}
         >
-          <BodySelector />
-          <UpdateModal />
-          <MiniDrawer />
+          <Box
+            sx={{
+              pointerEvents: "auto",
+            }}
+          >
+            <BodySelector />
+          </Box>
 
-          {/* Time controls, progress bar, and current step display */}
-          <Box sx={{ position: "absolute", top: 20, left: 300 }}>
-            <ProgressBar />
-            <CurrentTimeStepDisplay />
+          <Box
+            sx={{
+              pointerEvents: "auto",
+            }}
+          >
+            <MiniDrawer />
+          </Box>
+
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: 20,
+              left: "50%",
+              transform: "translateX(-50%)",
+              display: "flex",
+              alignItems: "center",
+              // maxWidth: "350px",
+              p: 0,
+              pointerEvents: "auto",
+            }}
+          >
             <TimeControls />
           </Box>
 
-          {/* Session ID in the bottom-left corner */}
-          <Box sx={{ position: "absolute", bottom: 20, left: 20 }}>
-            <Typography variant="h6" component="div">
-              {sessionID
-                ? `Session ID: ${sessionID}`
-                : "No Session ID available"}
-            </Typography>
+          <UpdateModal />
+
+          {/* Time controls, progress bar */}
+          <Box sx={{ position: "absolute", top: 20, right: 50 }}>
+            <CurrentTimeStep />
           </Box>
         </Box>
       </Box>

@@ -1,15 +1,16 @@
 /////////
 1.0
 
-radii needs adjusting; moon lives in earth
-Camera tracking on active planet
+shift textures to public/ for static caching
+consider different textures (stylilized)
+adjust scale
+grid / axes on / off
 logic for non-first sim request -> let old sim continue existing, but return new sim
 Create interface for DTOs?
 web worker for decompression
 unit tests (lol)
 
 major:
-Celestial body textures
 
 data size optimisation:
 - send delta updates instead of entire vectors from backend to save data
@@ -23,6 +24,7 @@ Object.keys doesn't count duplicate keys - n > 1 iterations of data response are
 
 /////////
 
+planet rotation
 orbital path drawing
 Implement OpenAPI?
 frontend performance optimisation
@@ -30,6 +32,7 @@ consider network rate limiting logic
 load balancing
 other integrators
 asteroid belt
+jupiter moons (SPICE kernels)
 custom bodies
 scenarios (n body problem)
 collisions??

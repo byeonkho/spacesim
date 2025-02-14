@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, extend } from "@react-three/fiber";
-import CameraControls from "@/app/components/scene/CameraControls";
+import Camera from "@/app/components/scene/Camera";
 import Sphere from "@/app/components/scene/Sphere";
 import React, { useEffect, useState } from "react";
 import { OrbitControls } from "three-stdlib";
@@ -163,7 +163,7 @@ const Scene = () => {
         scene.background = new THREE.CanvasTexture(canvas);
       }}
     >
-      <CameraControls />
+      <Camera />
       <ambientLight intensity={Math.PI / 2} />
       <axesHelper args={[10000]} />
       <gridHelper args={[10000, 1000]} />

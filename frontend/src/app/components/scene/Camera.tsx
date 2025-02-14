@@ -14,7 +14,7 @@ import { RootState } from "@/app/store/Store";
 
 extend({ OrbitControls });
 
-const CameraControls: React.FC = () => {
+const Camera: React.FC = () => {
   const { camera, gl } = useThree();
   const controlsRef = useRef<OrbitControls>(null!);
   const activeBody: CelestialBody = useSelector(selectActiveBody);
@@ -117,4 +117,4 @@ const CameraControls: React.FC = () => {
   );
 };
 
-export default CameraControls;
+export default Camera;

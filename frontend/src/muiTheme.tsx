@@ -37,13 +37,20 @@ const themeOptions: ThemeOptions = {
       textShadow: "0 0 10px rgba(255,255,255,0.5)",
     },
     h2: {
-      fontSize: "2.5rem",
+      fontSize: "1rem",
       fontWeight: 700,
       color: "#ffffff",
       textShadow: "0 0 8px rgba(255,255,255,0.4)",
     },
-    h6: {
+    h3: {
+      fontSize: "1.5rem",
       fontWeight: 700,
+      color: "#ffffff",
+      // textShadow: "0 0 8px rgba(255,255,255,0.4)",
+    },
+    h4: {
+      fontSize: "2.5rem",
+      fontWeight: 500,
       color: "#ffffff",
       textShadow: "0 0 8px rgba(255,255,255,0.4)",
     },
