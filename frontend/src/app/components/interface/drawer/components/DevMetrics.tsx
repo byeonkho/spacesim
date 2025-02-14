@@ -5,7 +5,7 @@ import {
   selectTotalTimeSteps,
 } from "@/app/store/slices/SimulationSlice";
 import { Box, Paper, Typography } from "@mui/material";
-import DataSizeDisplay from "@/app/components/interface/DataSizeDisplay";
+import DataSizeDisplay from "@/app/components/interface/drawer/components/DataSizeDisplay";
 import theme from "@/muiTheme";
 
 const DevMetrics: React.FC = () => {

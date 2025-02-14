@@ -22,6 +22,7 @@ import {
   setIsBodyActive,
   CelestialBody,
   Vector3Simple,
+  selectShowGrid,
 } from "@/app/store/slices/SimulationSlice";
 import { useTheme } from "@mui/material/styles";
 import PlanetInfoOverlay from "@/app/components/scene/PlanetInfoOverlay";
@@ -40,6 +41,7 @@ const Scene = () => {
   const simulationSnapshot: CelestialBody[] = useSelector(
     selectCurrentSimulationSnapshot,
   );
+  const showGrid: boolean = useSelector(selectShowGrid);
   const isPaused: boolean = useSelector(selectIsPaused);
   const isBodyActive: boolean = useSelector(selectIsBodyActive);
   const speedMultiplier: number = useSelector(selectSpeedMultiplier);
@@ -166,7 +168,7 @@ const Scene = () => {
       <Camera />
       <ambientLight intensity={Math.PI / 2} />
       <axesHelper args={[10000]} />
-      <gridHelper args={[10000, 1000]} />
+      {showGrid && <gridHelper args={[10000, 1000]} />}
 
       {simulationSnapshot.map((body: CelestialBody) => {
         const radius: number = celestialBodyRadiusMap.get(body.name) ?? 1; // Default to 1 if not found

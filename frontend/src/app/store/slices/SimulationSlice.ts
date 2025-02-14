@@ -44,8 +44,9 @@ export interface SimulationData {
 }
 
 export interface SimulationParameters {
-  celestialBodyWrapperList: CelestialBodyWrapper[];
-  simulationMetaData: SimulationMetadata;
+  celestialBodyWrapperList: CelestialBodyWrapper[] | null;
+  simulationMetaData: SimulationMetadata | null;
+  showGrid: boolean;
 }
 
 interface SimulationState {
@@ -63,7 +64,11 @@ const initialState: SimulationState = {
     isBodyActive: false,
     activeBody: null,
   },
-  simulationParameters: null,
+  simulationParameters: {
+    celestialBodyWrapperList: null,
+    simulationMetaData: null,
+    showGrid: false,
+  },
   simulationData: null,
   timeState: {
     isPaused: true,
@@ -124,6 +129,10 @@ export const simulationSlice = createSlice({
     },
     togglePause: (state) => {
       state.timeState.isPaused = !state.timeState.isPaused;
+    },
+    toggleShowGrid: (state) => {
+      state.simulationParameters.showGrid =
+        !state.simulationParameters.showGrid;
     },
     setCurrentSimulationSnapshot: (
       state,
@@ -329,6 +338,9 @@ export const selectBodyRadiusFromName = createSelector(
   },
 );
 
+export const selectShowGrid = (state: RootState) =>
+  state.simulation.simulationParameters.showGrid;
+
 export const selectActiveBody = (state: RootState) =>
   state.simulation.activeBodyState.activeBody;
 
@@ -364,6 +376,7 @@ export const {
   loadSimulation,
   updateDataReceived,
   togglePause,
+  toggleShowGrid,
   deleteExcessData,
   setCurrentSimulationSnapshot,
   setIsUpdating,

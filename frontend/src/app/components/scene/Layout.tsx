@@ -7,19 +7,20 @@ import { RootState } from "@/app/store/Store";
 import Scene from "@/app/components/scene/Scene";
 import MiniDrawer from "@/app/components/interface/drawer/MiniDrawer";
 import ProgressBar from "@/app/components/interface/ProgressBar";
-import TimeControls from "@/app/components/interface/TimeControls";
+import TimeControls from "@/app/components/interface/controls/TimeControls";
 import CurrentTimeStepDisplay from "@/app/components/interface/CurrentTimeStepDisplay";
 import DevMetrics from "@/app/components/interface/drawer/components/DevMetrics";
-import UpdateModal from "@/app/components/interface/UpdateModal";
+import UpdateModal from "@/app/components/interface/misc/UpdateModal";
 import PlanetInfoOverlay from "@/app/components/scene/PlanetInfoOverlay";
-import BodySelector from "@/app/components/interface/BodySelector";
-import CurrentTimeStep from "@/app/components/interface/CurrentTimeStep";
+import BodySelector from "@/app/components/interface/misc/BodySelector";
+import CurrentTimeStep from "@/app/components/interface/misc/CurrentTimeStep";
+import ControlsContainer from "@/app/components/interface/controls/ControlsContainer";
 
 const Layout: React.FC = () => {
   // Example: retrieving a session ID from Redux state
   const sessionID = useSelector(
     (state: RootState) =>
-      state.simulation.simulationParameters?.simulationMetaData.sessionID,
+      state.simulation.simulationParameters.simulationMetaData?.sessionID,
   );
 
   return (
@@ -80,22 +81,7 @@ const Layout: React.FC = () => {
             <MiniDrawer />
           </Box>
 
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: 20,
-              left: "50%",
-              transform: "translateX(-50%)",
-              display: "flex",
-              alignItems: "center",
-              // maxWidth: "350px",
-              p: 0,
-              pointerEvents: "auto",
-            }}
-          >
-            <TimeControls />
-          </Box>
-
+          <ControlsContainer />
           <UpdateModal />
 
           {/* Time controls, progress bar */}
