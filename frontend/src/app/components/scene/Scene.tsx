@@ -23,6 +23,7 @@ import {
   CelestialBody,
   Vector3Simple,
   selectShowGrid,
+  selectCelestialBodyPropertiesList,
 } from "@/app/store/slices/SimulationSlice";
 import { useTheme } from "@mui/material/styles";
 import PlanetInfoOverlay from "@/app/components/scene/PlanetInfoOverlay";
@@ -34,7 +35,9 @@ extend({ OrbitControls });
 const Scene = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
-  const celestialBodyList = useSelector(selectCelestialBodyList);
+  const celestialBodyPropertiesList = useSelector(
+    selectCelestialBodyPropertiesList,
+  );
   const [celestialBodyRadiusMap, setCelestialBodyRadiusMap] = useState(
     new Map<string, number>(),
   );
@@ -52,21 +55,28 @@ const Scene = () => {
   // get radii of bodies; this is in a separate one-time useEffect because we only send the radius data in the initial
   // REST response
   useEffect(() => {
-    if (!celestialBodyList || celestialBodyList.length === 0) return;
+    if (
+      !celestialBodyPropertiesList ||
+      celestialBodyPropertiesList.length === 0
+    )
+      return;
 
     const celestialBodyRadiusMap = new Map<string, number>();
 
-    for (const celestialBody of celestialBodyList) {
-      if (celestialBody.name && celestialBody.radius !== undefined) {
+    for (const celestialBodyProperties of celestialBodyPropertiesList) {
+      if (
+        celestialBodyProperties.name &&
+        celestialBodyProperties.radius !== undefined
+      ) {
         celestialBodyRadiusMap.set(
-          celestialBody.name,
-          celestialBody.radius / SimConstants.RADIUS_SCALE_FACTOR,
+          celestialBodyProperties.name,
+          celestialBodyProperties.radius / SimConstants.RADIUS_SCALE_FACTOR,
         );
       }
     }
 
     setCelestialBodyRadiusMap(celestialBodyRadiusMap);
-  }, [celestialBodyList]);
+  }, [celestialBodyPropertiesList]);
 
   // main rendering loop
   useEffect(() => {

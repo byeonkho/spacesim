@@ -1,7 +1,11 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/app/store/Store";
 import { requestRunSimulation } from "@/app/store/middleware/webSocketMiddleware";
-import SimConstants from "@/app/constants/SimConstants";
+import SimConstants, {
+  BodyProperties,
+  bodyProperties,
+} from "@/app/constants/SimConstants";
+import { StaticImageData } from "next/image";
 
 interface TimeState {
   isPaused: boolean;
@@ -23,11 +27,14 @@ export interface CelestialBody {
   velocity: Vector3Simple;
 }
 
-interface CelestialBodyWrapper {
-  mass: number;
-  radius: number;
-  name: string;
-  orbitingBody: string;
+export interface CelestialBodyProperties {
+  mass?: number;
+  radius?: number;
+  name?: string;
+  orbitingBody?: string;
+  ///////////////
+  positionScale?: number;
+  texture?: StaticImageData;
 }
 
 interface SimulationMetadata {
@@ -44,7 +51,7 @@ export interface SimulationData {
 }
 
 export interface SimulationParameters {
-  celestialBodyWrapperList: CelestialBodyWrapper[] | null;
+  celestialBodyPropertiesList: CelestialBodyProperties[] | null;
   simulationMetaData: SimulationMetadata | null;
   showGrid: boolean;
 }
@@ -65,7 +72,7 @@ const initialState: SimulationState = {
     activeBody: null,
   },
   simulationParameters: {
-    celestialBodyWrapperList: null,
+    celestialBodyPropertiesList: [],
     simulationMetaData: null,
     showGrid: false,
   },
@@ -86,9 +93,22 @@ export const simulationSlice = createSlice({
   reducers: {
     loadSimulation: (state, action: PayloadAction<SimulationParameters>) => {
       state.simulationParameters = action.payload;
+
+      // merge runtime attributes with backend attributes to maintain a dynamic source of truth
+      if (state.simulationParameters) {
+        state.simulationParameters.celestialBodyPropertiesList =
+          state.simulationParameters.celestialBodyPropertiesList.map(
+            (body: CelestialBodyProperties): CelestialBodyProperties => {
+              // retrieve default mapped attributes from SimConstants
+              const defaults: BodyProperties =
+                bodyProperties[body.name.toUpperCase()];
+              return defaults ? { ...body, ...defaults } : body;
+            },
+          );
+      }
       console.log(
         "load sim: ",
-        state.simulationParameters.celestialBodyWrapperList,
+        state.simulationParameters.celestialBodyPropertiesList,
       );
     },
 
@@ -284,25 +304,25 @@ export const selectSimulationDataSize = createSelector(
 export const selectDerivedOrbitingBody = createSelector(
   [
     (state: RootState) =>
-      state.simulation.simulationParameters?.celestialBodyWrapperList,
+      state.simulation.simulationParameters?.CelestialBodyPropertiesList,
     (state: RootState) => state.simulation.currentSimulationSnapshot,
     (state: RootState, props: { bodyName: string }) => props.bodyName,
   ],
   (
-    celestialBodyWrapperList: CelestialBodyWrapper[],
+    CelestialBodyPropertiesList: CelestialBodyProperties[],
     currentSimulationSnapshot: CelestialBody[],
     bodyName: string,
   ): CelestialBody | undefined => {
-    if (!celestialBodyWrapperList) return undefined;
+    if (!CelestialBodyPropertiesList) return undefined;
     // Find the celestial body wrapper that matches the provided bodyName.
-    const celestialBodyWrapper: CelestialBodyWrapper | undefined =
-      celestialBodyWrapperList.find(
-        (cb: CelestialBodyWrapper): boolean =>
+    const CelestialBodyProperties: CelestialBodyProperties | undefined =
+      CelestialBodyPropertiesList.find(
+        (cb: CelestialBodyProperties): boolean =>
           cb.name.trim().toLowerCase() === bodyName.trim().toLowerCase(),
       );
-    if (!celestialBodyWrapper) return undefined;
+    if (!CelestialBodyProperties) return undefined;
 
-    const orbitingBodyName: string = celestialBodyWrapper.orbitingBody;
+    const orbitingBodyName: string = CelestialBodyProperties.orbitingBody;
 
     return currentSimulationSnapshot.find(
       (body: CelestialBody): boolean =>
@@ -321,20 +341,20 @@ export const selectTotalTimeSteps = createSelector(
 export const selectBodyRadiusFromName = createSelector(
   [
     (state: RootState) =>
-      state.simulation.simulationParameters.celestialBodyWrapperList,
+      state.simulation.simulationParameters.CelestialBodyPropertiesList,
     (state: RootState, props: { bodyName: string }) => props.bodyName,
   ],
   (
-    celestialBodyWrapperList: CelestialBodyWrapper[],
+    CelestialBodyPropertiesList: CelestialBodyProperties[],
     bodyName: string,
   ): number | undefined => {
-    if (!celestialBodyWrapperList) return undefined;
-    const celestialBodyWrapper: CelestialBodyWrapper | undefined =
-      celestialBodyWrapperList.find(
-        (cb: CelestialBodyWrapper): boolean =>
+    if (!CelestialBodyPropertiesList) return undefined;
+    const CelestialBodyProperties: CelestialBodyProperties | undefined =
+      CelestialBodyPropertiesList.find(
+        (cb: CelestialBodyProperties): boolean =>
           cb.name.trim().toLowerCase() === bodyName.trim().toLowerCase(),
       );
-    return celestialBodyWrapper?.radius;
+    return CelestialBodyProperties?.radius;
   },
 );
 
@@ -350,8 +370,8 @@ export const selectIsBodyActive = (state: RootState) =>
 export const selectCurrentTimeStepIndex = (state: RootState) =>
   state.simulation.timeState.currentTimeStepIndex;
 
-export const selectCelestialBodyList = (state: RootState) =>
-  state.simulation.simulationParameters?.celestialBodyWrapperList;
+export const selectCelestialBodyPropertiesList = (state: RootState) =>
+  state.simulation.simulationParameters?.celestialBodyPropertiesList;
 
 export const selectIsPaused = (state: RootState) =>
   state.simulation.timeState.isPaused;

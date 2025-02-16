@@ -3,7 +3,9 @@ import { Html } from "@react-three/drei";
 import { useSelector } from "react-redux";
 import {
   CelestialBody,
+  CelestialBodyProperties,
   selectActiveBody,
+  selectCelestialBodyPropertiesList,
   selectCurrentSimulationSnapshot,
   selectIsBodyActive,
   Vector3Simple,
@@ -25,12 +27,12 @@ const PlanetInfoOverlay = () => {
   const simulationSnapshot: CelestialBody[] = useSelector(
     selectCurrentSimulationSnapshot,
   );
+  const celestialBodyPropertiesList: CelestialBodyProperties[] | undefined =
+    useSelector(selectCelestialBodyPropertiesList);
 
   let distanceFromOrbitingBody: string;
   let relativeVelocity: number;
   let position: number[];
-  let orbitingBodySnapshot: CelestialBody | undefined;
-  let activeBodySnapshot: CelestialBody | undefined;
 
   // do not shift this return earlier; React expects all hooks to run every render
   if (!activeBody || !isBodyActive) {
@@ -38,13 +40,19 @@ const PlanetInfoOverlay = () => {
   }
 
   // get the orbiting body and active body from single source of truth
-  const orbitingBodyName: string =
-    bodyProperties[activeBody.name.toUpperCase()].orbitingBody;
-  orbitingBodySnapshot = simulationSnapshot.find(
-    (body: CelestialBody) =>
-      body.name.trim().toUpperCase() === orbitingBodyName.trim().toUpperCase(),
-  );
-  activeBodySnapshot = simulationSnapshot.find(
+  const orbitingBodyName: string | undefined =
+    celestialBodyPropertiesList?.find(
+      (body: CelestialBodyProperties) =>
+        activeBody.name.trim().toUpperCase() === body.name.trim().toUpperCase(),
+    )?.orbitingBody;
+
+  const orbitingBodySnapshot: CelestialBody | undefined =
+    simulationSnapshot.find(
+      (body: CelestialBody) =>
+        body.name.trim().toUpperCase() ===
+        orbitingBodyName.trim().toUpperCase(),
+    );
+  const activeBodySnapshot: CelestialBody | undefined = simulationSnapshot.find(
     (body: CelestialBody) =>
       body.name.trim().toUpperCase() === activeBody.name.trim().toUpperCase(),
   );
