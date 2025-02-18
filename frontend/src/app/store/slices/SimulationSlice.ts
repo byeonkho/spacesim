@@ -54,7 +54,14 @@ export interface SimulationScale {
   name: string;
   positionScale: number;
   radiusScale: number;
-  EXCEPTION_BODIES_POSITION_SCALE: {};
+  EXCEPTION_BODIES_POSITION_SCALE: { [bodyName: string]: number };
+  GRID: {
+    SIZE: number;
+    SEGMENTS: number;
+  };
+  AXES: {
+    SIZE: number;
+  };
 }
 
 export interface SimulationParameters {
@@ -62,6 +69,7 @@ export interface SimulationParameters {
   simulationMetaData: SimulationMetadata | null;
   showGrid: boolean;
   showAxes: boolean;
+  showPlanetInfoOverlay: boolean;
   simulationScale: SimulationScale;
 }
 
@@ -85,7 +93,8 @@ const initialState: SimulationState = {
     simulationMetaData: null,
     showGrid: false,
     showAxes: false,
-    simulationScale: SimConstants.SCALE.SEMI_REALISTIC,
+    showPlanetInfoOverlay: false,
+    simulationScale: SimConstants.SCALE.SEMI_REALISTIC, // default scale
   },
   simulationData: null,
   timeState: {
@@ -108,15 +117,34 @@ export const simulationSlice = createSlice({
         ...action.payload,
       };
 
-      // merge runtime attributes with backend attributes to maintain a dynamic source of truth
-      if (state.simulationParameters) {
+      if (
+        state.simulationParameters &&
+        state.simulationParameters.celestialBodyPropertiesList
+      ) {
+        const exceptionMap =
+          state.simulationParameters.simulationScale
+            ?.EXCEPTION_BODIES_POSITION_SCALE || {};
+
         state.simulationParameters.celestialBodyPropertiesList =
           state.simulationParameters.celestialBodyPropertiesList.map(
             (body: CelestialBodyProperties): CelestialBodyProperties => {
-              // retrieve default mapped attributes from SimConstants
-              const defaults: BodyProperties =
-                bodyProperties[body.name.toUpperCase()];
-              return defaults ? { ...body, ...defaults } : body;
+              if (body.name) {
+                const upperName = body.name.trim().toUpperCase();
+                // Determine the new positionScale: if there's an exception, use it; otherwise, default to 1.
+                const newPositionScale =
+                  exceptionMap[upperName] !== undefined
+                    ? exceptionMap[upperName]
+                    : 1;
+                // look up default constants (e.g textures)
+                const defaults: BodyProperties = bodyProperties[upperName];
+                // Merge defaults into the body properties.
+                return {
+                  ...body,
+                  ...defaults,
+                  positionScale: newPositionScale,
+                };
+              }
+              return { ...body, positionScale: 1 };
             },
           );
       }
@@ -176,6 +204,12 @@ export const simulationSlice = createSlice({
       if (state.simulationData) {
         state.simulationParameters.showAxes =
           !state.simulationParameters.showAxes;
+      }
+    },
+    toggleShowPlanetInfoOverlay: (state) => {
+      if (state.simulationData) {
+        state.simulationParameters.showPlanetInfoOverlay =
+          !state.simulationParameters.showPlanetInfoOverlay;
       }
     },
 
@@ -392,16 +426,17 @@ export const selectDerivedOrbitingBody = createSelector(
     const CelestialBodyProperties: CelestialBodyProperties | undefined =
       CelestialBodyPropertiesList.find(
         (cb: CelestialBodyProperties): boolean =>
-          cb.name.trim().toLowerCase() === bodyName.trim().toLowerCase(),
+          cb.name?.trim().toLowerCase() === bodyName.trim().toLowerCase(),
       );
     if (!CelestialBodyProperties) return undefined;
 
-    const orbitingBodyName: string = CelestialBodyProperties.orbitingBody;
+    const orbitingBodyName: string | undefined =
+      CelestialBodyProperties.orbitingBody;
 
     return currentSimulationSnapshot.find(
       (body: CelestialBody): boolean =>
         body.name.trim().toLowerCase() ===
-        orbitingBodyName.trim().toLowerCase(),
+        orbitingBodyName?.trim().toLowerCase(),
     );
   },
 );
@@ -426,7 +461,7 @@ export const selectBodyRadiusFromName = createSelector(
     const CelestialBodyProperties: CelestialBodyProperties | undefined =
       CelestialBodyPropertiesList.find(
         (cb: CelestialBodyProperties): boolean =>
-          cb.name.trim().toLowerCase() === bodyName.trim().toLowerCase(),
+          cb.name?.trim().toLowerCase() === bodyName.trim().toLowerCase(),
       );
     return CelestialBodyProperties?.radius;
   },
@@ -437,6 +472,9 @@ export const selectShowGrid = (state: RootState) =>
 
 export const selectShowAxes = (state: RootState) =>
   state.simulation.simulationParameters.showAxes;
+
+export const selectShowPlanetInfoOverlay = (state: RootState) =>
+  state.simulation.simulationParameters.showPlanetInfoOverlay;
 
 export const selectSimulationScale = (state: RootState) =>
   state.simulation.simulationParameters.simulationScale;
@@ -478,6 +516,7 @@ export const {
   togglePause,
   toggleShowGrid,
   toggleShowAxes,
+  toggleShowPlanetInfoOverlay,
   deleteExcessData,
   setCurrentSimulationSnapshot,
   setIsUpdating,

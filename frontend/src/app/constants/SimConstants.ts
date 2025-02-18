@@ -21,6 +21,13 @@ const SimConstants = {
       EXCEPTION_BODIES_POSITION_SCALE: {
         MOON: 15,
       },
+      GRID: {
+        SIZE: 3650,
+        SEGMENTS: 100,
+      },
+      AXES: {
+        SIZE: 2000,
+      },
     },
     REALISTIC: {
       name: "Realistic",
@@ -29,18 +36,16 @@ const SimConstants = {
       EXCEPTION_BODIES_POSITION_SCALE: {
         MOON: 1,
       },
+      GRID: {
+        SIZE: 148250,
+        SEGMENTS: 100,
+      },
+      AXES: {
+        SIZE: 80000,
+      },
     },
   },
   // SCALE_FACTOR: MathConstants.METRES_TO_AU / 250, // larger divisors scale position up
-
-  //////// these are good values
-  // SCALE_FACTOR: 1_00_000_000, // larger values scale the system down
-  // RADIUS_SCALE_FACTOR: 18_000_000, // larger values scale radius down
-
-  /////// upper end - more realistic
-  // SCALE_FACTOR: 40_00_000_000, // larger values scale the system down
-  // RADIUS_SCALE_FACTOR: 100_000_000, // larger values scale radius down
-
   FPS: 60,
   MAX_TIMESTEPS: 30_000,
   TIMESTEP_CHUNK_SIZE: 10_000,
@@ -48,49 +53,38 @@ const SimConstants = {
 };
 
 export interface BodyProperties {
-  positionScale?: number;
   texture: StaticImageData;
 }
 
 export const bodyProperties: Record<string, BodyProperties> = {
   MERCURY: {
-    positionScale: 1,
     texture: MercuryTexture as StaticImageData,
   },
   VENUS: {
-    positionScale: 1,
     texture: VenusTexture as StaticImageData,
   },
   EARTH: {
-    positionScale: 1,
     texture: EarthTexture as StaticImageData,
   },
   MARS: {
-    positionScale: 1,
     texture: MarsTexture as StaticImageData,
   },
   JUPITER: {
-    positionScale: 1,
     texture: JupiterTexture as StaticImageData,
   },
   SATURN: {
-    positionScale: 1,
     texture: SaturnTexture as StaticImageData,
   },
   URANUS: {
-    positionScale: 1,
     texture: UranusTexture as StaticImageData,
   },
   NEPTUNE: {
-    positionScale: 1,
     texture: NeptuneTexture as StaticImageData,
   },
   MOON: {
-    positionScale: 15,
     texture: MoonTexture as StaticImageData,
   },
   SUN: {
-    positionScale: 1,
     texture: SunTexture as StaticImageData,
   },
   FALLBACK: {

@@ -27,16 +27,21 @@ import {
   SimulationScale,
   selectSimulationScale,
   CelestialBodyProperties,
+  selectShowPlanetInfoOverlay,
+  selectActiveBody,
 } from "@/app/store/slices/SimulationSlice";
 import { useTheme } from "@mui/material/styles";
-import PlanetInfoOverlay from "@/app/components/scene/PlanetInfoOverlay";
+import PlanetInfoOverlayActive from "@/app/components/scene/PlanetInfoOverlayActive";
 
 import { scaleDistance } from "@/app/utils/helpers";
+import PlanetInfoOverlayItem from "@/app/components/scene/PlanetInfoOverlayAll";
+import PlanetInfoOverlayAll from "@/app/components/scene/PlanetInfoOverlayAll";
 
 extend({ OrbitControls });
 
 const Scene = () => {
   const theme = useTheme();
+  const showPlanetInfoOverlay = useSelector(selectShowPlanetInfoOverlay);
   const dispatch = useDispatch();
   const celestialBodyPropertiesList = useSelector(
     selectCelestialBodyPropertiesList,
@@ -47,6 +52,7 @@ const Scene = () => {
   const simulationSnapshot: CelestialBody[] = useSelector(
     selectCurrentSimulationSnapshot,
   );
+  const activeBody: CelestialBody = useSelector(selectActiveBody);
 
   //////// SIM PARAMS ////////
   const showGrid: boolean = useSelector(selectShowGrid);
@@ -136,7 +142,7 @@ const Scene = () => {
 
   const checkDeleteExcessData = () => {
     if (timeStepKeys.length > SimConstants.MAX_TIMESTEPS) {
-      const excessCount = SimConstants.TIMESTEP_CHUNK_SIZE;
+      const excessCount: number = SimConstants.TIMESTEP_CHUNK_SIZE;
       const payload = {
         excessCount: excessCount,
         timeStepKeys: timeStepKeys,
@@ -184,9 +190,12 @@ const Scene = () => {
     >
       <Camera />
       <ambientLight intensity={Math.PI / 2} />
-      {showAxes && <axesHelper args={[10000]} />}
-      {showGrid && <gridHelper args={[10000, 1000]} />}
-
+      {showAxes && <axesHelper args={[simulationScale.AXES.SIZE]} />}
+      {showGrid && (
+        <gridHelper
+          args={[simulationScale.GRID.SIZE, simulationScale.GRID.SEGMENTS]}
+        />
+      )}
       {simulationSnapshot.map((body: CelestialBody) => {
         const radius: number = celestialBodyRadiusMap.get(body.name) ?? 1; // Default to 1 if not found
         let orbitingBody: CelestialBody | undefined;
@@ -244,7 +253,6 @@ const Scene = () => {
             position={
               orbitingBody
                 ? (() => {
-                    console.log("debug true");
                     const scaled: Vector3Simple = scaleDistance(
                       body.position,
                       orbitingBody.position,
@@ -270,7 +278,17 @@ const Scene = () => {
           />
         );
       })}
-      <PlanetInfoOverlay />
+      <PlanetInfoOverlayActive />
+      {/* Conditionally render overlays for all bodies except the active one */}
+      {showPlanetInfoOverlay &&
+        simulationSnapshot
+          .filter(
+            (body) =>
+              body.name.trim().toUpperCase() !==
+              activeBody.name.trim().toUpperCase(),
+          )
+          .map((body) => <PlanetInfoOverlayAll key={body.name} body={body} />)}
+      )
     </Canvas>
   );
 };

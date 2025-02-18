@@ -22,13 +22,10 @@ import Divider from "@mui/material/Divider";
 
 const TimeControls: React.FC = () => {
   const dispatch = useDispatch();
-  const currentTimeStepKey: string = useSelector(selectCurrentTimeStepKey);
-  const [datePart, timePart] = currentTimeStepKey.split("T");
-  const formattedTimeStepKey = `${datePart}  ${timePart || ""}`;
-  const currentTimeStepIndex = useSelector(selectCurrentTimeStepIndex);
-  const totalTimeSteps = useSelector(selectTotalTimeSteps);
+  const currentTimeStepIndex: number = useSelector(selectCurrentTimeStepIndex);
+  const totalTimeSteps: number = useSelector(selectTotalTimeSteps);
 
-  const progress =
+  const progress: number =
     totalTimeSteps > 1
       ? (currentTimeStepIndex / (totalTimeSteps - 1)) * 100
       : 0;
@@ -59,8 +56,7 @@ const TimeControls: React.FC = () => {
           // gap: 1,
         }}
       >
-        {/*<Divider sx={{ backgroundColor: "rgb(245,245,245)", my: 1 }} />*/}
-        <Typography variant="h2" sx={{ mb: 1 }}>
+        <Typography variant="h3" sx={{ mb: 1 }}>
           {speedMultiplier}x
         </Typography>
         <Box
@@ -95,9 +91,6 @@ const TimeControls: React.FC = () => {
           </IconButton>
         </Box>
         <Box sx={{ width: "80%", padding: 0 }}>
-          {/*<Typography variant="subtitle1" gutterBottom color="white">*/}
-          {/*  Simulation Progress: {Math.round(progress)}%*/}
-          {/*</Typography>*/}
           <LinearProgress variant="determinate" value={progress} />
         </Box>
       </CardContent>

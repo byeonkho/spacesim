@@ -7,16 +7,15 @@ import Box from "@mui/material/Box";
 const CurrentTimeStep = () => {
   const currentTimeStepKey: string = useSelector(selectCurrentTimeStepKey);
   const [datePart, timePart] = currentTimeStepKey.split("T");
-  const formattedTimeStepKey = `${datePart}  ${timePart || ""}`;
+  const formattedTimeStepKey: string = `${datePart}  ${timePart || ""}`;
 
   return (
     <Box>
       <Typography
-        variant="h3"
+        variant="h2"
         sx={{
-          // letterSpacing: 0.1,
           whiteSpace: "pre",
-          fontVariantNumeric: "tabular-nums",
+          fontVariantNumeric: "tabular-nums", // monospace numerals
         }}
       >
         {formattedTimeStepKey}

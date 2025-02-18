@@ -11,7 +11,7 @@ import TimeControls from "@/app/components/interface/controls/TimeControls";
 import CurrentTimeStepDisplay from "@/app/components/interface/CurrentTimeStepDisplay";
 import DevMetrics from "@/app/components/interface/drawer/components/DevMetrics";
 import UpdateModal from "@/app/components/interface/misc/UpdateModal";
-import PlanetInfoOverlay from "@/app/components/scene/PlanetInfoOverlay";
+import PlanetInfoOverlayActive from "@/app/components/scene/PlanetInfoOverlayActive";
 import BodySelector from "@/app/components/interface/misc/BodySelector";
 import CurrentTimeStep from "@/app/components/interface/misc/CurrentTimeStep";
 import ControlsContainer from "@/app/components/interface/controls/ControlsContainer";
@@ -19,9 +19,9 @@ import FadeNotification from "@/app/components/interface/misc/FadeNotification";
 import {
   selectShowAxes,
   selectShowGrid,
+  selectShowPlanetInfoOverlay,
   selectSimulationScale,
 } from "@/app/store/slices/SimulationSlice";
-import NotificationsContainer from "@/app/components/interface/misc/NotificationsContainer";
 
 const Layout: React.FC = () => {
   // Example: retrieving a session ID from Redux state
@@ -32,6 +32,7 @@ const Layout: React.FC = () => {
   const simulationScale = useSelector(selectSimulationScale);
   const showAxes = useSelector(selectShowAxes);
   const showGrid = useSelector(selectShowGrid);
+  const showPlanetInfoOverlay = useSelector(selectShowPlanetInfoOverlay);
 
   return (
     <Box
@@ -53,6 +54,7 @@ const Layout: React.FC = () => {
         <Box
           sx={{
             position: "absolute",
+            zIndex: 0,
             top: 0,
             left: 0,
             width: "100%",
@@ -69,12 +71,14 @@ const Layout: React.FC = () => {
             position: "absolute",
             top: 0,
             left: 0,
-            zIndex: 1, // Above the scene
+            zIndex: 1, // above the scene
             width: "100%",
             height: "100%",
             pointerEvents: "none",
           }}
         >
+          <ControlsContainer />
+          <UpdateModal />
           <Box
             sx={{
               pointerEvents: "auto",
@@ -91,8 +95,6 @@ const Layout: React.FC = () => {
             <MiniDrawer />
           </Box>
 
-          <ControlsContainer />
-          <UpdateModal />
           <Box>
             <FadeNotification
               key={simulationScale.name}
@@ -109,9 +111,13 @@ const Layout: React.FC = () => {
               message={`Grid: ${showGrid ? "On" : "Off"}`}
               trigger={showGrid}
             />
+            <FadeNotification
+              key={`overlay-${showPlanetInfoOverlay}`}
+              message={`Show all planets: ${showPlanetInfoOverlay ? "On" : "Off"}`}
+              trigger={showPlanetInfoOverlay}
+            />
           </Box>
 
-          {/* Time controls, progress bar */}
           <Box sx={{ position: "absolute", top: 20, right: 50 }}>
             <CurrentTimeStep />
           </Box>

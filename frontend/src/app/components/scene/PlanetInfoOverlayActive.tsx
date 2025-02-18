@@ -22,8 +22,10 @@ import {
   subtractVectors,
   toTitleCase,
 } from "@/app/utils/helpers";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
-const PlanetInfoOverlay = () => {
+const PlanetInfoOverlayActive = () => {
   const activeBody: CelestialBody = useSelector(selectActiveBody);
   const isBodyActive: boolean = useSelector(selectIsBodyActive);
   const simulationSnapshot: CelestialBody[] = useSelector(
@@ -119,7 +121,7 @@ const PlanetInfoOverlay = () => {
 
   return (
     <Html position={position} style={{ pointerEvents: "none" }}>
-      <div
+      <Box
         style={{
           position: "relative",
           width: totalWidth,
@@ -153,49 +155,43 @@ const PlanetInfoOverlay = () => {
         </svg>
 
         {/* Body name container: positioned above the horizontal line */}
-        <div
+        <Box
           style={{
             position: "absolute",
             left: diagonalLength * 1.5,
             bottom: totalHeight, // aligns with the horizontal line
             width: horizontalLength,
             textAlign: "left",
-            color: "white",
-            fontWeight: "bold",
-            // Optionally adjust font size as needed:
-            fontSize: "2em",
           }}
         >
-          {activeBody.name}
-        </div>
+          <Typography variant="h3"> {activeBody.name}</Typography>
+        </Box>
 
         {/* Velocity info container: positioned below the horizontal line */}
-        <div
+        <Box
           style={{
             position: "absolute",
             left: diagonalLength * 1.5,
             top: totalHeight, // starts at the horizontal line
             width: horizontalLength,
             textAlign: "left",
-            color: "white",
-            fontSize: "0.9em",
-            lineHeight: "1.2em",
           }}
         >
-          <p style={{ margin: "2px 0" }}>
+          <Typography variant="body2">
             {orbitingBodySnapshot?.name && (
               <>
-                Distance to {toTitleCase(orbitingBodySnapshot.name)}: {""}
+                Distance to {toTitleCase(orbitingBodySnapshot.name)}:{" "}
+                {distanceFromOrbitingBody}
               </>
             )}
-            {distanceFromOrbitingBody}
-          </p>
-          <p style={{ margin: "2px 0" }}>Relative Velocity:</p>
-          {formatToKM(relativeVelocity)}
-        </div>
-      </div>
+          </Typography>
+          <Typography variant="body2">
+            Relative Velocity: {formatToKM(relativeVelocity)}
+          </Typography>
+        </Box>
+      </Box>
     </Html>
   );
 };
 
-export default PlanetInfoOverlay;
+export default PlanetInfoOverlayActive;
