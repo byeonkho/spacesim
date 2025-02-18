@@ -13,9 +13,25 @@ import SunTexture from "../../../public/textures/sun_texture.jpg";
 import FallbackTexture from "../../../public/textures/earth_texture.jpg";
 
 const SimConstants = {
+  SCALE: {
+    SEMI_REALISTIC: {
+      name: "Semi-Realistic",
+      positionScale: 4_000_000_000, // larger values scale the system down
+      radiusScale: 100_000_000, // larger values scale radius down
+      EXCEPTION_BODIES_POSITION_SCALE: {
+        MOON: 15,
+      },
+    },
+    REALISTIC: {
+      name: "Realistic",
+      positionScale: 100_000_000, // larger values scale the system down
+      radiusScale: 100_000_000, // larger values scale radius down,
+      EXCEPTION_BODIES_POSITION_SCALE: {
+        MOON: 1,
+      },
+    },
+  },
   // SCALE_FACTOR: MathConstants.METRES_TO_AU / 250, // larger divisors scale position up
-  SCALE_FACTOR: 40_00_000_000, // larger values scale the system down
-  RADIUS_SCALE_FACTOR: 100_000_000, // larger values scale radius down
 
   //////// these are good values
   // SCALE_FACTOR: 1_00_000_000, // larger values scale the system down
@@ -70,7 +86,7 @@ export const bodyProperties: Record<string, BodyProperties> = {
     texture: NeptuneTexture as StaticImageData,
   },
   MOON: {
-    positionScale: 10,
+    positionScale: 15,
     texture: MoonTexture as StaticImageData,
   },
   SUN: {

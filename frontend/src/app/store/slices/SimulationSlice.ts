@@ -32,7 +32,6 @@ export interface CelestialBodyProperties {
   radius?: number;
   name?: string;
   orbitingBody?: string;
-  ///////////////
   positionScale?: number;
   texture?: StaticImageData;
 }
@@ -50,10 +49,20 @@ export interface SimulationData {
   [date: string]: CelestialBody[];
 }
 
+export interface SimulationScale {
+  // set in SimConstants
+  name: string;
+  positionScale: number;
+  radiusScale: number;
+  EXCEPTION_BODIES_POSITION_SCALE: {};
+}
+
 export interface SimulationParameters {
   celestialBodyPropertiesList: CelestialBodyProperties[] | null;
   simulationMetaData: SimulationMetadata | null;
   showGrid: boolean;
+  showAxes: boolean;
+  simulationScale: SimulationScale;
 }
 
 interface SimulationState {
@@ -75,6 +84,8 @@ const initialState: SimulationState = {
     celestialBodyPropertiesList: [],
     simulationMetaData: null,
     showGrid: false,
+    showAxes: false,
+    simulationScale: SimConstants.SCALE.SEMI_REALISTIC,
   },
   simulationData: null,
   timeState: {
@@ -92,7 +103,10 @@ export const simulationSlice = createSlice({
   initialState,
   reducers: {
     loadSimulation: (state, action: PayloadAction<SimulationParameters>) => {
-      state.simulationParameters = action.payload;
+      state.simulationParameters = {
+        ...state.simulationParameters,
+        ...action.payload,
+      };
 
       // merge runtime attributes with backend attributes to maintain a dynamic source of truth
       if (state.simulationParameters) {
@@ -109,6 +123,8 @@ export const simulationSlice = createSlice({
       console.log(
         "load sim: ",
         state.simulationParameters.celestialBodyPropertiesList,
+        "scale:",
+        state.simulationParameters.simulationScale,
       );
     },
 
@@ -151,9 +167,18 @@ export const simulationSlice = createSlice({
       state.timeState.isPaused = !state.timeState.isPaused;
     },
     toggleShowGrid: (state) => {
-      state.simulationParameters.showGrid =
-        !state.simulationParameters.showGrid;
+      if (state.simulationData) {
+        state.simulationParameters.showGrid =
+          !state.simulationParameters.showGrid;
+      }
     },
+    toggleShowAxes: (state) => {
+      if (state.simulationData) {
+        state.simulationParameters.showAxes =
+          !state.simulationParameters.showAxes;
+      }
+    },
+
     setCurrentSimulationSnapshot: (
       state,
       action: PayloadAction<CelestialBody[]>,
@@ -222,6 +247,55 @@ export const simulationSlice = createSlice({
     ) => {
       console.log("payload: ", action.payload);
       state.activeBodyState.isBodyActive = action.payload;
+    },
+    cycleSimulationScale: (state) => {
+      if (state.simulationParameters.simulationScale && state.simulationData) {
+        const currentScale = state.simulationParameters.simulationScale;
+        const scaleOptions: string[] = Object.keys(SimConstants.SCALE); //ES6 objects have defined insertion order
+        // for string keys
+
+        const currentIndex = scaleOptions.findIndex((key) => {
+          const preset = SimConstants.SCALE[key];
+          return (
+            preset.positionScale === currentScale.positionScale &&
+            preset.radiusScale === currentScale.radiusScale
+          );
+        });
+
+        const nextIndex: number = (currentIndex + 1) % scaleOptions.length;
+        const nextKey: string = scaleOptions[nextIndex];
+
+        state.simulationParameters.simulationScale =
+          SimConstants.SCALE[nextKey];
+
+        const exceptions =
+          state.simulationParameters.simulationScale
+            .EXCEPTION_BODIES_POSITION_SCALE;
+
+        // for exceptions (e.g Moon), map the custom position scale from SimConstants. we need to tweak the position
+        // scale here because otherwise we end up with cases like the moon being rendered in the earth, since the
+        // radius-position ratio is not aligned
+        if (
+          exceptions &&
+          state.simulationParameters.celestialBodyPropertiesList
+        ) {
+          state.simulationParameters.celestialBodyPropertiesList =
+            state.simulationParameters.celestialBodyPropertiesList.map(
+              (bodyProps) => {
+                if (
+                  bodyProps.name &&
+                  exceptions[bodyProps.name.toUpperCase()] !== undefined
+                ) {
+                  return {
+                    ...bodyProps,
+                    positionScale: exceptions[bodyProps.name.toUpperCase()],
+                  };
+                }
+                return bodyProps;
+              },
+            );
+        }
+      }
     },
   },
 });
@@ -361,6 +435,12 @@ export const selectBodyRadiusFromName = createSelector(
 export const selectShowGrid = (state: RootState) =>
   state.simulation.simulationParameters.showGrid;
 
+export const selectShowAxes = (state: RootState) =>
+  state.simulation.simulationParameters.showAxes;
+
+export const selectSimulationScale = (state: RootState) =>
+  state.simulation.simulationParameters.simulationScale;
+
 export const selectActiveBody = (state: RootState) =>
   state.simulation.activeBodyState.activeBody;
 
@@ -397,11 +477,13 @@ export const {
   updateDataReceived,
   togglePause,
   toggleShowGrid,
+  toggleShowAxes,
   deleteExcessData,
   setCurrentSimulationSnapshot,
   setIsUpdating,
   setCurrentTimeStepKey,
   setIsPaused,
+  cycleSimulationScale,
   setSpeedMultiplier,
   setCurrentTimeStepIndex,
   setActiveBody,

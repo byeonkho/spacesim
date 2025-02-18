@@ -8,6 +8,8 @@ import {
   selectCelestialBodyPropertiesList,
   selectCurrentSimulationSnapshot,
   selectIsBodyActive,
+  selectSimulationScale,
+  SimulationScale,
   Vector3Simple,
 } from "@/app/store/slices/SimulationSlice";
 import SimConstants, { bodyProperties } from "@/app/constants/SimConstants";
@@ -29,10 +31,12 @@ const PlanetInfoOverlay = () => {
   );
   const celestialBodyPropertiesList: CelestialBodyProperties[] | undefined =
     useSelector(selectCelestialBodyPropertiesList);
+  const simulationScale: SimulationScale = useSelector(selectSimulationScale);
 
   let distanceFromOrbitingBody: string;
   let relativeVelocity: number;
   let position: number[];
+  let activeBodyProperties: CelestialBodyProperties | undefined;
 
   // do not shift this return earlier; React expects all hooks to run every render
   if (!activeBody || !isBodyActive) {
@@ -43,7 +47,8 @@ const PlanetInfoOverlay = () => {
   const orbitingBodyName: string | undefined =
     celestialBodyPropertiesList?.find(
       (body: CelestialBodyProperties) =>
-        activeBody.name.trim().toUpperCase() === body.name.trim().toUpperCase(),
+        activeBody.name?.trim().toUpperCase() ===
+        body.name?.trim().toUpperCase(),
     )?.orbitingBody;
 
   const orbitingBodySnapshot: CelestialBody | undefined =
@@ -57,10 +62,18 @@ const PlanetInfoOverlay = () => {
       body.name.trim().toUpperCase() === activeBody.name.trim().toUpperCase(),
   );
 
-  // the coordinates we pass to Drei's Html component to transform 3d -> 2d; we anchor the UI element to
+  if (celestialBodyPropertiesList) {
+    activeBodyProperties = celestialBodyPropertiesList.find(
+      (bodyProperties: CelestialBodyProperties) =>
+        bodyProperties.name?.toUpperCase() ===
+        activeBodySnapshot.name.toUpperCase(),
+    );
+  }
+
+  // the coordinates to pass to Drei's Html component to transform 3d -> 2d; we anchor the UI element to
   // the derived position
   if (
-    bodyProperties[activeBody.name.toUpperCase()].positionScale != 1 &&
+    activeBodyProperties?.positionScale !== 1 &&
     activeBodySnapshot &&
     orbitingBodySnapshot
   ) {
@@ -68,21 +81,22 @@ const PlanetInfoOverlay = () => {
     const scaled: Vector3Simple = scaleDistance(
       activeBodySnapshot.position,
       orbitingBodySnapshot.position,
-      bodyProperties[activeBody.name.toUpperCase()].positionScale,
+      activeBodyProperties.positionScale,
     );
     position = [
-      scaled.x / SimConstants.SCALE_FACTOR,
-      scaled.y / SimConstants.SCALE_FACTOR,
-      scaled.z / SimConstants.SCALE_FACTOR,
+      scaled.x / simulationScale.positionScale,
+      scaled.y / simulationScale.positionScale,
+      scaled.z / simulationScale.positionScale,
     ];
   } else {
     position = [
-      activeBody.position.x / SimConstants.SCALE_FACTOR,
-      activeBody.position.y / SimConstants.SCALE_FACTOR,
-      activeBody.position.z / SimConstants.SCALE_FACTOR,
+      activeBody.position.x / simulationScale.positionScale,
+      activeBody.position.y / simulationScale.positionScale,
+      activeBody.position.z / simulationScale.positionScale,
     ];
   }
 
+  // derived distance and velocity info
   if (activeBodySnapshot && orbitingBodySnapshot) {
     distanceFromOrbitingBody = calculateDistance(
       activeBodySnapshot.position,
@@ -90,19 +104,17 @@ const PlanetInfoOverlay = () => {
       "AU", // TODO make this dynamic for future
     );
 
-    const velocityDelta = subtractVectors(
+    const velocityDelta: Vector3Simple = subtractVectors(
       activeBodySnapshot.velocity,
       orbitingBodySnapshot.velocity,
     );
     relativeVelocity = calculateMagnitude(velocityDelta);
   }
 
-  // Divider dimensions (in pixels)
+  // divider dimensions
   const diagonalLength: number = 20;
   const horizontalLength: number = 200;
-  // Total width is the length of the divider (diagonal plus horizontal)
   const totalWidth: number = diagonalLength + horizontalLength;
-  // Total height: we leave extra vertical space below the divider for the velocity info.
   const totalHeight: number = diagonalLength;
 
   return (

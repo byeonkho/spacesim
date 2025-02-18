@@ -15,6 +15,13 @@ import PlanetInfoOverlay from "@/app/components/scene/PlanetInfoOverlay";
 import BodySelector from "@/app/components/interface/misc/BodySelector";
 import CurrentTimeStep from "@/app/components/interface/misc/CurrentTimeStep";
 import ControlsContainer from "@/app/components/interface/controls/ControlsContainer";
+import FadeNotification from "@/app/components/interface/misc/FadeNotification";
+import {
+  selectShowAxes,
+  selectShowGrid,
+  selectSimulationScale,
+} from "@/app/store/slices/SimulationSlice";
+import NotificationsContainer from "@/app/components/interface/misc/NotificationsContainer";
 
 const Layout: React.FC = () => {
   // Example: retrieving a session ID from Redux state
@@ -22,6 +29,9 @@ const Layout: React.FC = () => {
     (state: RootState) =>
       state.simulation.simulationParameters.simulationMetaData?.sessionID,
   );
+  const simulationScale = useSelector(selectSimulationScale);
+  const showAxes = useSelector(selectShowAxes);
+  const showGrid = useSelector(selectShowGrid);
 
   return (
     <Box
@@ -83,6 +93,23 @@ const Layout: React.FC = () => {
 
           <ControlsContainer />
           <UpdateModal />
+          <Box>
+            <FadeNotification
+              key={simulationScale.name}
+              message={`Scale: ${simulationScale.name}`}
+              trigger={simulationScale}
+            />
+            <FadeNotification
+              key={`axes-${showAxes}`}
+              message={`Axes: ${showAxes ? "On" : "Off"}`}
+              trigger={showAxes}
+            />
+            <FadeNotification
+              key={`grid-${showGrid}`}
+              message={`Grid: ${showGrid ? "On" : "Off"}`}
+              trigger={showGrid}
+            />
+          </Box>
 
           {/* Time controls, progress bar */}
           <Box sx={{ position: "absolute", top: 20, right: 50 }}>

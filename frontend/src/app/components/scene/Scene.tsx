@@ -10,7 +10,6 @@ import SimConstants, { bodyProperties } from "@/app/constants/SimConstants";
 import * as THREE from "three";
 import {
   deleteExcessData,
-  selectCelestialBodyList,
   selectCurrentTimeStepIndex,
   selectIsPaused,
   selectCurrentSimulationSnapshot,
@@ -24,6 +23,10 @@ import {
   Vector3Simple,
   selectShowGrid,
   selectCelestialBodyPropertiesList,
+  selectShowAxes,
+  SimulationScale,
+  selectSimulationScale,
+  CelestialBodyProperties,
 } from "@/app/store/slices/SimulationSlice";
 import { useTheme } from "@mui/material/styles";
 import PlanetInfoOverlay from "@/app/components/scene/PlanetInfoOverlay";
@@ -44,16 +47,20 @@ const Scene = () => {
   const simulationSnapshot: CelestialBody[] = useSelector(
     selectCurrentSimulationSnapshot,
   );
+
+  //////// SIM PARAMS ////////
   const showGrid: boolean = useSelector(selectShowGrid);
+  const showAxes: boolean = useSelector(selectShowAxes);
   const isPaused: boolean = useSelector(selectIsPaused);
   const isBodyActive: boolean = useSelector(selectIsBodyActive);
   const speedMultiplier: number = useSelector(selectSpeedMultiplier);
   const currentTimeStepIndex: number = useSelector(selectCurrentTimeStepIndex);
+  const simulationScale: SimulationScale = useSelector(selectSimulationScale);
+
   const timeStepKeys = useSelector(selectTimeStepKeys);
   const totalTimeSteps: number = timeStepKeys.length;
 
-  // get radii of bodies; this is in a separate one-time useEffect because we only send the radius data in the initial
-  // REST response
+  // get derived radii of bodies from initial radius constants and scale to simulation parameter
   useEffect(() => {
     if (
       !celestialBodyPropertiesList ||
@@ -70,13 +77,13 @@ const Scene = () => {
       ) {
         celestialBodyRadiusMap.set(
           celestialBodyProperties.name,
-          celestialBodyProperties.radius / SimConstants.RADIUS_SCALE_FACTOR,
+          celestialBodyProperties.radius / simulationScale.radiusScale,
         );
       }
     }
 
     setCelestialBodyRadiusMap(celestialBodyRadiusMap);
-  }, [celestialBodyPropertiesList]);
+  }, [celestialBodyPropertiesList, simulationScale]);
 
   // main rendering loop
   useEffect(() => {
@@ -177,7 +184,7 @@ const Scene = () => {
     >
       <Camera />
       <ambientLight intensity={Math.PI / 2} />
-      <axesHelper args={[10000]} />
+      {showAxes && <axesHelper args={[10000]} />}
       {showGrid && <gridHelper args={[10000, 1000]} />}
 
       {simulationSnapshot.map((body: CelestialBody) => {
@@ -190,8 +197,8 @@ const Scene = () => {
               <pointLight
                 key="sun-light"
                 position={[body.position.x, body.position.y, body.position.z]}
-                intensity={SimConstants.SCALE_FACTOR * 0.0001} // adjust the intensity as needed
-                distance={SimConstants.SCALE_FACTOR} // adjust the distance so the light falls off
+                intensity={simulationScale.positionScale * 0.0001} // TODO adjust the intensity as needed
+                distance={simulationScale.positionScale} // TODO adjust the distance so the light falls off
                 // appropriately
                 color={0xffffff} // typically white light for the sun
               />
@@ -200,14 +207,14 @@ const Scene = () => {
                 name={body.name}
                 body={body}
                 position={[
-                  body.position.x / SimConstants.SCALE_FACTOR,
-                  body.position.y / SimConstants.SCALE_FACTOR,
-                  body.position.z / SimConstants.SCALE_FACTOR,
+                  body.position.x / simulationScale.positionScale,
+                  body.position.y / simulationScale.positionScale,
+                  body.position.z / simulationScale.positionScale,
                 ]}
                 radius={radius} // Pass radius to Sphere component
                 textureUrl={
                   bodyProperties[body.name.toUpperCase()]?.texture.src ||
-                  bodyProperties["FALLBACK"].texture.src
+                  bodyProperties["FALLBACK"].texture.src // TODO use slice state
                 }
               />
             </React.Fragment>
@@ -215,14 +222,18 @@ const Scene = () => {
         }
 
         // prepare orbitingBody if current body needs to be distance scaled
-        if (bodyProperties[body.name.toUpperCase()].positionScale !== 1) {
-          const orbitingBodyName: string =
-            bodyProperties[body.name.toUpperCase()].orbitingBody;
-          if (orbitingBodyName) {
-            orbitingBody = simulationSnapshot.find(
-              (b) => b.name.toUpperCase() === orbitingBodyName.toUpperCase(),
-            );
-          }
+        // TODO orbitingBody is misleading. parentBody instead?
+        const celestialBodyProperties = celestialBodyPropertiesList.find(
+          (bodyProperties: CelestialBodyProperties) =>
+            bodyProperties.name?.toUpperCase() === body.name.toUpperCase(),
+        );
+
+        if (celestialBodyProperties.positionScale != 1) {
+          orbitingBody = simulationSnapshot.find(
+            (body: CelestialBody) =>
+              body.name.toUpperCase() ===
+              celestialBodyProperties.orbitingBody.toUpperCase(),
+          );
         }
 
         return (
@@ -233,21 +244,22 @@ const Scene = () => {
             position={
               orbitingBody
                 ? (() => {
+                    console.log("debug true");
                     const scaled: Vector3Simple = scaleDistance(
                       body.position,
                       orbitingBody.position,
-                      bodyProperties[body.name.toUpperCase()].positionScale,
+                      celestialBodyProperties.positionScale,
                     );
                     return [
-                      scaled.x / SimConstants.SCALE_FACTOR,
-                      scaled.y / SimConstants.SCALE_FACTOR,
-                      scaled.z / SimConstants.SCALE_FACTOR,
+                      scaled.x / simulationScale.positionScale,
+                      scaled.y / simulationScale.positionScale,
+                      scaled.z / simulationScale.positionScale,
                     ] as [number, number, number];
                   })()
                 : [
-                    body.position.x / SimConstants.SCALE_FACTOR,
-                    body.position.y / SimConstants.SCALE_FACTOR,
-                    body.position.z / SimConstants.SCALE_FACTOR,
+                    body.position.x / simulationScale.positionScale,
+                    body.position.y / simulationScale.positionScale,
+                    body.position.z / simulationScale.positionScale,
                   ]
             }
             radius={radius} // Pass radius to Sphere component

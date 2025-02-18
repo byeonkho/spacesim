@@ -7,6 +7,8 @@ import {
   selectActiveBody,
   selectIsBodyActive,
   selectBodyRadiusFromName,
+  SimulationScale,
+  selectSimulationScale,
 } from "@/app/store/slices/SimulationSlice";
 import * as THREE from "three";
 import SimConstants from "@/app/constants/SimConstants";
@@ -19,6 +21,8 @@ const Camera: React.FC = () => {
   const controlsRef = useRef<OrbitControls>(null!);
   const activeBody: CelestialBody = useSelector(selectActiveBody);
   const isBodyActive: boolean = useSelector(selectIsBodyActive);
+  const simulationScale: SimulationScale = useSelector(selectSimulationScale);
+
   let radius: number | undefined;
 
   // Retrieve the active body's radius (if active) and scale it.
@@ -32,7 +36,7 @@ const Camera: React.FC = () => {
             ) => number
           )(state, { bodyName: activeBody.name })
         : undefined,
-    )! / SimConstants.RADIUS_SCALE_FACTOR;
+    )! / simulationScale.radiusScale;
 
   // A ref for the tracking zoom level, which can be adjusted by mouse scroll.
   const trackingZoomRef = useRef<number>(
@@ -42,6 +46,12 @@ const Camera: React.FC = () => {
           controlsRef.current?.target || new THREE.Vector3(),
         ),
   );
+
+  useEffect(() => {
+    camera.near = 0.1;
+    camera.far = 1e12; // set to your desired maximum render distance
+    camera.updateProjectionMatrix();
+  }, [camera]);
 
   // Listen for mouse wheel events to adjust the tracking zoom.
   useEffect(() => {
@@ -75,9 +85,9 @@ const Camera: React.FC = () => {
     if (isBodyActive && activeBody) {
       // 1. Compute the new target position based on the active body's scaled position.
       const newTarget = new THREE.Vector3(
-        activeBody.position.x / SimConstants.SCALE_FACTOR,
-        activeBody.position.y / SimConstants.SCALE_FACTOR,
-        activeBody.position.z / SimConstants.SCALE_FACTOR,
+        activeBody.position.x / simulationScale.positionScale,
+        activeBody.position.y / simulationScale.positionScale,
+        activeBody.position.z / simulationScale.positionScale,
       );
       // Smoothly update the OrbitControls target.
       controlsRef.current.target.lerp(newTarget, 0.01);

@@ -2,8 +2,8 @@
 1.0
 
 consider different textures (stylilized)
-adjust scale
-axes on / off
+adjust scale - moon oribt scale needs adjusting, create text fade animation, adjust grid scale
+toggle show all body info
 logic for non-first sim request -> let old sim continue existing, but return new sim
 Create interface for DTOs?
 web worker for decompression
@@ -23,6 +23,7 @@ Object.keys doesn't count duplicate keys - n > 1 iterations of data response are
 
 /////////
 
+2d minimap?
 planet rotation
 orbital path drawing
 Implement OpenAPI?
