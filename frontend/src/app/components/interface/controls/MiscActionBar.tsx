@@ -7,7 +7,6 @@ import SearchIcon from "@mui/icons-material/Search";
 import { useDispatch } from "react-redux";
 import {
   cycleSimulationScale,
-  setActiveBody,
   toggleShowAxes,
   toggleShowGrid,
   toggleShowPlanetInfoOverlay,

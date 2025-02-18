@@ -11,14 +11,12 @@ import {
 } from "@mui/material";
 import {
   selectCurrentTimeStepIndex,
-  selectCurrentTimeStepKey,
   selectTotalTimeSteps,
   setSpeedMultiplier,
   togglePause,
 } from "@/app/store/slices/SimulationSlice";
 import { FastForward, FastRewind, Pause, PlayArrow } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
-import Divider from "@mui/material/Divider";
 
 const TimeControls: React.FC = () => {
   const dispatch = useDispatch();

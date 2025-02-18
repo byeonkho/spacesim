@@ -2,15 +2,14 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/store/Store";
 import {
-  Box,
-  Typography,
+  Paper,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
+  Typography,
 } from "@mui/material";
 import theme from "@/muiTheme";
 import SimConstants from "@/app/constants/SimConstants";

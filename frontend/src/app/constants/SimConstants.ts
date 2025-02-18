@@ -1,8 +1,8 @@
-import MathConstants from "@/app/constants/MathConstants";
 import { StaticImageData } from "next/image";
 import MercuryTexture from "../../../public/textures/mercury_texture.jpg";
 import VenusTexture from "../../../public/textures/venus_texture.jpg";
 import EarthTexture from "../../../public/textures/earth_texture.jpg";
+import FallbackTexture from "../../../public/textures/earth_texture.jpg";
 import MarsTexture from "../../../public/textures/mars_texture.jpg";
 import JupiterTexture from "../../../public/textures/jupiter_texture.jpg";
 import SaturnTexture from "../../../public/textures/saturn_texture.jpg";
@@ -10,7 +10,6 @@ import UranusTexture from "../../../public/textures/uranus_texture.jpg";
 import NeptuneTexture from "../../../public/textures/neptune_texture.jpg";
 import MoonTexture from "../../../public/textures/moon_texture.jpg";
 import SunTexture from "../../../public/textures/sun_texture.jpg";
-import FallbackTexture from "../../../public/textures/earth_texture.jpg";
 
 const SimConstants = {
   SCALE: {

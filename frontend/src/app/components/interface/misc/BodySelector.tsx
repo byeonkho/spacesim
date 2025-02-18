@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import IconButton from "@mui/material/IconButton";
 import Box from "@mui/material/Box";
 import { useDispatch, useSelector } from "react-redux";

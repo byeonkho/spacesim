@@ -12,7 +12,6 @@ import {
   SimulationScale,
   Vector3Simple,
 } from "@/app/store/slices/SimulationSlice";
-import SimConstants, { bodyProperties } from "@/app/constants/SimConstants";
 
 import {
   calculateDistance,

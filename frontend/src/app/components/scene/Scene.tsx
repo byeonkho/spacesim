@@ -9,32 +9,31 @@ import { useDispatch, useSelector } from "react-redux";
 import SimConstants, { bodyProperties } from "@/app/constants/SimConstants";
 import * as THREE from "three";
 import {
+  CelestialBody,
+  CelestialBodyProperties,
   deleteExcessData,
-  selectCurrentTimeStepIndex,
-  selectIsPaused,
+  selectActiveBody,
+  selectCelestialBodyPropertiesList,
   selectCurrentSimulationSnapshot,
+  selectCurrentTimeStepIndex,
+  selectIsBodyActive,
+  selectIsPaused,
+  selectShowAxes,
+  selectShowGrid,
+  selectShowPlanetInfoOverlay,
+  selectSimulationScale,
   selectSpeedMultiplier,
   selectTimeStepKeys,
   setCurrentTimeStepIndex,
-  selectIsBodyActive,
-  updateActiveBody,
   setIsBodyActive,
-  CelestialBody,
-  Vector3Simple,
-  selectShowGrid,
-  selectCelestialBodyPropertiesList,
-  selectShowAxes,
   SimulationScale,
-  selectSimulationScale,
-  CelestialBodyProperties,
-  selectShowPlanetInfoOverlay,
-  selectActiveBody,
+  updateActiveBody,
+  Vector3Simple,
 } from "@/app/store/slices/SimulationSlice";
 import { useTheme } from "@mui/material/styles";
 import PlanetInfoOverlayActive from "@/app/components/scene/PlanetInfoOverlayActive";
 
 import { scaleDistance } from "@/app/utils/helpers";
-import PlanetInfoOverlayItem from "@/app/components/scene/PlanetInfoOverlayAll";
 import PlanetInfoOverlayAll from "@/app/components/scene/PlanetInfoOverlayAll";
 
 extend({ OrbitControls });

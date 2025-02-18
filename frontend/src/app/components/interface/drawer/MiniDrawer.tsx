@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { styled, useTheme, Theme, CSSObject } from "@mui/material/styles";
+import { CSSObject, styled, Theme, useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import MuiDrawer from "@mui/material/Drawer";
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
 import List from "@mui/material/List";
 import CssBaseline from "@mui/material/CssBaseline";
-import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -20,7 +17,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import InfoIcon from "@mui/icons-material/Info";
 import SimParams from "@/app/components/interface/drawer/components/SimParams";
 import InfoOverview from "@/app/components/interface/drawer/components/InfoOverview";
-import { Button, ClickAwayListener, Slide } from "@mui/material";
+import { ClickAwayListener, Slide } from "@mui/material";
 import { TransitionGroup } from "react-transition-group";
 import DevMetrics from "@/app/components/interface/drawer/components/DevMetrics";
 

@@ -5,13 +5,12 @@ import { useSelector } from "react-redux";
 import {
   CelestialBody,
   selectActiveBody,
-  selectIsBodyActive,
   selectBodyRadiusFromName,
-  SimulationScale,
+  selectIsBodyActive,
   selectSimulationScale,
+  SimulationScale,
 } from "@/app/store/slices/SimulationSlice";
 import * as THREE from "three";
-import SimConstants from "@/app/constants/SimConstants";
 import { RootState } from "@/app/store/Store";
 
 extend({ OrbitControls });

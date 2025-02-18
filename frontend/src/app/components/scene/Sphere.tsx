@@ -1,7 +1,7 @@
 import { MeshProps, useLoader } from "@react-three/fiber";
-import React, { useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "@/app/store/Store";
+import React, { useRef } from "react";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/app/store/Store";
 import {
   CelestialBody,
   setActiveBody,

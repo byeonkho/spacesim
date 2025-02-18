@@ -9,15 +9,7 @@ import {
 } from "@/app/store/slices/SimulationSlice";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/store/Store";
-import SimConstants, { bodyProperties } from "@/app/constants/SimConstants";
-import {
-  calculateDistance,
-  calculateMagnitude,
-  formatToKM,
-  scaleDistance,
-  subtractVectors,
-  toTitleCase,
-} from "@/app/utils/helpers";
+import { scaleDistance } from "@/app/utils/helpers";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 

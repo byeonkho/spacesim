@@ -1,17 +1,12 @@
 import React from "react";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/store/Store";
 
 // Import your components
 import Scene from "@/app/components/scene/Scene";
 import MiniDrawer from "@/app/components/interface/drawer/MiniDrawer";
-import ProgressBar from "@/app/components/interface/ProgressBar";
-import TimeControls from "@/app/components/interface/controls/TimeControls";
-import CurrentTimeStepDisplay from "@/app/components/interface/CurrentTimeStepDisplay";
-import DevMetrics from "@/app/components/interface/drawer/components/DevMetrics";
 import UpdateModal from "@/app/components/interface/misc/UpdateModal";
-import PlanetInfoOverlayActive from "@/app/components/scene/PlanetInfoOverlayActive";
 import BodySelector from "@/app/components/interface/misc/BodySelector";
 import CurrentTimeStep from "@/app/components/interface/misc/CurrentTimeStep";
 import ControlsContainer from "@/app/components/interface/controls/ControlsContainer";
