@@ -1,7 +1,6 @@
 /////////
 1.0
 
-consider different textures (stylilized)
 logic for non-first sim request -> let old sim continue existing, but return new sim
 Create interface for DTOs?
 web worker for decompression
@@ -17,11 +16,11 @@ docker, kubernetes deployment
 switch to fully websocket data flow?
 
 bugs
-activeBody doesnt exist before first click
 Object.keys doesn't count duplicate keys - n > 1 iterations of data response are size 9999 as a result
 
 /////////
 
+consider different textures (stylilized)
 2d minimap?
 planet rotation
 orbital path drawing

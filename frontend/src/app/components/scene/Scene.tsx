@@ -284,7 +284,7 @@ const Scene = () => {
           .filter(
             (body) =>
               body.name.trim().toUpperCase() !==
-              activeBody.name.trim().toUpperCase(),
+                activeBody?.name.trim().toUpperCase() || "",
           )
           .map((body) => <PlanetInfoOverlayAll key={body.name} body={body} />)}
       )
