@@ -21,11 +21,11 @@ const SimConstants = {
         MOON: 15,
       },
       GRID: {
-        SIZE: 3650,
+        SIZE: 3_650,
         SEGMENTS: 100,
       },
       AXES: {
-        SIZE: 2000,
+        SIZE: 2_000,
       },
     },
     REALISTIC: {
@@ -36,15 +36,14 @@ const SimConstants = {
         MOON: 1,
       },
       GRID: {
-        SIZE: 148250,
+        SIZE: 148_250,
         SEGMENTS: 100,
       },
       AXES: {
-        SIZE: 80000,
+        SIZE: 80_000,
       },
     },
   },
-  // SCALE_FACTOR: MathConstants.METRES_TO_AU / 250, // larger divisors scale position up
   FPS: 60,
   MAX_TIMESTEPS: 30_000,
   TIMESTEP_CHUNK_SIZE: 10_000,

@@ -29,7 +29,7 @@ const PlanetInfoOverlayAll: React.FC<PlanetInfoOverlayItemProps> = ({
   );
 
   // Prepare the body name for lookup
-  const bodyName = body.name.trim().toUpperCase();
+  const bodyName: string = body.name.trim().toUpperCase();
 
   // Look up the corresponding properties for this body.
   const properties = celestialBodyPropertiesList?.find(
@@ -46,7 +46,7 @@ const PlanetInfoOverlayAll: React.FC<PlanetInfoOverlayItemProps> = ({
   ) {
     // Find the orbiting body in the snapshot.
     const orbitingBody = simulationSnapshot.find(
-      (b) =>
+      (b: CelestialBody) =>
         b.name.trim().toUpperCase() ===
         properties.orbitingBody.trim().toUpperCase(),
     );
@@ -82,9 +82,7 @@ const PlanetInfoOverlayAll: React.FC<PlanetInfoOverlayItemProps> = ({
       <Box
         style={{
           background: "transparent",
-          // background: "rgba(0,0,0,0.5)",
-          padding: "4px 8px",
-          borderRadius: 4,
+          padding: "4px 8px", // TODO
         }}
       >
         <Typography style={{ color: "#fff", margin: 0 }}>

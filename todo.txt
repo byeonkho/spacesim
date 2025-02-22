@@ -17,6 +17,7 @@ docker, kubernetes deployment
 switch to fully websocket data flow?
 
 bugs
+activeBody doesnt exist before first click
 Object.keys doesn't count duplicate keys - n > 1 iterations of data response are size 9999 as a result
 
 /////////
