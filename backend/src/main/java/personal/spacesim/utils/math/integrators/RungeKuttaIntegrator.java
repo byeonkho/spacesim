@@ -12,6 +12,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import personal.spacesim.constants.PhysicsConstants;
+import personal.spacesim.simulation.body.CelestialBodySnapshot;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
 
 public class RungeKuttaIntegrator implements Integrator {
@@ -46,5 +47,16 @@ public class RungeKuttaIntegrator implements Integrator {
 
         body.setPosition(finalPV.getPosition());
         body.setVelocity(finalPV.getVelocity());
+    }
+
+    @Override
+    public CelestialBodySnapshot getDelta(
+            CelestialBodyWrapper body,
+            Vector3D totalForce,
+            double deltaTimeSeconds,
+            AbsoluteDate currentDate,
+            Frame frame
+    ) {
+        return null;
     }
 }

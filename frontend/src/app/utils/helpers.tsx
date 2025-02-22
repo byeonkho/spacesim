@@ -1,4 +1,7 @@
-import { Vector3Simple } from "@/app/store/slices/SimulationSlice";
+import {
+  CelestialBody,
+  Vector3Simple,
+} from "@/app/store/slices/SimulationSlice";
 import MathConstants from "@/app/constants/MathConstants";
 import * as THREE from "three";
 
@@ -90,6 +93,28 @@ export function scaleDistance(
   return toSimple(newPosition);
 }
 
+export function addDelta(
+  previousBody: CelestialBody,
+  deltaBody: CelestialBody,
+): CelestialBody {
+  const bodyName: string = deltaBody.name;
+  const newPosition: Vector3Simple = {
+    x: previousBody.position.x + deltaBody.position.x,
+    y: previousBody.position.y + deltaBody.position.y,
+    z: previousBody.position.z + deltaBody.position.z,
+  };
+  const newVelocity: Vector3Simple = {
+    x: previousBody.velocity.x + deltaBody.velocity.x,
+    y: previousBody.velocity.y + deltaBody.velocity.y,
+    z: previousBody.velocity.z + deltaBody.velocity.z,
+  };
+
+  return {
+    name: bodyName,
+    position: newPosition,
+    velocity: newVelocity,
+  };
+}
 // Convert a simple vector to a THREE.Vector3.
 const toTHREE = (v: Vector3Simple): THREE.Vector3 =>
   new THREE.Vector3(v.x, v.y, v.z);

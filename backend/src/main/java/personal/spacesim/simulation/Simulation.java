@@ -73,6 +73,35 @@
             }
         }
 
+        private List<CelestialBodySnapshot> updateDelta() {
+            double deltaTimeSeconds = convertTimeStep(timeStepUnit);
+
+            simCurrentDate = simCurrentDate.shiftedBy(deltaTimeSeconds);
+
+            List<CelestialBodySnapshot> deltaSnapshotList = new ArrayList<>();
+
+            CelestialBodySnapshot dummySunSnapshot = new CelestialBodySnapshot();
+
+            dummySunSnapshot.setName("Sun");
+            dummySunSnapshot.setVelocity(new Vector3D(0,0,0));
+            dummySunSnapshot.setPosition(new Vector3D(0,0,0));
+
+            deltaSnapshotList.add(dummySunSnapshot);
+
+            for (CelestialBodyWrapper body : celestialBodies) {
+                if (body.getName().equalsIgnoreCase(("sun"))) {
+                    continue; // Skip the Sun for simplicity. // TODO future refactor for more accurate modelling?
+                }
+                Vector3D totalForce = computeTotalForce(body);
+
+                // mutates the state (pos, vel) of all objects in the celestialBodies array
+                deltaSnapshotList.add(integrator.getDelta(body, totalForce, deltaTimeSeconds,
+                                                           simCurrentDate, frame));
+            }
+
+            return deltaSnapshotList;
+        }
+
         private Vector3D computeTotalForce(CelestialBodyWrapper body) {
             Vector3D totalForce = new Vector3D(0, 0, 0);
             for (CelestialBodyWrapper otherBody : celestialBodies) {
@@ -93,8 +122,8 @@
                 if (currentTimeStep == 0) {
                     results.put(simStartDate, snapshotCelestialBodies(celestialBodies));
                 } else {
-                    update();
-                    results.put(simCurrentDate, snapshotCelestialBodies(celestialBodies));
+                    List<CelestialBodySnapshot> deltaSnapshotList = updateDelta();
+                    results.put(simCurrentDate, deltaSnapshotList);
                 }
                 currentTimeStep ++;
             }

@@ -1,8 +1,10 @@
 import { Action, Dispatch, Middleware, MiddlewareAPI } from "redux";
 import {
+  CelestialBody,
   selectCurrentTimeStepIndex,
   setCurrentTimeStepIndex,
   setIsUpdating,
+  SimulationData,
   updateDataReceived,
 } from "@/app/store/slices/SimulationSlice";
 import {
@@ -12,6 +14,8 @@ import {
   setRequestInProgress,
 } from "@/app/store/slices/WebSocketSlice";
 import { ZSTDDecoder } from "zstddec";
+import List from "@mui/material/List";
+import { addDelta } from "@/app/utils/helpers";
 
 interface ConnectAction {
   type: "webSocket/connect";
@@ -97,11 +101,23 @@ export const webSocketMiddleware: Middleware =
                 decompressedArray,
               );
 
-              const messageData = JSON.parse(decompressedString);
+              const message = JSON.parse(decompressedString);
 
-              if (messageData.messageType === "SIM_DATA") {
+              console.log("delta response received: ", message);
+
+              const derivedData: SimulationData = {};
+
+              for (let i = 0; i < message.data.size(); i++) {
+                if (i == 0) {
+                  derivedData.push(deltaData[i]);
+                } else {
+                  derivedData.push(addDelta(derivedData[i - 1], deltaData[i]));
+                }
+              }
+
+              if (message.messageType === "SIM_DATA") {
                 store.dispatch(setRequestInProgress(false));
-                store.dispatch(updateDataReceived({ data: messageData.data }));
+                store.dispatch(updateDataReceived({ data: derivedData.data }));
 
                 //  trigger first rendering iteration via simulationSnapshot side effect
                 // of this dispatch
@@ -112,7 +128,7 @@ export const webSocketMiddleware: Middleware =
                 }
               } else {
                 console.warn(
-                  `Unhandled binary message type: ${messageData.messageType}`,
+                  `Unhandled binary message type: ${message.messageType}`,
                 );
               }
             }
