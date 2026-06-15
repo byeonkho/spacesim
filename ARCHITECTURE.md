@@ -185,6 +185,13 @@ This split lets each protocol do what it's actually good at: HTTP for bulk + cac
 - **Compute is server-side** in Java rather than browser-side WASM. This trades client autonomy for accuracy and access to Orekit's astrodynamics tooling (JPL ephemerides, real reference frames, validated integrators).
 - **Wire format is custom binary** rather than a schema-driven protocol like MessagePack or protobuf. The shape is uniform numeric data (positions + velocities), so a flat little-endian layout compresses well under zstd and is trivial to write/parse on both ends. Schema-driven formats would add tooling overhead without measurable wins for this payload shape.
 
+### Examined, not problems
+
+Two issues that look plausible on a code read but were checked during review and found not to bite, recorded so a later review does not rediscover them as new:
+
+- **Idle eviction's `CompletableFuture.cancel(true)` does not interrupt a running precompute task.** True in the abstract (it cannot interrupt a `supplyAsync` supplier that is already executing), but the only place a session is cancelled is the idle sweep, which fires after 15 minutes of inactivity, so there is no live computation left to orphan. No production path cancels a session with work in flight.
+- **Dev-mode Redux `immutableCheck` walking the multi-million-element chunk buffer on every dispatch.** The buffer's typed arrays do sit in Redux state with only `serializableCheck` disabled, but the check does not impose the claimed per-dispatch cost in practice (verified by reading the installed middleware and by direct measurement), and `immutableCheck` is development-only, stripped from production builds, regardless.
+
 ## Tech choices
 
 | Layer | Choice | Why |
