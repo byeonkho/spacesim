@@ -16,11 +16,12 @@ import {
 import { readBodyPositionInto, type ChunkBuffer } from "@/app/store/chunkBuffer";
 import * as THREE from "three";
 import { RootState } from "@/app/store/Store";
-import { useDevSettings } from "@/app/dev/devSettingsStore";
+import { getDevSettings, useDevSettings } from "@/app/dev/devSettingsStore";
 import { setBodyWorldPositionWithPreset } from "@/app/utils/coordinates";
 import { writePivotInto } from "@/app/utils/framePivot";
 import { worldRadius, worldDistanceFromParent, ScalePreset } from "@/app/utils/scalePipeline";
 import SimConstants from "@/app/constants/SimConstants";
+import { autoOrbitSpeed, AUTO_ORBIT_RAMP_MS } from "@/app/utils/autoOrbit";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Snap-to-anchor camera model. See pre-buffer version of this file for the
@@ -143,6 +144,10 @@ const Camera: React.FC = () => {
 
   const minDistanceRef = useRef<number>(0);
   const tweenRef = useRef<TweenState | null>(null);
+  // Timestamp (performance.now()) of the last user input. Stamped by passive
+  // listeners below; read each frame to decide whether to auto-orbit. Seeded
+  // to "now" on mount so a freshly loaded page does not orbit immediately.
+  const lastActivityRef = useRef<number>(0);
 
   const pivotScratch = useRef<Vector3Simple>({ x: 0, y: 0, z: 0 });
   const shiftedScratch = useRef<Vector3Simple>({ x: 0, y: 0, z: 0 });
@@ -206,6 +211,39 @@ const Camera: React.FC = () => {
     camera.updateProjectionMatrix();
   }, [camera]);
   /* eslint-enable react-hooks/immutability */
+
+  // Cinematic auto-orbit idle tracking. Passive listeners stamp the last-input
+  // time (same activity set as the playback gate); the useFrame loop reads it.
+  // Decoupled from the playback gate's 10-minute idle pause: different
+  // threshold, different concern. See autoOrbit.ts.
+  useEffect(() => {
+    lastActivityRef.current = performance.now();
+    const stamp = () => {
+      lastActivityRef.current = performance.now();
+    };
+    const onVisibility = () => {
+      // Returning to a backgrounded tab counts as activity, so a stale
+      // timestamp does not orbit the instant the tab becomes visible again.
+      if (!document.hidden) lastActivityRef.current = performance.now();
+    };
+    const events = [
+      "pointerdown",
+      "pointermove",
+      "keydown",
+      "wheel",
+      "touchstart",
+    ] as const;
+    for (const evt of events) {
+      window.addEventListener(evt, stamp, { passive: true });
+    }
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      for (const evt of events) {
+        window.removeEventListener(evt, stamp);
+      }
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, []);
 
   useEffect(() => {
     if (!controlsRef.current) return;
@@ -286,6 +324,24 @@ const Camera: React.FC = () => {
   useFrame(() => {
     const controls = controlsRef.current;
     if (!controls) return;
+
+    // Cinematic auto-orbit: when idle, spin OrbitControls around its current
+    // target (focused body, or system center). Read tunables via
+    // getDevSettings() so live slider changes apply without a rerender, and
+    // the per-frame read stays allocation-free. three.js only applies
+    // autoRotate when not mid-gesture (state === NONE), so this never fights
+    // an active drag or zoom. update() (called in every branch below) consumes
+    // these two fields.
+    const dev = getDevSettings();
+    const orbitSpeed = autoOrbitSpeed({
+      now: performance.now(),
+      lastActivityAt: lastActivityRef.current,
+      idleMs: dev.autoOrbitIdleSeconds * 1000,
+      rampMs: AUTO_ORBIT_RAMP_MS,
+      targetSpeed: dev.autoOrbitSpeed,
+    });
+    controls.autoRotate = orbitSpeed > 0;
+    controls.autoRotateSpeed = orbitSpeed;
 
     if (!isBodyActive || !activeBodyNameUpper) {
       controls.update();
