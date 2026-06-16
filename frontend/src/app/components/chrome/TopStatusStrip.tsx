@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector, useStore } from "react-redux";
 import {
   selectCurrentTimeStepIndex,
@@ -17,6 +17,7 @@ import { FpsValue } from "@/app/components/chrome/FpsValue";
 import { SimSetupButton } from "@/app/components/chrome/SimSetupButton";
 import { ConfigurationChip } from "@/app/components/chrome/ConfigurationChip";
 import { InfoTooltip } from "@/app/components/chrome/InfoTooltip";
+import { AboutPopover } from "@/app/components/chrome/AboutPopover";
 import { readDeltaERelativeAt } from "@/app/store/chunkBuffer";
 import { formatDeltaE } from "@/app/utils/helpers";
 import { RESIDUAL_CONCEPT_COPY } from "@/app/constants/residualTooltipCopy";
@@ -147,6 +148,10 @@ export function TopStatusStrip({
   // set on submit, persisted across chunk fetches, never re-cleared.
   const showPulse = lastReq === null;
 
+  // About popover — local open state, no Redux (self-contained chrome).
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const aboutBtnRef = useRef<HTMLButtonElement>(null);
+
   return (
     <div
       className="glass pointer-events-auto absolute top-[18px] right-6 left-6 flex h-[46px] items-stretch overflow-hidden p-0"
@@ -217,6 +222,39 @@ export function TopStatusStrip({
           <path d="M12 17h.01" />
         </svg>
       </button>
+
+      <button
+        ref={aboutBtnRef}
+        type="button"
+        aria-label="About nbodysim"
+        aria-haspopup="dialog"
+        aria-expanded={aboutOpen}
+        onClick={() => setAboutOpen((v) => !v)}
+        className={`flex h-full items-center border-l border-white/[0.06] px-3.5 transition-colors ${
+          aboutOpen ? "text-accent bg-accent/[0.14]" : "text-dim hover:text-hi"
+        }`}
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 16v-4M12 8h.01" />
+        </svg>
+      </button>
+
+      <AboutPopover
+        open={aboutOpen}
+        anchorRef={aboutBtnRef}
+        onClose={() => setAboutOpen(false)}
+      />
     </div>
   );
 }
