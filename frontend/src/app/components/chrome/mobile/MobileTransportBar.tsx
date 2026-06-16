@@ -66,9 +66,10 @@ export function MobileTransportBar() {
           }}
         />
       </div>
-      {/* Transport controls centered as a group, speed pinned to the right
-          edge so the play button stays thumb-centered. */}
-      <div className="relative flex items-center justify-center gap-3">
+      {/* Transport buttons centered with the speed readout tucked just to
+          their right, so the whole cluster (controls + speed) reads as one
+          group rather than the speed floating off at the screen edge. */}
+      <div className="flex items-center justify-center gap-3">
         <button
           aria-label="slow down"
           className="grid h-11 w-11 place-items-center rounded-full border border-white/[0.06] text-dim transition-colors hover:bg-white/[0.04] hover:text-hi"
@@ -90,7 +91,7 @@ export function MobileTransportBar() {
         >
           &#8811;
         </button>
-        <span className="absolute right-0 top-1/2 -translate-y-1/2 text-xs">
+        <span className="text-xs">
           <span className="tabular font-mono text-hi">{formatSpeed(speed)}</span>
           <span className="text-dim">&#215;</span>
         </span>
