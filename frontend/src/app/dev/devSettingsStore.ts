@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { AUTO_ORBIT_IDLE_MS, AUTO_ORBIT_SPEED } from "@/app/utils/autoOrbit";
 
 /**
  * Dev-only tunables exposed to the floating <DevToolbar />. Lives outside
@@ -22,6 +23,17 @@ export interface DevSettings {
   zoomSensitivity: number;
   /** OrbitControls dampingFactor — smaller = more damping. */
   orbitDampingFactor: number;
+  /**
+   * Seconds of no user input before the cinematic auto-orbit begins. See
+   * autoOrbit.ts. Canonical default is AUTO_ORBIT_IDLE_MS / 1000.
+   */
+  autoOrbitIdleSeconds: number;
+  /**
+   * OrbitControls autoRotateSpeed target for the cinematic auto-orbit once
+   * fully ramped. three.js default is 2.0; we run slower. Canonical default
+   * is AUTO_ORBIT_SPEED.
+   */
+  autoOrbitSpeed: number;
   /**
    * Per-frame lerp factor used in body-tracking mode for the radial
    * (zoom) component of the camera position. Higher = snappier zoom
@@ -78,6 +90,8 @@ export interface DevSettings {
 const DEFAULTS: DevSettings = {
   zoomSensitivity: 0.001,
   orbitDampingFactor: 0.01,
+  autoOrbitIdleSeconds: AUTO_ORBIT_IDLE_MS / 1000,
+  autoOrbitSpeed: AUTO_ORBIT_SPEED,
   cameraZoomLerpRate: 0.1,
   trailLength: 1000,
   skyboxVariant: "full",

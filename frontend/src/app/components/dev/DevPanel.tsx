@@ -135,6 +135,24 @@ function Tunables() {
         format={(v) => v.toFixed(3)}
       />
       <DevSlider
+        label="Auto-orbit idle (s)"
+        valueKey="autoOrbitIdleSeconds"
+        value={settings.autoOrbitIdleSeconds}
+        min={2}
+        max={120}
+        step={1}
+        format={(v) => `${v.toFixed(0)}s`}
+      />
+      <DevSlider
+        label="Auto-orbit speed"
+        valueKey="autoOrbitSpeed"
+        value={settings.autoOrbitSpeed}
+        min={0}
+        max={2}
+        step={0.05}
+        format={(v) => v.toFixed(2)}
+      />
+      <DevSlider
         label="Tracking zoom lerp"
         valueKey="cameraZoomLerpRate"
         value={settings.cameraZoomLerpRate}
