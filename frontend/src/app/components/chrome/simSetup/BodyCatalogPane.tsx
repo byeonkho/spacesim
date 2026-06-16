@@ -225,7 +225,7 @@ export function BodyCatalogPane({
               onSetMany(ALL_MOONS, masterState(ALL_MOONS, selected) !== "on")
             }
           >
-            <div className="grid grid-cols-3 items-start gap-2.5">
+            <div className="grid grid-cols-1 items-start gap-2.5 xl:grid-cols-3">
               {MOON_PARENT_ORDER.map((parent) => (
                 <MoonParentCard
                   key={parent}
@@ -299,8 +299,11 @@ export function BodyCatalogPane({
   );
 }
 
+// Two columns on the narrow mobile sheet, three on the wide desktop modal.
+// The xl breakpoint (1280px) is exactly the app's mobile/desktop split, so the
+// modal (only ever rendered >=1280) keeps three columns untouched.
 function Grid({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-3 gap-2">{children}</div>;
+  return <div className="grid grid-cols-2 gap-2 xl:grid-cols-3">{children}</div>;
 }
 
 function Section({
