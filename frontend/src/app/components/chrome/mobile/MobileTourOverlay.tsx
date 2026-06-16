@@ -9,6 +9,7 @@ import {
   MOBILE_TOUR_STEPS,
   MOBILE_TOUR_SEEN_KEY,
 } from "@/app/constants/mobileTourSteps";
+import { MOBILE_DOCK_CLEARANCE } from "@/app/constants/mobileLayout";
 import { MobileTourCard } from "./MobileTourCard";
 
 // Scene dim for welcome/done and for the build spotlight. Kept light so the
@@ -120,7 +121,7 @@ export function MobileTourOverlay({ buildSheetOpen }: { buildSheetOpen: boolean 
   } else if (step.placement === "bottom") {
     cardWrap = {
       left: "50%",
-      bottom: "calc(env(safe-area-inset-bottom, 0px) + 112px)",
+      bottom: MOBILE_DOCK_CLEARANCE,
       transform: "translateX(-50%)",
     };
   } else {

@@ -187,9 +187,10 @@ export function MobileControlSheet({
         aria-label={expanded ? "Collapse controls" : "Expand controls"}
         aria-expanded={expanded}
         onClick={toggleExpanded}
-        // Fixed 30px: matches the old grab-handle's height exactly so the
-        // collapsed peek's transport bar (in the fixed 96px sheet) is not pushed
-        // down and clipped. The taller chevron box must not change this height.
+        // Fixed 30px: the chevron row's contribution to the collapsed dock
+        // height. That collapsed height (chevron + transport bar + bottom inset)
+        // is the contract other bottom surfaces clear via MOBILE_DOCK_CLEARANCE;
+        // changing this height means updating that constant too.
         className="flex h-[30px] w-full shrink-0 items-center justify-center"
       >
         {/* A chevron, not a drag grab-handle: this sheet toggles on tap. Points
