@@ -145,10 +145,11 @@ const Camera: React.FC = () => {
   const minDistanceRef = useRef<number>(0);
   const tweenRef = useRef<TweenState | null>(null);
   // Timestamp (performance.now()) of the last user input. Stamped by passive
-  // listeners below; read each frame to decide whether to auto-orbit.
-  // Initialized to now at construction so a freshly loaded page does not orbit
-  // immediately.
-  const lastActivityRef = useRef<number>(performance.now());
+  // listeners below; read each frame to decide whether to auto-orbit. Seeded to
+  // "now" in the mount effect rather than here, because performance.now() is
+  // impure and the lint rules forbid calling it during render; the effect runs
+  // before the first frame can orbit, so a freshly loaded page stays still.
+  const lastActivityRef = useRef<number>(0);
 
   const pivotScratch = useRef<Vector3Simple>({ x: 0, y: 0, z: 0 });
   const shiftedScratch = useRef<Vector3Simple>({ x: 0, y: 0, z: 0 });
@@ -218,6 +219,7 @@ const Camera: React.FC = () => {
   // Decoupled from the playback gate's 10-minute idle pause: different
   // threshold, different concern. See autoOrbit.ts.
   useEffect(() => {
+    lastActivityRef.current = performance.now();
     const stamp = () => {
       lastActivityRef.current = performance.now();
     };
