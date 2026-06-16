@@ -66,35 +66,38 @@ export function MobileTransportBar() {
           }}
         />
       </div>
-      {/* Transport buttons centered with the speed readout tucked just to
-          their right, so the whole cluster (controls + speed) reads as one
-          group rather than the speed floating off at the screen edge. */}
-      <div className="flex items-center justify-center gap-3">
-        <button
-          aria-label="slow down"
-          className="grid h-11 w-11 place-items-center rounded-full border border-white/[0.06] text-dim transition-colors hover:bg-white/[0.04] hover:text-hi"
-          onClick={() => dispatch(setSpeedMultiplier("decrease"))}
-        >
-          &#8810;
-        </button>
-        <button
-          aria-label={isPaused ? "play" : "pause"}
-          className="grid h-12 w-12 place-items-center rounded-full bg-accent text-bg"
-          onClick={() => dispatch(togglePause())}
-        >
-          {isPaused ? "▶" : "❚❚"}
-        </button>
-        <button
-          aria-label="speed up"
-          className="grid h-11 w-11 place-items-center rounded-full border border-white/[0.06] text-dim transition-colors hover:bg-white/[0.04] hover:text-hi"
-          onClick={() => dispatch(setSpeedMultiplier("increase"))}
-        >
-          &#8811;
-        </button>
-        <span className="text-xs">
-          <span className="tabular font-mono text-hi">{formatSpeed(speed)}</span>
-          <span className="text-dim">&#215;</span>
-        </span>
+      {/* The buttons are centered as their own group so the play button always
+          lands dead-center of the bar, independent of the speed readout. The
+          speed floats just past the last button (absolute, out of the centering
+          flow) so it sits beside the controls without shifting them off-center. */}
+      <div className="flex items-center justify-center">
+        <div className="relative flex items-center gap-3">
+          <button
+            aria-label="slow down"
+            className="grid h-11 w-11 place-items-center rounded-full border border-white/[0.06] text-dim transition-colors hover:bg-white/[0.04] hover:text-hi"
+            onClick={() => dispatch(setSpeedMultiplier("decrease"))}
+          >
+            &#8810;
+          </button>
+          <button
+            aria-label={isPaused ? "play" : "pause"}
+            className="grid h-12 w-12 place-items-center rounded-full bg-accent text-bg"
+            onClick={() => dispatch(togglePause())}
+          >
+            {isPaused ? "▶" : "❚❚"}
+          </button>
+          <button
+            aria-label="speed up"
+            className="grid h-11 w-11 place-items-center rounded-full border border-white/[0.06] text-dim transition-colors hover:bg-white/[0.04] hover:text-hi"
+            onClick={() => dispatch(setSpeedMultiplier("increase"))}
+          >
+            &#8811;
+          </button>
+          <span className="absolute left-full top-1/2 ml-3 -translate-y-1/2 text-xs whitespace-nowrap">
+            <span className="tabular font-mono text-hi">{formatSpeed(speed)}</span>
+            <span className="text-dim">&#215;</span>
+          </span>
+        </div>
       </div>
     </div>
   );
