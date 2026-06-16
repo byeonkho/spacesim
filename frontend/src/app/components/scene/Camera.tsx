@@ -145,9 +145,10 @@ const Camera: React.FC = () => {
   const minDistanceRef = useRef<number>(0);
   const tweenRef = useRef<TweenState | null>(null);
   // Timestamp (performance.now()) of the last user input. Stamped by passive
-  // listeners below; read each frame to decide whether to auto-orbit. Seeded
-  // to "now" on mount so a freshly loaded page does not orbit immediately.
-  const lastActivityRef = useRef<number>(0);
+  // listeners below; read each frame to decide whether to auto-orbit.
+  // Initialized to now at construction so a freshly loaded page does not orbit
+  // immediately.
+  const lastActivityRef = useRef<number>(performance.now());
 
   const pivotScratch = useRef<Vector3Simple>({ x: 0, y: 0, z: 0 });
   const shiftedScratch = useRef<Vector3Simple>({ x: 0, y: 0, z: 0 });
@@ -217,7 +218,6 @@ const Camera: React.FC = () => {
   // Decoupled from the playback gate's 10-minute idle pause: different
   // threshold, different concern. See autoOrbit.ts.
   useEffect(() => {
-    lastActivityRef.current = performance.now();
     const stamp = () => {
       lastActivityRef.current = performance.now();
     };
@@ -327,8 +327,8 @@ const Camera: React.FC = () => {
 
     // Cinematic auto-orbit: when idle, spin OrbitControls around its current
     // target (focused body, or system center). Read tunables via
-    // getDevSettings() so live slider changes apply without a rerender, and
-    // the per-frame read stays allocation-free. three.js only applies
+    // getDevSettings() (returns the module-level object, no subscription) so
+    // live slider changes apply without a rerender. three.js only applies
     // autoRotate when not mid-gesture (state === NONE), so this never fights
     // an active drag or zoom. update() (called in every branch below) consumes
     // these two fields.
