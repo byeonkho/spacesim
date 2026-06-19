@@ -7,3 +7,7 @@ export {
   type ToggleProps,
   type ToggleState,
 } from "./components/Toggle";
+export {
+  InfoTooltip,
+  type InfoTooltipProps,
+} from "./components/InfoTooltip";

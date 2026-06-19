@@ -1,0 +1,55 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  border-radius: 9999px;
+  background: none;
+  color: var(--color-dim);
+  cursor: help;
+  outline: none;
+  transition: color 0.15s ease;
+}
+
+.trigger:hover,
+.trigger:focus-visible {
+  color: var(--color-hi);
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  width: 256px;
+  pointer-events: none;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-hi);
+  background: rgba(10, 12, 20, 0.96);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  transition: opacity 0.15s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trigger,
+  .tooltip {
+    transition: none;
+  }
+}
