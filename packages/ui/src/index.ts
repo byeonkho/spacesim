@@ -11,3 +11,4 @@ export {
   InfoTooltip,
   type InfoTooltipProps,
 } from "./components/InfoTooltip";
+export { Chip, type ChipProps } from "./components/Chip";
