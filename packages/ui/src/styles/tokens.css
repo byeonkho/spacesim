@@ -1,0 +1,43 @@
+/*
+ * nbodysim design tokens. Point-in-time port of the app's @theme block.
+ * Plain :root custom properties so the kit has no Tailwind dependency.
+ */
+:root {
+  /* Surfaces */
+  --color-bg: #0a0b10;
+  --color-space: #050610;
+
+  /* Text */
+  --color-text: #dcdde3;
+  --color-hi: #f4f5f8;
+  --color-dim: #7f828d;
+  --color-subdim: #5a5d68;
+
+  /* Accent + status */
+  --color-accent: #a4a8ff;
+  --color-accent-grad-end: #6e74d4;
+  --color-amber: #f0a942;
+  --color-success: #7dd3a0;
+
+  /* Body palette */
+  --color-body-sun: #ffb554;
+  --color-body-mercury: #a59387;
+  --color-body-venus: #e6c692;
+  --color-body-earth: #5d8fd6;
+  --color-body-mars: #c5573a;
+  --color-body-jupiter: #d4a566;
+  --color-body-saturn: #dcb474;
+  --color-body-uranus: #7fc7c5;
+  --color-body-neptune: #4a78c0;
+  --color-body-moon: #bfc4cc;
+
+  /* Type. Self-contained fallbacks; no next/font dependency. */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  /* Radii */
+  --radius-panel: 14px;
+  --radius-strip: 12px;
+  --radius-dock: 18px;
+  --radius-chip: 10px;
+}
