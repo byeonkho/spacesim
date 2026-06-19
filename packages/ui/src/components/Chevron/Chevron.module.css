@@ -1,0 +1,15 @@
+.chevron {
+  color: var(--color-dim);
+  transform: rotate(-90deg);
+  transition: transform 0.15s ease;
+}
+
+.open {
+  transform: rotate(0deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
+  }
+}

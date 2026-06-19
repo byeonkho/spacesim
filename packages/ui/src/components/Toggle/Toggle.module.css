@@ -1,0 +1,35 @@
+.toggle {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  border: none;
+  padding: 0;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.knob {
+  position: absolute;
+  top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: left 0.15s ease;
+}
+
+.dash {
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(146, 152, 238, 0.95);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle,
+  .knob {
+    transition: none;
+  }
+}
