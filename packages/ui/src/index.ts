@@ -36,3 +36,4 @@ export {
   type SelectorProps,
   type SelectorItem,
 } from "./components/Selector";
+export { Card, type CardProps, type CardStatItem } from "./components/Card";
