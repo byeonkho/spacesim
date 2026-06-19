@@ -4,3 +4,8 @@ storybook-static
 *.tsbuildinfo
 
 *storybook.log
+
+# design-sync tooling, config, and build artifacts (kept out of the repo)
+.design-sync/
+.ds-sync/
+ds-bundle/

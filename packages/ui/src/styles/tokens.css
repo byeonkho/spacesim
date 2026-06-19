@@ -1,3 +1,5 @@
+@import "./fonts.css";
+
 /*
  * nbodysim design tokens. Point-in-time port of the app's @theme block.
  * Plain :root custom properties so the kit has no Tailwind dependency.
