@@ -27,9 +27,25 @@ describe("GroundTruthSlice", () => {
       toMs: 1000,
     }));
     expect(s.anchorsByBody["EARTH"].map((a) => a.epochMillis)).toEqual([0, 1000]);
-    expect(s.coveredBody).toBe("EARTH");
-    expect(s.coveredFromMs).toBe(0);
-    expect(s.coveredToMs).toBe(1000);
+    expect(s.coveredByBody["EARTH"]).toEqual({ fromMs: 0, toMs: 1000 });
+  });
+
+  it("records covered windows per body (independent keys)", () => {
+    let s = reducer(initial, setBodyAnchors({
+      body: "earth",
+      anchors: [],
+      fromMs: 0,
+      toMs: 1000,
+    }));
+    s = reducer(s, setBodyAnchors({
+      body: "mars",
+      anchors: [],
+      fromMs: 5000,
+      toMs: 9000,
+    }));
+    // Fetching Mars must not wipe Earth's coverage.
+    expect(s.coveredByBody["EARTH"]).toEqual({ fromMs: 0, toMs: 1000 });
+    expect(s.coveredByBody["MARS"]).toEqual({ fromMs: 5000, toMs: 9000 });
   });
 
   it("REPLACES a body's anchors on each fetch (no accumulation)", () => {
@@ -54,8 +70,7 @@ describe("GroundTruthSlice", () => {
       toMs: 4000,
     }));
     expect(second.anchorsByBody["EARTH"].map((a) => a.epochMillis)).toEqual([3000, 4000]);
-    expect(second.coveredFromMs).toBe(3000);
-    expect(second.coveredToMs).toBe(4000);
+    expect(second.coveredByBody["EARTH"]).toEqual({ fromMs: 3000, toMs: 4000 });
   });
 
   it("stores the Tier-2 buffer with its body name", () => {
@@ -75,8 +90,7 @@ describe("GroundTruthSlice", () => {
     }));
     s = reducer(s, resetGroundTruth());
     expect(s.anchorsByBody).toEqual({});
-    expect(s.coveredBody).toBeNull();
-    expect(s.coveredFromMs).toBeNull();
+    expect(s.coveredByBody).toEqual({});
     expect(s.trueTrack).toBeNull();
     expect(s.overlayEnabled).toBe(true); // user preference survives a resubmit
   });
@@ -98,5 +112,60 @@ describe("GroundTruthSlice", () => {
     let s = reducer(initial, { type: "groundTruth/fetch/pending" });
     s = reducer(s, resetGroundTruth());
     expect(s.fetchInFlight).toBe(false);
+  });
+
+  // userFetchInFlight tracks only user-initiated (immediate) fetches, so the
+  // loading notice fires on a toggle/focus but stays silent for the automatic
+  // background top-up refetches that slide coverage forward during playback.
+  it("sets userFetchInFlight only for an immediate (user-initiated) fetch", () => {
+    const s = reducer(initial, {
+      type: "groundTruth/fetch/pending",
+      meta: { arg: { immediate: true } },
+    });
+    expect(s.fetchInFlight).toBe(true);
+    expect(s.userFetchInFlight).toBe(true);
+  });
+
+  it("leaves userFetchInFlight false for a background (non-immediate) fetch", () => {
+    const s = reducer(initial, {
+      type: "groundTruth/fetch/pending",
+      meta: { arg: { immediate: false } },
+    });
+    expect(s.fetchInFlight).toBe(true);
+    expect(s.userFetchInFlight).toBe(false);
+  });
+
+  it("a settling background fetch does not clear an in-flight user fetch", () => {
+    let s = reducer(initial, {
+      type: "groundTruth/fetch/pending",
+      meta: { arg: { immediate: true } },
+    });
+    // A background fetch finishes while the user fetch is still pending.
+    s = reducer(s, {
+      type: "groundTruth/fetch/fulfilled",
+      meta: { arg: { immediate: false } },
+    });
+    expect(s.userFetchInFlight).toBe(true);
+  });
+
+  it("clears userFetchInFlight when the user fetch itself settles", () => {
+    let s = reducer(initial, {
+      type: "groundTruth/fetch/pending",
+      meta: { arg: { immediate: true } },
+    });
+    s = reducer(s, {
+      type: "groundTruth/fetch/rejected",
+      meta: { arg: { immediate: true } },
+    });
+    expect(s.userFetchInFlight).toBe(false);
+  });
+
+  it("reset clears a stuck userFetchInFlight", () => {
+    let s = reducer(initial, {
+      type: "groundTruth/fetch/pending",
+      meta: { arg: { immediate: true } },
+    });
+    s = reducer(s, resetGroundTruth());
+    expect(s.userFetchInFlight).toBe(false);
   });
 });

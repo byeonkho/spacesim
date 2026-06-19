@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { REST_URL } from "@/app/utils/backendUrls";
 import { setBodyAnchors } from "@/app/store/slices/GroundTruthSlice";
+import { setErrorMessage } from "@/app/store/slices/RequestSlice";
 import { currentLaunchEpoch, isCurrentLaunch } from "@/app/store/launchEpoch";
 import type { components } from "@/app/generated/api";
 import type { AppDispatch, RootState } from "@/app/store/Store";
@@ -14,7 +15,19 @@ interface FetchArgs {
   toMs: number;
   stepSeconds: number; // cadence sized to the visible window by the caller
   subtractSun: boolean; // mirror the predicted Sun convention (Sun in session?)
+  // True for a user-initiated fetch (toggling Drift, switching the focused
+  // body), false for an automatic background top-up. Read off action.meta.arg
+  // by the slice to gate the loading notice, and here to gate error surfacing:
+  // only a fetch the user is actively waiting on raises a toast on failure, so
+  // a transient background refetch failure (which retries) stays silent.
+  immediate: boolean;
 }
+
+// Plain-English toast for a failed user-initiated fetch. Shown via the shared
+// error toast so the user who just turned on Drift learns the load failed
+// instead of staring at an overlay that never appears.
+const GROUND_TRUTH_ERROR_COPY =
+  "Could not load the real-world positions. Toggle Drift to try again.";
 
 // Fetches the active body's true track for a visible window and REPLACES that
 // body's anchors. Active-body-only keeps the recurring fetch small; replace
@@ -24,7 +37,7 @@ export const fetchGroundTruth = createAsyncThunk<
   void,
   FetchArgs,
   { state: RootState; dispatch: AppDispatch }
->("groundTruth/fetch", async ({ frame, body, fromMs, toMs, stepSeconds, subtractSun }, { dispatch }) => {
+>("groundTruth/fetch", async ({ frame, body, fromMs, toMs, stepSeconds, subtractSun, immediate }, { dispatch }) => {
   // Bind this fetch to the launch that started it. A resubmit bumps the
   // launch epoch (and resets the anchors); if that happened while this was
   // in flight, dropping it keeps the stale window from repopulating.
@@ -41,12 +54,14 @@ export const fetchGroundTruth = createAsyncThunk<
     const response = await fetch(url, { method: "GET" });
     if (!response.ok) {
       console.warn(`ground-truth fetch failed: HTTP ${response.status}`);
+      if (immediate) dispatch(setErrorMessage(GROUND_TRUTH_ERROR_COPY));
       return;
     }
     data = await response.json();
   } catch (err) {
     // Network-level failure (offline, reset). The simulation carries on.
     console.warn("ground-truth fetch failed:", err);
+    if (immediate) dispatch(setErrorMessage(GROUND_TRUTH_ERROR_COPY));
     return;
   }
 

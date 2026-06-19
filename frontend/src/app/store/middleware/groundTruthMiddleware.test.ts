@@ -9,6 +9,7 @@ import simulationReducer, {
 import groundTruthReducer, {
   setOverlayEnabled,
 } from "@/app/store/slices/GroundTruthSlice";
+import requestReducer from "@/app/store/slices/RequestSlice";
 import {
   groundTruthMiddleware,
   resetGroundTruthMiddlewareState,
@@ -53,7 +54,11 @@ const lastReq = {
 
 function makeStore() {
   return configureStore({
-    reducer: { simulation: simulationReducer, groundTruth: groundTruthReducer },
+    reducer: {
+      simulation: simulationReducer,
+      groundTruth: groundTruthReducer,
+      request: requestReducer,
+    },
     middleware: (getDefault) =>
       getDefault({ serializableCheck: false, immutableCheck: false }).concat(
         groundTruthMiddleware,
@@ -106,9 +111,11 @@ describe("groundTruthMiddleware: playback-driven coverage", () => {
     await flush();
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    // New coverage extends ahead of the new head.
-    const { coveredToMs } = store.getState().groundTruth;
-    expect(coveredToMs).toBe(T0 + Math.min(N - 1, 4_500 + 4_000) * HOUR_MS);
+    // New coverage extends ahead of the new head (tracked under the active body).
+    const { coveredByBody } = store.getState().groundTruth;
+    expect(coveredByBody["MARS"].toMs).toBe(
+      T0 + Math.min(N - 1, 4_500 + 4_000) * HOUR_MS,
+    );
   });
 
   it("rate-limits playback-driven attempts to one per 3 seconds", async () => {
@@ -177,5 +184,77 @@ describe("groundTruthMiddleware: playback-driven coverage", () => {
     await flush();
     const url = fetchMock.mock.calls[0][0] as string;
     expect(url).toContain("subtractSun=true");
+  });
+
+  // The loading notice reads userFetchInFlight, so it must be true only while a
+  // user-initiated fetch is pending and false for the background top-ups.
+  it("flags userFetchInFlight only while a user-initiated fetch is pending", async () => {
+    const store = makeStore();
+    store.dispatch(setLastSimRequest(lastReq));
+    store.dispatch(appendChunkToBuffer(chunkPayload(N, T0)));
+    store.dispatch(setCurrentTimeStepIndex(0));
+    store.dispatch(setOverlayEnabled(true));
+    store.dispatch(setActiveBody("Mars")); // user-initiated immediate fetch
+    // The thunk's pending action fires synchronously during dispatch.
+    expect(store.getState().groundTruth.userFetchInFlight).toBe(true);
+    await flush();
+    expect(store.getState().groundTruth.userFetchInFlight).toBe(false);
+  });
+
+  it("never flags userFetchInFlight for a background top-up refetch", async () => {
+    const store = makeStore();
+    await setupCoveredAt(store, 0);
+    expect(store.getState().groundTruth.userFetchInFlight).toBe(false);
+
+    store.dispatch(setCurrentTimeStepIndex(4_500)); // playback-driven background fetch
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    // The chip's busy flag still toggles, but the notice flag never lifts, so
+    // the notice cannot blink on these.
+    expect(store.getState().groundTruth.fetchInFlight).toBe(true);
+    expect(store.getState().groundTruth.userFetchInFlight).toBe(false);
+    await flush();
+    expect(store.getState().groundTruth.userFetchInFlight).toBe(false);
+  });
+
+  it("surfaces an error toast when a user-initiated fetch fails", async () => {
+    const store = makeStore();
+    fetchMock.mockImplementation(async () => {
+      throw new Error("network down");
+    });
+    store.dispatch(setLastSimRequest(lastReq));
+    store.dispatch(appendChunkToBuffer(chunkPayload(N, T0)));
+    store.dispatch(setCurrentTimeStepIndex(0));
+    store.dispatch(setOverlayEnabled(true));
+    store.dispatch(setActiveBody("Mars")); // user-initiated -> failure is surfaced
+    await flush();
+    expect(store.getState().request.errorMessage).toMatch(/real-world positions/i);
+  });
+
+  it("stays silent when a background refetch fails", async () => {
+    const store = makeStore();
+    await setupCoveredAt(store, 0); // initial user fetch succeeds
+    fetchMock.mockImplementation(async () => {
+      throw new Error("network down");
+    });
+    store.dispatch(setCurrentTimeStepIndex(4_500)); // background refetch -> fails quietly
+    await flush();
+    expect(store.getState().request.errorMessage).toBeNull();
+  });
+
+  // Coverage is tracked per body, so flipping to another body and back does not
+  // re-pull a body whose window is still covered (a single covered-window record
+  // would have forgotten the first body and refetched it).
+  it("does not refetch a body whose window is still covered after visiting another", async () => {
+    const store = makeStore();
+    await setupCoveredAt(store, 0); // Mars fetched + covered at idx 0
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    store.dispatch(setActiveBody("Earth")); // different body: its own fetch
+    await flush();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    store.dispatch(setActiveBody("Mars")); // back to Mars, same window: still covered
+    await flush();
+    expect(fetchMock).toHaveBeenCalledTimes(2); // no redundant refetch
   });
 });

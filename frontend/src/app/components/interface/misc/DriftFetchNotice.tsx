@@ -1,40 +1,70 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import {
   selectOverlayEnabled,
-  selectGroundTruthFetchInFlight,
+  selectUserGroundTruthFetchInFlight,
 } from "@/app/store/slices/GroundTruthSlice";
+import {
+  COLD_START_COPY,
+  COLD_START_MS,
+  LOADING_COPY,
+  minDisplayRemainingMs,
+} from "@/app/utils/driftFetchNotice";
 
-// Bottom-center notice for a slow drift-data load. The Drift chip pulses for
-// every in-flight fetch; this only appears when a fetch has been pending long
-// enough to mean the cold path (the backend waking from sleep, up to ~20 s),
-// so the quiet wait gets an explanation. Warm fetches answer in well under a
-// second and never show it.
-const SLOW_FETCH_MS = 2000;
-
+// Bottom-center notice for a drift-data load. It appears the instant a
+// user-initiated fetch is in flight (toggling Drift, switching the focused
+// body) so the action never feels like nothing happened, then escalates its
+// copy once the wait is long enough to mean the cold path (the backend waking
+// from sleep, up to ~20 s). A min-display hold keeps a fast warm fetch (well
+// under a second) from flashing it as a sub-second blink. It deliberately
+// ignores the automatic background top-up refetches during playback, which
+// would otherwise blink it on a steady interval; failures of those surface
+// only when the user is actively waiting (see fetchGroundTruth).
 const DriftFetchNotice: React.FC = () => {
   const enabled = useSelector(selectOverlayEnabled);
-  const fetching = useSelector(selectGroundTruthFetchInFlight);
+  const fetching = useSelector(selectUserGroundTruthFetchInFlight);
   const pending = enabled && fetching;
-  const [show, setShow] = useState(false);
 
-  // Hide the moment the fetch settles. Guarded set-state-in-render (not in
-  // the effect body) to satisfy the repo's set-state-in-effect lint rule.
+  const [visible, setVisible] = useState(false);
+  const [cold, setCold] = useState(false);
+  // When the notice most recently became visible, for the min-display hold.
+  const shownAtRef = useRef(0);
+
+  // Show immediately on the rising edge (loading tier). Guarded set-state in
+  // render (not in an effect body) to satisfy the repo's set-state-in-effect
+  // lint rule; the overlay starts disabled, so pending is always false at mount
+  // and the first toggle is a real transition. The falling edge is handled by
+  // the effect below, which needs a timer for the min-display hold.
   const [prevPending, setPrevPending] = useState(pending);
   if (prevPending !== pending) {
     setPrevPending(pending);
-    if (!pending) setShow(false);
+    if (pending) {
+      setVisible(true);
+      setCold(false);
+    }
   }
 
   useEffect(() => {
-    if (!pending) return;
-    const id = window.setTimeout(() => setShow(true), SLOW_FETCH_MS);
+    if (pending) {
+      // Anchor the min-display window and arm the cold-start escalation.
+      shownAtRef.current = Date.now();
+      const id = window.setTimeout(() => setCold(true), COLD_START_MS);
+      return () => window.clearTimeout(id);
+    }
+    // Settled: hold the notice for the remainder of the min-display window,
+    // then hide. remaining is 0 once the window has elapsed (the common case
+    // for any non-trivial fetch), so the notice hides on the next tick.
+    const remaining = minDisplayRemainingMs(shownAtRef.current, Date.now());
+    const id = window.setTimeout(() => {
+      setVisible(false);
+      setCold(false);
+    }, remaining);
     return () => window.clearTimeout(id);
   }, [pending]);
 
-  if (!show) return null;
+  if (!visible) return null;
 
   return (
     <div
@@ -47,10 +77,7 @@ const DriftFetchNotice: React.FC = () => {
       }}
     >
       <span className="animate-pulse text-accent">●</span>
-      <span>
-        Loading real-world positions. The first load can take a few moments
-        while the simulator wakes up.
-      </span>
+      <span>{cold ? COLD_START_COPY : LOADING_COPY}</span>
     </div>
   );
 };

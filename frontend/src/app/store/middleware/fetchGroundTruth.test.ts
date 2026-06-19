@@ -19,6 +19,7 @@ const args = {
   toMs: 5000,
   stepSeconds: 86_400,
   subtractSun: true,
+  immediate: true,
 };
 
 describe("fetchGroundTruth stale-launch guard", () => {
@@ -51,7 +52,7 @@ describe("fetchGroundTruth stale-launch guard", () => {
   it("records anchors when no newer launch superseded the fetch", async () => {
     const store = makeStore();
     await store.dispatch(fetchGroundTruth(args));
-    expect(store.getState().groundTruth.coveredToMs).toBe(5000);
+    expect(store.getState().groundTruth.coveredByBody.EARTH.toMs).toBe(5000);
     expect(store.getState().groundTruth.anchorsByBody.EARTH).toHaveLength(1);
   });
 
@@ -60,7 +61,7 @@ describe("fetchGroundTruth stale-launch guard", () => {
     const p = store.dispatch(fetchGroundTruth(args)); // captures epoch 1 synchronously
     beginLaunch(); // epoch -> 2, simulating a resubmit mid-fetch
     await p;
-    expect(store.getState().groundTruth.coveredToMs).toBeNull();
+    expect(store.getState().groundTruth.coveredByBody.EARTH).toBeUndefined();
     expect(store.getState().groundTruth.anchorsByBody.EARTH).toBeUndefined();
   });
 });
