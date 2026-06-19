@@ -18,3 +18,7 @@ export {
   type DisclosureProps,
 } from "./components/Disclosure";
 export { Stat, type StatProps } from "./components/Stat";
+export {
+  GlassPanel,
+  type GlassPanelProps,
+} from "./components/GlassPanel";
