@@ -13,8 +13,6 @@ import { AUTO_ORBIT_IDLE_MS, AUTO_ORBIT_SPEED } from "@/app/utils/autoOrbit";
  * useDevSettings(), event handlers read with getDevSettings().
  */
 
-export type SkyboxVariant = "full" | "milkyway" | "stars";
-
 export interface DevSettings {
   /**
    * Multiplier on wheel deltaY for tracking-zoom updates.
@@ -48,12 +46,6 @@ export interface DevSettings {
    * points get drawn, so dragging is allocation-free.
    */
   trailLength: number;
-  /**
-   * Active skybox texture. All three are pre-loaded by Skybox.tsx via
-   * useTexture's object form, so switching is instant — no Suspense
-   * flash during the swap.
-   */
-  skyboxVariant: SkyboxVariant;
   /**
    * Log preset: overall stretch multiplier on the log curve. Bigger A =
    * larger system in world space; ratios between planet positions are
@@ -94,7 +86,6 @@ const DEFAULTS: DevSettings = {
   autoOrbitSpeed: AUTO_ORBIT_SPEED,
   cameraZoomLerpRate: 0.1,
   trailLength: 1000,
-  skyboxVariant: "full",
   logScaleA: 60,
   logScaleRRef: 149_597_870_700,
   logRadiusExponent: 0.5,
