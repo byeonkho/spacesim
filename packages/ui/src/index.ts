@@ -17,3 +17,4 @@ export {
   Disclosure,
   type DisclosureProps,
 } from "./components/Disclosure";
+export { Stat, type StatProps } from "./components/Stat";
