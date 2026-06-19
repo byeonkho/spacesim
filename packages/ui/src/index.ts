@@ -1,3 +1,3 @@
 import "./styles/tokens.css";
 
-export {};
+export { Eyebrow, type EyebrowProps } from "./components/Eyebrow";
