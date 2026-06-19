@@ -21,10 +21,16 @@ export interface GroundTruthState {
   // rebuild). serializableCheck is disabled store-wide.
   trueTrack: ChunkBuffer | null;
   trueTrackBody: string | null;
-  // True while a ground-truth fetch is in flight. UI-only signal (the Drift
-  // chip's busy state and the slow-first-fetch notice); the middleware keeps
-  // its own in-flight guard for dispatch gating.
+  // True while ANY ground-truth fetch is in flight. UI-only signal (the Drift
+  // chip's busy pulse); the middleware keeps its own in-flight guard for
+  // dispatch gating.
   fetchInFlight: boolean;
+  // True only while a USER-INITIATED fetch is in flight (toggling Drift,
+  // switching the focused body). Drives the loading notice, which must stay
+  // silent for the automatic background top-up refetches that slide coverage
+  // forward during playback (those would otherwise blink the notice on a steady
+  // interval). See the middleware's immediate flag.
+  userFetchInFlight: boolean;
 }
 
 const initialState: GroundTruthState = {
@@ -36,6 +42,7 @@ const initialState: GroundTruthState = {
   trueTrack: null,
   trueTrackBody: null,
   fetchInFlight: false,
+  userFetchInFlight: false,
 };
 
 export const groundTruthSlice = createSlice({
@@ -89,23 +96,39 @@ export const groundTruthSlice = createSlice({
       state.trueTrack = null;
       state.trueTrackBody = null;
       // A response for the old sim may never settle visibly; don't let a new
-      // sim inherit a stuck busy indicator.
+      // sim inherit a stuck busy indicator or loading notice.
       state.fetchInFlight = false;
+      state.userFetchInFlight = false;
     },
   },
   // Follow the fetch thunk's lifecycle by action TYPE rather than importing
   // its action creators: the thunk module imports this slice, so importing it
   // back here would be a require cycle.
   extraReducers: (builder) => {
+    // Read the thunk's immediate flag off action.meta.arg (a user-initiated
+    // fetch sets it true). Cast rather than import the thunk's types: matching
+    // by action TYPE is what keeps the slice from importing the thunk module,
+    // which imports this slice back.
+    const isImmediate = (action: unknown): boolean =>
+      (action as { meta?: { arg?: { immediate?: boolean } } }).meta?.arg
+        ?.immediate === true;
+
     builder
-      .addCase("groundTruth/fetch/pending", (state) => {
+      .addCase("groundTruth/fetch/pending", (state, action) => {
         state.fetchInFlight = true;
+        if (isImmediate(action)) state.userFetchInFlight = true;
       })
-      .addCase("groundTruth/fetch/fulfilled", (state) => {
+      // Clear userFetchInFlight only when an IMMEDIATE fetch settles. A
+      // background fetch can settle while a user fetch is still pending (user
+      // fetches bypass the in-flight guard); clearing on any settle would hide
+      // the notice early in that overlap.
+      .addCase("groundTruth/fetch/fulfilled", (state, action) => {
         state.fetchInFlight = false;
+        if (isImmediate(action)) state.userFetchInFlight = false;
       })
-      .addCase("groundTruth/fetch/rejected", (state) => {
+      .addCase("groundTruth/fetch/rejected", (state, action) => {
         state.fetchInFlight = false;
+        if (isImmediate(action)) state.userFetchInFlight = false;
       });
   },
 });
@@ -132,3 +155,5 @@ export const selectAnchorsByBody = (
 ): Record<string, GroundTruthAnchorLike[]> => state.groundTruth.anchorsByBody;
 export const selectGroundTruthFetchInFlight = (state: RootState): boolean =>
   state.groundTruth.fetchInFlight;
+export const selectUserGroundTruthFetchInFlight = (state: RootState): boolean =>
+  state.groundTruth.userFetchInFlight;

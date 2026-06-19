@@ -369,8 +369,13 @@ export function BodyCard() {
 
   return (
     <div
-      className="glass px-[18px] pt-4 pb-3.5"
-      style={{ borderRadius: 14 }}
+      className="glass overflow-y-auto overscroll-y-contain px-[18px] pt-4 pb-3.5"
+      // Cap the height to the space between the card's top anchor (148px, set
+      // by RightColumn) and the bottom dock, and scroll internally past that.
+      // Turning Drift on appends the Reality drift section, which used to push a
+      // tall card under the playback controls; this keeps it clear at any
+      // viewport height.
+      style={{ borderRadius: 14, maxHeight: "calc(100dvh - 316px)" }}
     >
       <button
         type="button"

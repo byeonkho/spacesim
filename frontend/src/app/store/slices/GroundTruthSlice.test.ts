@@ -99,4 +99,59 @@ describe("GroundTruthSlice", () => {
     s = reducer(s, resetGroundTruth());
     expect(s.fetchInFlight).toBe(false);
   });
+
+  // userFetchInFlight tracks only user-initiated (immediate) fetches, so the
+  // loading notice fires on a toggle/focus but stays silent for the automatic
+  // background top-up refetches that slide coverage forward during playback.
+  it("sets userFetchInFlight only for an immediate (user-initiated) fetch", () => {
+    const s = reducer(initial, {
+      type: "groundTruth/fetch/pending",
+      meta: { arg: { immediate: true } },
+    });
+    expect(s.fetchInFlight).toBe(true);
+    expect(s.userFetchInFlight).toBe(true);
+  });
+
+  it("leaves userFetchInFlight false for a background (non-immediate) fetch", () => {
+    const s = reducer(initial, {
+      type: "groundTruth/fetch/pending",
+      meta: { arg: { immediate: false } },
+    });
+    expect(s.fetchInFlight).toBe(true);
+    expect(s.userFetchInFlight).toBe(false);
+  });
+
+  it("a settling background fetch does not clear an in-flight user fetch", () => {
+    let s = reducer(initial, {
+      type: "groundTruth/fetch/pending",
+      meta: { arg: { immediate: true } },
+    });
+    // A background fetch finishes while the user fetch is still pending.
+    s = reducer(s, {
+      type: "groundTruth/fetch/fulfilled",
+      meta: { arg: { immediate: false } },
+    });
+    expect(s.userFetchInFlight).toBe(true);
+  });
+
+  it("clears userFetchInFlight when the user fetch itself settles", () => {
+    let s = reducer(initial, {
+      type: "groundTruth/fetch/pending",
+      meta: { arg: { immediate: true } },
+    });
+    s = reducer(s, {
+      type: "groundTruth/fetch/rejected",
+      meta: { arg: { immediate: true } },
+    });
+    expect(s.userFetchInFlight).toBe(false);
+  });
+
+  it("reset clears a stuck userFetchInFlight", () => {
+    let s = reducer(initial, {
+      type: "groundTruth/fetch/pending",
+      meta: { arg: { immediate: true } },
+    });
+    s = reducer(s, resetGroundTruth());
+    expect(s.userFetchInFlight).toBe(false);
+  });
 });

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import {
   selectOverlayEnabled,
-  selectGroundTruthFetchInFlight,
+  selectUserGroundTruthFetchInFlight,
 } from "@/app/store/slices/GroundTruthSlice";
 import {
   COLD_START_COPY,
@@ -13,14 +13,18 @@ import {
   minDisplayRemainingMs,
 } from "@/app/utils/driftFetchNotice";
 
-// Bottom-center notice for a drift-data load. It appears the instant a fetch is
-// in flight so toggling Drift never feels like nothing happened, then escalates
-// its copy once the wait is long enough to mean the cold path (the backend
-// waking from sleep, up to ~20 s). A min-display hold keeps a fast warm fetch
-// (well under a second) from flashing the notice as a sub-second blink.
+// Bottom-center notice for a drift-data load. It appears the instant a
+// user-initiated fetch is in flight (toggling Drift, switching the focused
+// body) so the action never feels like nothing happened, then escalates its
+// copy once the wait is long enough to mean the cold path (the backend waking
+// from sleep, up to ~20 s). A min-display hold keeps a fast warm fetch (well
+// under a second) from flashing it as a sub-second blink. It deliberately
+// ignores the automatic background top-up refetches during playback, which
+// would otherwise blink it on a steady interval; failures of those surface
+// only when the user is actively waiting (see fetchGroundTruth).
 const DriftFetchNotice: React.FC = () => {
   const enabled = useSelector(selectOverlayEnabled);
-  const fetching = useSelector(selectGroundTruthFetchInFlight);
+  const fetching = useSelector(selectUserGroundTruthFetchInFlight);
   const pending = enabled && fetching;
 
   const [visible, setVisible] = useState(false);

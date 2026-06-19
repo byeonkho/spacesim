@@ -117,6 +117,7 @@ function maybeFetch(store: Store, immediate: boolean): void {
       frame: FRAME_CODE[lastRequest.frame] ?? lastRequest.frame,
       body: activeUpper,
       subtractSun,
+      immediate,
       ...req,
     }) as never,
   ) as unknown as Promise<unknown>;
