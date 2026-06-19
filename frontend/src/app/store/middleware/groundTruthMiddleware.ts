@@ -72,8 +72,7 @@ function rebuildTrueTrack(store: Store): void {
 // window is already covered. Rebuilds Tier-2 when the fetch lands.
 function maybeFetch(store: Store, immediate: boolean): void {
   const state = store.getState();
-  const { overlayEnabled, coveredBody, coveredFromMs, coveredToMs } =
-    state.groundTruth;
+  const { overlayEnabled, coveredByBody } = state.groundTruth;
   const activeBody = state.simulation.activeBodyState.activeBodyName;
   const predicted = state.simulation.chunkBuffer;
   // Sessionless: ground truth needs only body + frame, so the overlay works
@@ -100,12 +99,8 @@ function maybeFetch(store: Store, immediate: boolean): void {
   if (!req) return;
 
   const activeUpper = activeBody.toUpperCase();
-  const covered =
-    coveredBody === activeUpper &&
-    coveredFromMs !== null &&
-    coveredToMs !== null &&
-    coveredFromMs <= req.fromMs &&
-    coveredToMs >= req.toMs;
+  const cov = coveredByBody[activeUpper];
+  const covered = cov != null && cov.fromMs <= req.fromMs && cov.toMs >= req.toMs;
   if (covered) return;
 
   const subtractSun = lastRequest.celestialBodyNames.some(
@@ -174,16 +169,18 @@ export const groundTruthMiddleware: Middleware =
     // in-flight guard.
     if (setCurrentTimeStepIndex.match(action)) {
       const state = typedStore.getState();
-      const { overlayEnabled, coveredBody, coveredToMs } = state.groundTruth;
+      const { overlayEnabled, coveredByBody } = state.groundTruth;
       const activeBody = state.simulation.activeBodyState.activeBodyName;
       const predicted = state.simulation.chunkBuffer;
+      const cov = activeBody
+        ? coveredByBody[activeBody.toUpperCase()]
+        : undefined;
       if (
         overlayEnabled &&
         activeBody &&
         predicted &&
         predicted.totalTimesteps > 1 &&
-        coveredToMs !== null &&
-        coveredBody === activeBody.toUpperCase()
+        cov != null
       ) {
         const n = predicted.totalTimesteps;
         const idxFloor = Math.max(
@@ -197,7 +194,7 @@ export const groundTruthMiddleware: Middleware =
         const wantToMs = Number(predicted.timestamps[hi]);
         const now = Date.now();
         if (
-          wantToMs > coveredToMs &&
+          wantToMs > cov.toMs &&
           now - lastPlaybackFetchAttemptMs >= PLAYBACK_FETCH_MIN_INTERVAL_MS
         ) {
           lastPlaybackFetchAttemptMs = now;

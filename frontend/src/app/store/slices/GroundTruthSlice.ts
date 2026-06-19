@@ -10,12 +10,12 @@ export interface GroundTruthState {
   // Only the active body is populated (the overlay renders one body at a time);
   // a prior body's anchors may linger harmlessly until overwritten or reset.
   anchorsByBody: Record<string, GroundTruthAnchorLike[]>;
-  // The body + window (millis UTC) most recently fetched. The middleware skips
-  // a refetch while the visible window is already within [coveredFrom, coveredTo]
-  // for the active body. null before the first fetch / after reset.
-  coveredBody: string | null;
-  coveredFromMs: number | null;
-  coveredToMs: number | null;
+  // The fetched window (millis UTC) per body, keyed by UPPER-CASE name. The
+  // middleware skips a refetch while the active body's visible window is already
+  // within its [fromMs, toMs]. Per body (not a single record) so flipping to
+  // another body and back does not re-pull a body still in coverage. Empty
+  // before the first fetch / after reset.
+  coveredByBody: Record<string, { fromMs: number; toMs: number }>;
   // Tier 2: dense, keyframe-aligned single-body buffer for the active body.
   // Held like simulation.chunkBuffer (typed-array-backed, reassigned on
   // rebuild). serializableCheck is disabled store-wide.
@@ -36,9 +36,7 @@ export interface GroundTruthState {
 const initialState: GroundTruthState = {
   overlayEnabled: false,
   anchorsByBody: {},
-  coveredBody: null,
-  coveredFromMs: null,
-  coveredToMs: null,
+  coveredByBody: {},
   trueTrack: null,
   trueTrackBody: null,
   fetchInFlight: false,
@@ -68,9 +66,10 @@ export const groundTruthSlice = createSlice({
     ) => {
       const key = action.payload.body.toUpperCase();
       state.anchorsByBody[key] = action.payload.anchors;
-      state.coveredBody = key;
-      state.coveredFromMs = action.payload.fromMs;
-      state.coveredToMs = action.payload.toMs;
+      state.coveredByBody[key] = {
+        fromMs: action.payload.fromMs,
+        toMs: action.payload.toMs,
+      };
     },
 
     setTrueTrack: (
@@ -90,9 +89,7 @@ export const groundTruthSlice = createSlice({
     // like showTrails survives a resubmit in SimulationSlice).
     resetGroundTruth: (state) => {
       state.anchorsByBody = {};
-      state.coveredBody = null;
-      state.coveredFromMs = null;
-      state.coveredToMs = null;
+      state.coveredByBody = {};
       state.trueTrack = null;
       state.trueTrackBody = null;
       // A response for the old sim may never settle visibly; don't let a new

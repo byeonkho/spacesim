@@ -111,9 +111,11 @@ describe("groundTruthMiddleware: playback-driven coverage", () => {
     await flush();
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    // New coverage extends ahead of the new head.
-    const { coveredToMs } = store.getState().groundTruth;
-    expect(coveredToMs).toBe(T0 + Math.min(N - 1, 4_500 + 4_000) * HOUR_MS);
+    // New coverage extends ahead of the new head (tracked under the active body).
+    const { coveredByBody } = store.getState().groundTruth;
+    expect(coveredByBody["MARS"].toMs).toBe(
+      T0 + Math.min(N - 1, 4_500 + 4_000) * HOUR_MS,
+    );
   });
 
   it("rate-limits playback-driven attempts to one per 3 seconds", async () => {
@@ -237,5 +239,22 @@ describe("groundTruthMiddleware: playback-driven coverage", () => {
     store.dispatch(setCurrentTimeStepIndex(4_500)); // background refetch -> fails quietly
     await flush();
     expect(store.getState().request.errorMessage).toBeNull();
+  });
+
+  // Coverage is tracked per body, so flipping to another body and back does not
+  // re-pull a body whose window is still covered (a single covered-window record
+  // would have forgotten the first body and refetched it).
+  it("does not refetch a body whose window is still covered after visiting another", async () => {
+    const store = makeStore();
+    await setupCoveredAt(store, 0); // Mars fetched + covered at idx 0
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    store.dispatch(setActiveBody("Earth")); // different body: its own fetch
+    await flush();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    store.dispatch(setActiveBody("Mars")); // back to Mars, same window: still covered
+    await flush();
+    expect(fetchMock).toHaveBeenCalledTimes(2); // no redundant refetch
   });
 });

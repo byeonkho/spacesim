@@ -27,9 +27,25 @@ describe("GroundTruthSlice", () => {
       toMs: 1000,
     }));
     expect(s.anchorsByBody["EARTH"].map((a) => a.epochMillis)).toEqual([0, 1000]);
-    expect(s.coveredBody).toBe("EARTH");
-    expect(s.coveredFromMs).toBe(0);
-    expect(s.coveredToMs).toBe(1000);
+    expect(s.coveredByBody["EARTH"]).toEqual({ fromMs: 0, toMs: 1000 });
+  });
+
+  it("records covered windows per body (independent keys)", () => {
+    let s = reducer(initial, setBodyAnchors({
+      body: "earth",
+      anchors: [],
+      fromMs: 0,
+      toMs: 1000,
+    }));
+    s = reducer(s, setBodyAnchors({
+      body: "mars",
+      anchors: [],
+      fromMs: 5000,
+      toMs: 9000,
+    }));
+    // Fetching Mars must not wipe Earth's coverage.
+    expect(s.coveredByBody["EARTH"]).toEqual({ fromMs: 0, toMs: 1000 });
+    expect(s.coveredByBody["MARS"]).toEqual({ fromMs: 5000, toMs: 9000 });
   });
 
   it("REPLACES a body's anchors on each fetch (no accumulation)", () => {
@@ -54,8 +70,7 @@ describe("GroundTruthSlice", () => {
       toMs: 4000,
     }));
     expect(second.anchorsByBody["EARTH"].map((a) => a.epochMillis)).toEqual([3000, 4000]);
-    expect(second.coveredFromMs).toBe(3000);
-    expect(second.coveredToMs).toBe(4000);
+    expect(second.coveredByBody["EARTH"]).toEqual({ fromMs: 3000, toMs: 4000 });
   });
 
   it("stores the Tier-2 buffer with its body name", () => {
@@ -75,8 +90,7 @@ describe("GroundTruthSlice", () => {
     }));
     s = reducer(s, resetGroundTruth());
     expect(s.anchorsByBody).toEqual({});
-    expect(s.coveredBody).toBeNull();
-    expect(s.coveredFromMs).toBeNull();
+    expect(s.coveredByBody).toEqual({});
     expect(s.trueTrack).toBeNull();
     expect(s.overlayEnabled).toBe(true); // user preference survives a resubmit
   });
