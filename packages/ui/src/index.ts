@@ -26,3 +26,8 @@ export {
   CelestialPortrait,
   type CelestialPortraitProps,
 } from "./components/CelestialPortrait";
+export {
+  SegmentedControl,
+  type SegmentedControlProps,
+  type SegmentedOption,
+} from "./components/SegmentedControl";
