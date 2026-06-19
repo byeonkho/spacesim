@@ -22,3 +22,7 @@ export {
   GlassPanel,
   type GlassPanelProps,
 } from "./components/GlassPanel";
+export {
+  CelestialPortrait,
+  type CelestialPortraitProps,
+} from "./components/CelestialPortrait";
