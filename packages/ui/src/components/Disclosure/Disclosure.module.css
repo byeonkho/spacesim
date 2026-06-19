@@ -1,0 +1,34 @@
+.disclosure {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-strip);
+  color: var(--color-hi);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.header:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.title {
+  font-weight: 500;
+}
+
+.content {
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text);
+}

@@ -12,3 +12,8 @@ export {
   type InfoTooltipProps,
 } from "./components/InfoTooltip";
 export { Chip, type ChipProps } from "./components/Chip";
+export { Chevron, type ChevronProps } from "./components/Chevron";
+export {
+  Disclosure,
+  type DisclosureProps,
+} from "./components/Disclosure";
