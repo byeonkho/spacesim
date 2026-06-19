@@ -31,3 +31,8 @@ export {
   type SegmentedControlProps,
   type SegmentedOption,
 } from "./components/SegmentedControl";
+export {
+  Selector,
+  type SelectorProps,
+  type SelectorItem,
+} from "./components/Selector";
