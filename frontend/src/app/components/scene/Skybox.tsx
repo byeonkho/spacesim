@@ -28,7 +28,9 @@ import {
 // encodes on output. With Canvas tone-mapping disabled (flat prop on
 // the parent), this preserves the source colors 1:1.
 
-const SKYBOX_PATH = "/textures/skybox/skybox-full.jpg";
+// Version suffix in the filename lets _headers cache this immutably the
+// same way the preset clips are: bump to -v2 when the texture is replaced.
+const SKYBOX_PATH = "/textures/skybox/skybox-full-v1.jpg";
 
 export function Skybox() {
   // onLoad fires once in a useLayoutEffect inside useTexture, before the
