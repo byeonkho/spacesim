@@ -35,6 +35,15 @@ public class Simulation {
     private static final int TIMESTEPS_TO_RUN = 10_000;
 
     /**
+     * DP853's derivative evaluations per accepted, interpolated step under
+     * the Hipparchus build on the classpath: 12 tableau stages plus 3
+     * dense-output stages folded in when the step is interpolated. Pinned
+     * against the live library by DP853StageCountTest, which fails if a
+     * Hipparchus upgrade changes it.
+     */
+    static final double DP853_EVALS_PER_ACCEPTED_STEP = 15.0;
+
+    /**
      * Fixed-step path (Euler, RK4): emit every Nth integration step
      * (1 = no thinning). Computed by the HTTP boundary from request
      * {@code keyframeIntervalSec / stepDt} and validated to
@@ -368,18 +377,18 @@ public class Simulation {
 
     /**
      * Estimates DP853's attempted-step count for a chunk from its
-     * derivative-evaluation total. Hipparchus 3.0's DormandPrince853
-     * evaluates 15 stages per attempt (the 12-stage tableau plus 3
-     * dense-output stages folded into the main loop), accepted or
-     * rejected, plus one initIntegration evaluation per integrate() call;
-     * the initializeStep probe is skipped because stepInto seeds the
-     * previous accepted step size (the first-ever call pays one extra
-     * evaluation, negligible across a chunk). One external step is one
-     * integrate() call. The constant must be re-derived on a Hipparchus
-     * upgrade.
+     * derivative-evaluation total. DP853 evaluates
+     * {@link #DP853_EVALS_PER_ACCEPTED_STEP} derivatives per accepted,
+     * interpolated step (the tableau stages plus dense-output stages),
+     * accepted or rejected, plus one initIntegration evaluation per
+     * integrate() call; the initializeStep probe is skipped because
+     * stepInto seeds the previous accepted step size (the first-ever call
+     * pays one extra evaluation, negligible across a chunk). One external
+     * step is one integrate() call. DP853StageCountTest pins the constant
+     * to the Hipparchus build so an upgrade cannot drift it silently.
      */
     static double estimateDp853Attempts(long evalsThisChunk, int externalSteps) {
-        return (evalsThisChunk - (double) externalSteps) / 15.0;
+        return (evalsThisChunk - (double) externalSteps) / DP853_EVALS_PER_ACCEPTED_STEP;
     }
 
     /**
