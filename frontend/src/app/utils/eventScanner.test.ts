@@ -19,8 +19,9 @@ describe("findLocalExtrema", () => {
 
   it("respects the [from,to] window", () => {
     const v = [9, 1, 9, 1, 9];
-    const { minima } = findLocalExtrema(v, 2, 4);
+    const { minima, maxima } = findLocalExtrema(v, 2, 4);
     expect(minima).toEqual([3]); // only the dip inside the window
+    expect(maxima).toEqual([2]); // index 2 is an interior maximum (9 > 1 on both sides)
   });
 
   it("treats flat runs as non-extrema (strict turns only)", () => {
