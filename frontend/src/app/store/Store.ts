@@ -7,6 +7,7 @@ import eventLogReducer from "./slices/EventLogSlice";
 import groundTruthReducer from "./slices/GroundTruthSlice";
 import uiReducer from "./slices/UISlice";
 import tourReducer from "./slices/TourSlice";
+import notableEventsReducer from "./slices/NotableEventsSlice";
 import { groundTruthMiddleware } from "./middleware/groundTruthMiddleware";
 import { userActionLogger } from "./middleware/userActionLogger";
 import { tourMiddleware } from "./middleware/tourMiddleware";
@@ -19,6 +20,7 @@ export const store = configureStore({
     groundTruth: groundTruthReducer,
     ui: uiReducer,
     tour: tourReducer,
+    notableEvents: notableEventsReducer,
   },
 
   middleware: (getDefaultMiddleware) =>
