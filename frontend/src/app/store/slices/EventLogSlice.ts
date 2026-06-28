@@ -19,6 +19,9 @@ export interface LogEvent {
   source: EventSource;
   severity: EventSeverity;
   message: string;
+  // Present only on SIM entries: the GLOBAL timestep index the event sits at,
+  // so clicking the row can seek the scrubber there.
+  timeIndex?: number;
 }
 
 export type EventFilter = "ALL" | EventSource;
@@ -43,7 +46,9 @@ export const eventLogSlice = createSlice({
   reducers: {
     pushEvent: (
       state,
-      action: PayloadAction<Omit<LogEvent, "id" | "ts"> & { ts?: number }>,
+      action: PayloadAction<
+        Omit<LogEvent, "id" | "ts"> & { ts?: number }
+      >,
     ) => {
       const event: LogEvent = {
         id: state.nextId,
@@ -51,6 +56,7 @@ export const eventLogSlice = createSlice({
         source: action.payload.source,
         severity: action.payload.severity,
         message: action.payload.message,
+        timeIndex: action.payload.timeIndex,
       };
       state.nextId += 1;
       state.events.unshift(event);

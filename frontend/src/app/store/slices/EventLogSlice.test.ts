@@ -118,3 +118,21 @@ describe("EventLogSlice — clearEvents", () => {
     expect(state.nextId).toBe(3);
   });
 });
+
+describe("EventLogSlice timeIndex", () => {
+  it("stores an optional timeIndex on SIM entries", () => {
+    const s = eventLogReducer(
+      undefined,
+      pushEvent({ source: "SIM", severity: "info", message: "x", timeIndex: 4521 }),
+    );
+    expect(s.events[0].timeIndex).toBe(4521);
+  });
+
+  it("leaves timeIndex undefined when not provided (USR entries)", () => {
+    const s = eventLogReducer(
+      undefined,
+      pushEvent({ source: "USR", severity: "user", message: "Paused" }),
+    );
+    expect(s.events[0].timeIndex).toBeUndefined();
+  });
+});
