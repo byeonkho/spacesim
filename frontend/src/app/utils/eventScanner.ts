@@ -5,6 +5,12 @@
 // (bufferStartTimestep + local), making them invariant to live-buffer eviction.
 
 import type { EventSeverity } from "@/app/store/slices/EventLogSlice";
+import { Vector3 } from "three";
+import {
+  type ChunkBuffer,
+  readBodyPositionInto,
+  getTimestampAsIsoString,
+} from "@/app/store/chunkBuffer";
 
 export type EventType = "closestApproach" | "perihelion" | "aphelion";
 
@@ -39,13 +45,6 @@ export function findLocalExtrema(
   }
   return { minima, maxima };
 }
-
-import { Vector3 } from "three";
-import {
-  type ChunkBuffer,
-  readBodyPositionInto,
-  getTimestampAsIsoString,
-} from "@/app/store/chunkBuffer";
 
 // A closest approach is kept only if it closes at least this fraction from the
 // shallower of its two surrounding peaks (topographic prominence). Self-
