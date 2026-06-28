@@ -4,10 +4,8 @@ import simulationReducer, {
   appendChunkToBuffer,
   setCurrentTimeStepIndex,
 } from "@/app/store/slices/SimulationSlice";
-import eventLogReducer, { selectEvents } from "@/app/store/slices/EventLogSlice";
-import notableEventsReducer, {
-  selectDetectedEvents,
-} from "@/app/store/slices/NotableEventsSlice";
+import eventLogReducer from "@/app/store/slices/EventLogSlice";
+import notableEventsReducer from "@/app/store/slices/NotableEventsSlice";
 import { notableEventsMiddleware } from "./notableEventsMiddleware";
 
 // Minimal store with just the slices the middleware touches.
@@ -53,23 +51,23 @@ describe("notableEventsMiddleware", () => {
   it("scans on appendChunkToBuffer and narrates as the playhead crosses", () => {
     const store = makeStore();
     store.dispatch(appendChunkToBuffer(approachChunkPayload()));
-    const detected = selectDetectedEvents(store.getState());
+    const detected = store.getState().notableEvents.detectedEvents;
     expect(detected.length).toBeGreaterThanOrEqual(1);
 
     // Playhead behind the event: no SIM log entry yet.
     store.dispatch(setCurrentTimeStepIndex(2));
-    expect(selectEvents(store.getState()).filter((e) => e.source === "SIM")).toHaveLength(0);
+    expect(store.getState().eventLog.events.filter((e) => e.source === "SIM")).toHaveLength(0);
 
     // Playhead past the event: it narrates exactly once.
     store.dispatch(setCurrentTimeStepIndex(10));
-    const sim1 = selectEvents(store.getState()).filter((e) => e.source === "SIM");
+    const sim1 = store.getState().eventLog.events.filter((e) => e.source === "SIM");
     expect(sim1.length).toBeGreaterThanOrEqual(1);
     expect(sim1[0].timeIndex).toBeDefined();
 
     // Scrub back then forward: no duplicate narration.
     store.dispatch(setCurrentTimeStepIndex(2));
     store.dispatch(setCurrentTimeStepIndex(10));
-    const sim2 = selectEvents(store.getState()).filter((e) => e.source === "SIM");
+    const sim2 = store.getState().eventLog.events.filter((e) => e.source === "SIM");
     expect(sim2.length).toBe(sim1.length);
   });
 });
