@@ -168,3 +168,48 @@ describe("scanBuffer", () => {
     expect(events).toHaveLength(0);
   });
 });
+
+describe("scanBuffer incremental scan across a chunk seam", () => {
+  // Drive the incremental scan the way notableEventsMiddleware does: scanBuffer
+  // once per chunk append, advancing a GLOBAL high-water mark. A clean
+  // perihelion V-minimum at global index `minAtGlobal` must be detected exactly
+  // once no matter where it lands relative to the seam (chunk1 = global 0..9,
+  // chunk2 = global 10..19), and never missed at the seam.
+  function runIncremental(minAtGlobal: number): number[] {
+    const names = ["Sun", "P"];
+    const total = 20;
+    const chunk1Len = 10;
+    const buf = createChunkBuffer(names, total);
+    const mk = (from: number, len: number) => {
+      const positions = new Float64Array(len * 2 * 6);
+      const timestamps = new Float64Array(len);
+      for (let k = 0; k < len; k++) {
+        const t = from + k;
+        timestamps[k] = t * 86_400_000;
+        const r = 1e11 + Math.abs(t - minAtGlobal) * 1e9; // clean V, min at minAtGlobal
+        const base = k * 2 * 6;
+        positions[base + 6] = r; // Sun at origin (index 0), P at (r,0,0) (index 1)
+      }
+      return { positions, timestamps, dE: new Float32Array(len) };
+    };
+    const peris: number[] = [];
+    let hw = 0;
+    const c1 = mk(0, chunk1Len);
+    appendChunk(buf, c1.positions, c1.timestamps, c1.dE, chunk1Len);
+    for (const e of scanBuffer(buf, hw)) if (e.type === "perihelion") peris.push(e.timeIndex);
+    hw = buf.bufferStartTimestep + buf.totalTimesteps - 1;
+    const c2 = mk(chunk1Len, total - chunk1Len);
+    appendChunk(buf, c2.positions, c2.timestamps, c2.dE, total - chunk1Len);
+    for (const e of scanBuffer(buf, hw)) if (e.type === "perihelion") peris.push(e.timeIndex);
+    return peris;
+  }
+
+  it("detects a seam-adjacent perihelion exactly once (no duplicate, no miss)", () => {
+    for (const m of [8, 9, 10, 12]) {
+      const peris = runIncremental(m);
+      console.log(`min@${m} -> perihelion timeIndices: ${JSON.stringify(peris)}`);
+      expect(peris, `minimum at global ${m} should be found exactly once`).toHaveLength(1);
+      expect(Math.round(peris[0]), `minimum at global ${m}`).toBe(m);
+    }
+  });
+});
