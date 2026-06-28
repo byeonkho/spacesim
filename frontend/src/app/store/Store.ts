@@ -11,6 +11,7 @@ import notableEventsReducer from "./slices/NotableEventsSlice";
 import { groundTruthMiddleware } from "./middleware/groundTruthMiddleware";
 import { userActionLogger } from "./middleware/userActionLogger";
 import { tourMiddleware } from "./middleware/tourMiddleware";
+import { notableEventsMiddleware } from "./middleware/notableEventsMiddleware";
 
 export const store = configureStore({
   reducer: {
@@ -30,7 +31,8 @@ export const store = configureStore({
       .concat(simulationUpdateDataMiddleware)
       .concat(groundTruthMiddleware)
       .concat(userActionLogger)
-      .concat(tourMiddleware),
+      .concat(tourMiddleware)
+      .concat(notableEventsMiddleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
