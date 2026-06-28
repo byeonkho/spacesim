@@ -15,7 +15,7 @@ type Slice = ReturnType<typeof eventLogReducer>;
 const initialState = (): Slice =>
   eventLogReducer(undefined, { type: "@@INIT" });
 
-describe("EventLogSlice — pushEvent", () => {
+describe("EventLogSlice: pushEvent", () => {
   it("inserts at the head of the events list", () => {
     let state = initialState();
     state = eventLogReducer(
@@ -92,7 +92,7 @@ describe("EventLogSlice — pushEvent", () => {
   });
 });
 
-describe("EventLogSlice — setEventFilter", () => {
+describe("EventLogSlice: setEventFilter", () => {
   it("updates the filter", () => {
     let state = initialState();
     state = eventLogReducer(state, setEventFilter("SIM"));
@@ -102,7 +102,7 @@ describe("EventLogSlice — setEventFilter", () => {
   });
 });
 
-describe("EventLogSlice — clearEvents", () => {
+describe("EventLogSlice: clearEvents", () => {
   it("empties events but preserves nextId so ids never collide", () => {
     let state = initialState();
     state = eventLogReducer(

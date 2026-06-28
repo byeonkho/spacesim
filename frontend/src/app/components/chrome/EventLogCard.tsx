@@ -133,7 +133,7 @@ function EventRow({ event }: { event: LogEvent }) {
       className={[
         "flex items-baseline gap-2.5 px-4 py-[5px]",
         seekable ? "cursor-pointer hover:bg-white/[0.04]" : "",
-      ].join(" ")}
+      ].filter(Boolean).join(" ")}
       onClick={onClick}
       role={seekable ? "button" : undefined}
       title={seekable ? "Jump to this moment" : undefined}
