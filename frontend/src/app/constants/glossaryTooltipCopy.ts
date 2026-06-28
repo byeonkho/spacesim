@@ -67,6 +67,9 @@ export const FRAME_COMPASS_COPY =
 export const EVENT_LOG_COPY =
   "A running list of notable moments. The filters let you show everything, just the things the simulation itself reports, or just the actions you have taken.";
 
+export const NOTABLE_EVENTS_COPY =
+  "Little markers on the bar mark interesting moments the simulation found, like two worlds passing close or a planet reaching the nearest point of its loop around the Sun. Click one to jump straight to that moment.";
+
 // ── View toggles (timeline) ───────────────────────────────────────────
 
 export const GRID_COPY =

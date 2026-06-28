@@ -13,6 +13,7 @@ import {
   selectCurrentTimeStepIndex,
 } from "@/app/store/slices/SimulationSlice";
 import { formatSpeed } from "@/app/utils/formatSpeed";
+import { ScrubberMarkers } from "@/app/components/chrome/ScrubberMarkers";
 
 const clamp = (v: number, lo: number, hi: number) =>
   Math.max(lo, Math.min(hi, v));
@@ -65,6 +66,7 @@ export function MobileTransportBar() {
             boxShadow: "0 0 0 3px rgba(164,168,255,0.45), 0 2px 8px rgba(0,0,0,0.4)",
           }}
         />
+        <ScrubberMarkers />
       </div>
       {/* The buttons are centered as their own group so the play button always
           lands dead-center of the bar, independent of the speed readout. The
