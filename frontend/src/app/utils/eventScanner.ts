@@ -270,13 +270,6 @@ export function detectPerihelia(
     }
     const { minima, maxima } = findLocalExtrema(dist, 0, dist.length - 1);
 
-    // For orbits, also check if endpoints are minima (perihelion at loop boundaries)
-    // Only include the first endpoint to avoid double-counting periodic minima
-    const allMinima = [...minima];
-    if (dist.length > 1 && dist[0] < dist[1]) {
-      allMinima.push(0);
-    }
-
     const emit = (arrIdx: number, kind: "perihelion" | "aphelion") => {
       const center = arrIdx + from;
       const refined = refineExtremum(buffer, center, bi, primaryIdx, kind);
@@ -293,7 +286,7 @@ export function detectPerihelia(
         message: describePerihelion(buffer.bodyNames[bi], isoDate, kind),
       });
     };
-    for (const m of allMinima) emit(m, "perihelion");
+    for (const m of minima) emit(m, "perihelion");
     for (const m of maxima) emit(m, "aphelion");
   }
   return events;

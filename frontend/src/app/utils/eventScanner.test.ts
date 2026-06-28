@@ -113,12 +113,15 @@ describe("detectPerihelia", () => {
     const positions = new Float64Array(T * 2 * 6);
     const timestamps = new Float64Array(T);
     const dE = new Float32Array(T);
-    // P traces one ellipse around the Sun: r = a(1 - e^2)/(1 + e cos theta).
+    // P traces one ellipse around the Sun, phase-shifted so both turning
+    // points fall in the interior: r = a(1 - e^2)/(1 + e cos theta), with
+    // theta swept from -pi/2 to 3pi/2. Perihelion (theta=0) lands near t=3,
+    // aphelion (theta=pi) near t=9; both endpoints sit mid-arc.
     const a = 1.5e11;
     const e = 0.3;
     for (let t = 0; t < T; t++) {
       timestamps[t] = t * 86_400_000;
-      const theta = (2 * Math.PI * t) / (T - 1); // one full loop
+      const theta = (2 * Math.PI * t) / (T - 1) - Math.PI / 2;
       const r = (a * (1 - e * e)) / (1 + e * Math.cos(theta));
       const base = t * 2 * 6;
       positions[base + 6] = r * Math.cos(theta);
@@ -131,9 +134,11 @@ describe("detectPerihelia", () => {
     expect(peri).toHaveLength(1);
     expect(apo).toHaveLength(1);
     expect(peri[0].bodies).toEqual(["P"]);
-    // Perihelion (theta=0/2pi) is at the loop ends; the interior turn is aphelion (theta=pi, t approx 6).
-    expect(apo[0].timeIndex).toBeGreaterThan(4);
-    expect(apo[0].timeIndex).toBeLessThan(8);
+    // Perihelion interior near t=3, aphelion interior near t=9.
+    expect(peri[0].timeIndex).toBeGreaterThan(1);
+    expect(peri[0].timeIndex).toBeLessThan(5);
+    expect(apo[0].timeIndex).toBeGreaterThan(7);
+    expect(apo[0].timeIndex).toBeLessThan(11);
   });
 
   it("returns nothing when the Sun is not loaded", () => {
