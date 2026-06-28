@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { findLocalExtrema, detectClosestApproaches } from "./eventScanner";
+import { findLocalExtrema, detectClosestApproaches, detectPerihelia } from "./eventScanner";
 import {
   createChunkBuffer,
   appendChunk,
@@ -102,5 +102,46 @@ describe("detectClosestApproaches", () => {
     appendChunk(buf, positions, timestamps, dE, T);
     const events = detectClosestApproaches(buf, 0, buf.totalTimesteps - 1);
     expect(events).toHaveLength(0);
+  });
+});
+
+describe("detectPerihelia", () => {
+  it("finds one perihelion and one aphelion of an elliptical orbit", () => {
+    const names = ["Sun", "P"];
+    const T = 13;
+    const buf = createChunkBuffer(names, T);
+    const positions = new Float64Array(T * 2 * 6);
+    const timestamps = new Float64Array(T);
+    const dE = new Float32Array(T);
+    // P traces one ellipse around the Sun: r = a(1 - e^2)/(1 + e cos theta).
+    const a = 1.5e11;
+    const e = 0.3;
+    for (let t = 0; t < T; t++) {
+      timestamps[t] = t * 86_400_000;
+      const theta = (2 * Math.PI * t) / (T - 1); // one full loop
+      const r = (a * (1 - e * e)) / (1 + e * Math.cos(theta));
+      const base = t * 2 * 6;
+      positions[base + 6] = r * Math.cos(theta);
+      positions[base + 7] = r * Math.sin(theta);
+    }
+    appendChunk(buf, positions, timestamps, dE, T);
+    const events = detectPerihelia(buf, 0, buf.totalTimesteps - 1);
+    const peri = events.filter((x) => x.type === "perihelion");
+    const apo = events.filter((x) => x.type === "aphelion");
+    expect(peri).toHaveLength(1);
+    expect(apo).toHaveLength(1);
+    expect(peri[0].bodies).toEqual(["P"]);
+    // Perihelion (theta=0/2pi) is at the loop ends; the interior turn is aphelion (theta=pi, t approx 6).
+    expect(apo[0].timeIndex).toBeGreaterThan(4);
+    expect(apo[0].timeIndex).toBeLessThan(8);
+  });
+
+  it("returns nothing when the Sun is not loaded", () => {
+    const names = ["Earth", "Mars"];
+    const buf = createChunkBuffer(names, 3);
+    const positions = new Float64Array(3 * 2 * 6);
+    const timestamps = new Float64Array(3);
+    appendChunk(buf, positions, timestamps, new Float32Array(3), 3);
+    expect(detectPerihelia(buf, 0, 2)).toEqual([]);
   });
 });
