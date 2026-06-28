@@ -291,3 +291,25 @@ export function detectPerihelia(
   }
   return events;
 }
+
+// One keyframe of leading overlap so an extremum sitting on the boundary
+// between the previously-scanned region and the new chunk is not missed.
+export const SCAN_OVERLAP = 1;
+
+export function scanBuffer(
+  buffer: ChunkBuffer,
+  fromGlobal: number,
+): DetectedEvent[] {
+  if (buffer.totalTimesteps < 3) return [];
+  const fromLocal = Math.max(
+    0,
+    Math.floor(fromGlobal - buffer.bufferStartTimestep) - SCAN_OVERLAP,
+  );
+  const toLocal = buffer.totalTimesteps - 1;
+  const events = [
+    ...detectClosestApproaches(buffer, fromLocal, toLocal),
+    ...detectPerihelia(buffer, fromLocal, toLocal),
+  ];
+  events.sort((a, b) => a.timeIndex - b.timeIndex);
+  return events;
+}

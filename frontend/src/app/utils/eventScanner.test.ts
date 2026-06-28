@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { findLocalExtrema, detectClosestApproaches, detectPerihelia } from "./eventScanner";
+import { findLocalExtrema, detectClosestApproaches, detectPerihelia, scanBuffer } from "./eventScanner";
 import {
   createChunkBuffer,
   appendChunk,
@@ -148,5 +148,23 @@ describe("detectPerihelia", () => {
     const timestamps = new Float64Array(3);
     appendChunk(buf, positions, timestamps, new Float32Array(3), 3);
     expect(detectPerihelia(buf, 0, 2)).toEqual([]);
+  });
+});
+
+describe("scanBuffer", () => {
+  it("combines approach and perihelion events, sorted by timeIndex", () => {
+    const buf = buildApproachBuffer(); // A, B with one approach near t=5.4
+    const events = scanBuffer(buf, 0);
+    expect(events.length).toBeGreaterThanOrEqual(1);
+    for (let i = 1; i < events.length; i++) {
+      expect(events[i].timeIndex).toBeGreaterThanOrEqual(events[i - 1].timeIndex);
+    }
+  });
+
+  it("only scans from fromGlobal forward (minus the one-keyframe overlap)", () => {
+    const buf = buildApproachBuffer();
+    // fromGlobal past the approach: no events should be re-emitted.
+    const events = scanBuffer(buf, 9);
+    expect(events).toHaveLength(0);
   });
 });
