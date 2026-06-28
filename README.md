@@ -80,7 +80,7 @@ For a deeper architectural discussion, planned work, and known tradeoffs, see **
 | Layer | Choice |
 |---|---|
 | Backend | Spring Boot 3.5, Java 21 |
-| Astrodynamics | [Orekit](https://www.orekit.org/) 12 + [Hipparchus](https://hipparchus.org/) (JPL ephemerides, ICRF/GCRF reference frames) |
+| Astrodynamics | [Orekit](https://www.orekit.org/) 13 + [Hipparchus](https://hipparchus.org/) (JPL ephemerides, ICRF/GCRF reference frames) |
 | Wire format | Custom binary over HTTP/2, zstd-compressed |
 | Frontend | Next.js 16, React 19, [React Three Fiber](https://docs.pmnd.rs/react-three-fiber), Redux Toolkit, Tailwind v4, Radix |
 | Hosting | Railway (backend) + Cloudflare Pages (frontend), behind Cloudflare |
