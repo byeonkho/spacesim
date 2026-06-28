@@ -54,12 +54,20 @@ export const notableEventsMiddleware: Middleware = (storeApi) => (next) => (acti
     const bufferStart = selectBufferStartTimestep(state);
     const playheadGlobal = Math.floor(selectCurrentTimeStepIndex(state)) + bufferStart;
     const cursor = selectNarrationCursorGlobal(state);
-    const toNarrate = eventsToNarrate(
-      selectDetectedEvents(state),
-      cursor,
-      playheadGlobal,
-    );
-    if (toNarrate.length === 0) return result;
+    const detectedEvents = selectDetectedEvents(state);
+    // This branch runs every frame during playback. Do an allocation-free
+    // pre-scan first and only build the filtered array on the rare frame that
+    // actually crosses an event, to keep per-frame garbage off the hot path.
+    let crossed = false;
+    for (let i = 0; i < detectedEvents.length; i++) {
+      const ti = detectedEvents[i].timeIndex;
+      if (ti > cursor && ti <= playheadGlobal) {
+        crossed = true;
+        break;
+      }
+    }
+    if (!crossed) return result;
+    const toNarrate = eventsToNarrate(detectedEvents, cursor, playheadGlobal);
     for (const e of toNarrate) {
       storeApi.dispatch(
         pushEvent({
