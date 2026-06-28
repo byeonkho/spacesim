@@ -59,6 +59,7 @@ import {
   TIMELINE_STEPS_COPY,
   TPLUS_COPY,
 } from "@/app/constants/glossaryTooltipCopy";
+import { ScrubberMarkers } from "@/app/components/chrome/ScrubberMarkers";
 
 // Bottom timeline: transport + rate + scrubber + view toggles. Replaces
 // TimeControls.tsx + MiscActionBar.tsx + ControlsContainer.tsx. Scrubber
@@ -309,6 +310,7 @@ function Scrubber() {
             }}
           />
         </div>
+        <ScrubberMarkers />
       </div>
     </div>
   );

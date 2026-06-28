@@ -13,6 +13,11 @@ import {
   selectEventLogCollapsed,
   toggleEventLog,
 } from "@/app/store/slices/UISlice";
+import {
+  selectBufferStartTimestep,
+  selectTotalTimeSteps,
+  setCurrentTimeStepIndex,
+} from "@/app/store/slices/SimulationSlice";
 import { CollapseChevron } from "@/app/components/chrome/CollapseChevron";
 import { InfoTooltip } from "@/app/components/chrome/InfoTooltip";
 import { EVENT_LOG_COPY } from "@/app/constants/glossaryTooltipCopy";
@@ -108,11 +113,31 @@ export function EventLogCard() {
 }
 
 function EventRow({ event }: { event: LogEvent }) {
+  const dispatch = useDispatch();
+  const bufferStart = useSelector(selectBufferStartTimestep);
+  const total = useSelector(selectTotalTimeSteps);
   const time = formatHms(event.ts);
   const dotClass = severityDotClass(event.severity);
   const messageDimmed = event.severity === "info";
+
+  const local =
+    event.timeIndex !== undefined ? event.timeIndex - bufferStart : -1;
+  const seekable = local >= 0 && local <= total - 1;
+
+  const onClick = seekable
+    ? () => dispatch(setCurrentTimeStepIndex(Math.round(local)))
+    : undefined;
+
   return (
-    <div className="flex items-baseline gap-2.5 px-4 py-[5px]">
+    <div
+      className={[
+        "flex items-baseline gap-2.5 px-4 py-[5px]",
+        seekable ? "cursor-pointer hover:bg-white/[0.04]" : "",
+      ].filter(Boolean).join(" ")}
+      onClick={onClick}
+      role={seekable ? "button" : undefined}
+      title={seekable ? "Jump to this moment" : undefined}
+    >
       <span className="text-subdim tabular min-w-[54px] font-mono text-[10px]">
         {time}
       </span>

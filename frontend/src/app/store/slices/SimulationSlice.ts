@@ -525,6 +525,9 @@ export const selectChunkBuffer = (state: RootState): ChunkBuffer | null =>
 export const selectTotalTimeSteps = (state: RootState): number =>
   state.simulation.chunkBuffer?.totalTimesteps ?? 0;
 
+export const selectBufferStartTimestep = (state: RootState): number =>
+  state.simulation.chunkBuffer?.bufferStartTimestep ?? 0;
+
 export const selectCurrentTimeStepIsoString = createSelector(
   [
     (state: RootState) => state.simulation.chunkBuffer,

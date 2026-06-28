@@ -15,7 +15,7 @@ type Slice = ReturnType<typeof eventLogReducer>;
 const initialState = (): Slice =>
   eventLogReducer(undefined, { type: "@@INIT" });
 
-describe("EventLogSlice — pushEvent", () => {
+describe("EventLogSlice: pushEvent", () => {
   it("inserts at the head of the events list", () => {
     let state = initialState();
     state = eventLogReducer(
@@ -92,7 +92,7 @@ describe("EventLogSlice — pushEvent", () => {
   });
 });
 
-describe("EventLogSlice — setEventFilter", () => {
+describe("EventLogSlice: setEventFilter", () => {
   it("updates the filter", () => {
     let state = initialState();
     state = eventLogReducer(state, setEventFilter("SIM"));
@@ -102,7 +102,7 @@ describe("EventLogSlice — setEventFilter", () => {
   });
 });
 
-describe("EventLogSlice — clearEvents", () => {
+describe("EventLogSlice: clearEvents", () => {
   it("empties events but preserves nextId so ids never collide", () => {
     let state = initialState();
     state = eventLogReducer(
@@ -116,5 +116,23 @@ describe("EventLogSlice — clearEvents", () => {
     state = eventLogReducer(state, clearEvents());
     expect(state.events).toEqual([]);
     expect(state.nextId).toBe(3);
+  });
+});
+
+describe("EventLogSlice timeIndex", () => {
+  it("stores an optional timeIndex on SIM entries", () => {
+    const s = eventLogReducer(
+      undefined,
+      pushEvent({ source: "SIM", severity: "info", message: "x", timeIndex: 4521 }),
+    );
+    expect(s.events[0].timeIndex).toBe(4521);
+  });
+
+  it("leaves timeIndex undefined when not provided (USR entries)", () => {
+    const s = eventLogReducer(
+      undefined,
+      pushEvent({ source: "USR", severity: "user", message: "Paused" }),
+    );
+    expect(s.events[0].timeIndex).toBeUndefined();
   });
 });
