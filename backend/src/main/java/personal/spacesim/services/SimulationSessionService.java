@@ -16,7 +16,6 @@ import personal.spacesim.utils.compressor.ZstdCompressor;
 import personal.spacesim.utils.serializers.BinaryResponseSerializer;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +26,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.LongSupplier;
 
 @Component
 public class SimulationSessionService {
@@ -46,25 +46,11 @@ public class SimulationSessionService {
     // sessions after IDLE_TIMEOUT_MS.
     private static final int MAX_CONCURRENT_SESSIONS = 50;
 
-    private final ConcurrentHashMap<String, Simulation> simulationMap;
-    private final ConcurrentHashMap<String, Long> lastAccessedAt;
+    private final ConcurrentHashMap<String, SimulationSessionState> sessions;
     private final SimulationFactory simulationFactory;
     private final BinaryResponseSerializer binaryResponseSerializer;
     private final ZstdCompressor zstdCompressor;
-
-    // Per-session next-chunk precompute. The future may be in-flight or done.
-    // Missing entry = no precompute kicked off yet (first request, or after eviction).
-    private final ConcurrentHashMap<String, CompletableFuture<byte[]>> nextChunkCache;
-
-    // Per-session chunk-protocol state. servedChunkIndex is the index of the last
-    // chunk produced for the session (-1 = none yet). lastChunkBytes holds that
-    // chunk's payload so a client retry for the same index re-serves it instead of
-    // advancing the cursor (idempotent retry, fixes the dropped-chunk-on-blip bug).
-    // sessionLocks serializes the decide-and-produce critical section per session,
-    // so Simulation.run() is never executed concurrently for one session.
-    private final ConcurrentHashMap<String, Integer> servedChunkIndex = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, byte[]> lastChunkBytes = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, ReentrantLock> sessionLocks = new ConcurrentHashMap<>();
+    private final LongSupplier currentTimeMillis;
 
     // Bounded executor for precompute work. Threads are daemon so they don't
     // prevent JVM shutdown if a request is in flight at exit.
@@ -82,12 +68,21 @@ public class SimulationSessionService {
             BinaryResponseSerializer binaryResponseSerializer,
             ZstdCompressor zstdCompressor
     ) {
+        this(simulationFactory, binaryResponseSerializer, zstdCompressor,
+                System::currentTimeMillis);
+    }
+
+    SimulationSessionService(
+            SimulationFactory simulationFactory,
+            BinaryResponseSerializer binaryResponseSerializer,
+            ZstdCompressor zstdCompressor,
+            LongSupplier currentTimeMillis
+    ) {
         this.simulationFactory = simulationFactory;
         this.binaryResponseSerializer = binaryResponseSerializer;
         this.zstdCompressor = zstdCompressor;
-        this.simulationMap = new ConcurrentHashMap<>();
-        this.lastAccessedAt = new ConcurrentHashMap<>();
-        this.nextChunkCache = new ConcurrentHashMap<>();
+        this.currentTimeMillis = currentTimeMillis;
+        this.sessions = new ConcurrentHashMap<>();
     }
 
     public String createSimulation(
@@ -102,7 +97,7 @@ public class SimulationSessionService {
         // Reject before doing the expensive build (body wrappers, possible
         // Horizons fetches) if we're already at capacity. Soft check — a tiny
         // race can let a few past the cap, which is harmless for a heap guard.
-        if (simulationMap.size() >= MAX_CONCURRENT_SESSIONS) {
+        if (sessions.size() >= MAX_CONCURRENT_SESSIONS) {
             throw new SessionCapacityExceededException(
                     "Server at capacity (" + MAX_CONCURRENT_SESSIONS + " concurrent sessions)");
         }
@@ -118,35 +113,40 @@ public class SimulationSessionService {
                 keyframesPerKept,
                 targetSnapshotsPerChunk
         );
-        simulationMap.put(sessionID, simulation);
-        lastAccessedAt.put(sessionID, System.currentTimeMillis());
+        sessions.put(sessionID, new SimulationSessionState(
+                simulation, currentTimeMillis.getAsLong()));
         logger.info("sessionID: {}", sessionID);
         return sessionID;
     }
 
     public SimulationResponseDTO returnSimulationResponseDTO(String sessionID) {
-        Simulation simulation = simulationMap.get(sessionID);
+        Simulation simulation = getSimulation(sessionID);
+        if (simulation == null) {
+            throw sessionNotFound(sessionID);
+        }
         List<CelestialBodyWrapper> celestialBodyList = simulation.getCelestialBodies();
-        SimulationResponseMetadata simulationResponseMetadata = new SimulationResponseMetadata(sessionID);
-        return new SimulationResponseDTO(celestialBodyList, simulationResponseMetadata);
+        SimulationResponseMetadata metadata = new SimulationResponseMetadata(sessionID);
+        return new SimulationResponseDTO(celestialBodyList, metadata);
     }
 
     public Simulation getSimulation(String sessionID) {
-        return simulationMap.get(sessionID);
+        SimulationSessionState state = sessions.get(sessionID);
+        return state == null ? null : state.liveSimulation();
     }
 
     public List<Simulation> getAllSimulations() {
-        return new ArrayList<>(simulationMap.values());
+        List<Simulation> simulations = new ArrayList<>();
+        for (SimulationSessionState state : sessions.values()) {
+            Simulation simulation = state.liveSimulation();
+            if (simulation != null) {
+                simulations.add(simulation);
+            }
+        }
+        return simulations;
     }
 
     public void removeSimulation(String sessionID) {
-        simulationMap.remove(sessionID);
-        lastAccessedAt.remove(sessionID);
-        CompletableFuture<byte[]> pending = nextChunkCache.remove(sessionID);
-        if (pending != null) {
-            pending.cancel(true);
-        }
-        clearChunkProtocolState(sessionID);
+        closeSession(sessionID, sessions.get(sessionID));
     }
 
     /**
@@ -156,86 +156,87 @@ public class SimulationSessionService {
      * session at a time (no interleaved state corruption). The index gate makes the
      * call idempotent: a request for the last-served index re-serves the cached
      * bytes without advancing; the next sequential index produces and advances;
-     * anything else is a conflict. Always kicks off the next precompute after
-     * producing, so subsequent calls hit cache.
+     * anything else is a conflict. Result publication and next-chunk precompute
+     * are atomic with session closure, so late work cannot restore a dead session.
      */
     public byte[] getNextChunkBytes(String sessionID, int expectedChunkIndex) {
-        Simulation simulation = simulationMap.get(sessionID);
-        if (simulation == null) {
-            // Evicted, released, or never existed. Throw BEFORE touching
-            // lastAccessedAt: resurrecting a dead session's idle clock on every
-            // retry would defeat eviction.
-            throw new SessionNotFoundException("No live session for ID: " + sessionID);
+        SimulationSessionState state = sessions.get(sessionID);
+        if (state == null || !state.touchIfOpen(currentTimeMillis.getAsLong())) {
+            throw sessionNotFound(sessionID);
         }
-        lastAccessedAt.put(sessionID, System.currentTimeMillis());
 
-        ReentrantLock lock = sessionLocks.computeIfAbsent(sessionID, id -> new ReentrantLock());
+        Simulation simulation = state.simulationForWork();
+        ReentrantLock lock = state.requestLock();
         lock.lock();
         try {
-            int served = servedChunkIndex.getOrDefault(sessionID, -1);
-
-            // Idempotent retry: the client is re-requesting the chunk it was last
-            // served but never received (its fetch died after we computed). Re-serve
-            // the cached bytes without advancing the cursor.
-            if (expectedChunkIndex == served) {
-                byte[] cached = lastChunkBytes.get(sessionID);
-                if (cached != null) {
-                    return cached;
-                }
-                // served set but bytes absent should never happen; recomputing would
-                // double-advance, so surface it rather than corrupt the timeline.
-                throw new ChunkIndexConflictException(expectedChunkIndex, served);
+            SimulationSessionState.ChunkReservation reservation =
+                    state.reserveChunk(expectedChunkIndex);
+            if (reservation.isRetry()) {
+                return reservation.retryPayload();
             }
 
-            // Anything other than the next sequential chunk: cursors diverged by
-            // more than the one re-servable step. Never silently advance.
-            if (expectedChunkIndex != served + 1) {
-                throw new ChunkIndexConflictException(expectedChunkIndex, served);
-            }
-
-            // Produce the next chunk: consume the precompute future if present
-            // (common case), else compute on this thread (first request or
-            // post-eviction). The lock is held across get(); the precompute task
-            // does not take the lock, so there is no deadlock, and concurrent
-            // same-session requests serialize as intended.
-            CompletableFuture<byte[]> cached = nextChunkCache.remove(sessionID);
+            CompletableFuture<byte[]> cached = reservation.precomputedChunk();
             byte[] payload;
             try {
-                if (cached != null) {
-                    payload = cached.get();
-                } else {
-                    payload = computeChunkBytes(sessionID);
-                }
+                payload = cached != null
+                        ? cached.get()
+                        : computeChunkBytes(simulation);
             } catch (InterruptedException e) {
-                cached.cancel(true);
+                if (cached != null) {
+                    cached.cancel(true);
+                }
                 Thread.currentThread().interrupt();
-                removeSimulation(sessionID);
+                closeSession(sessionID, state);
                 throw new RuntimeException("Interrupted while awaiting precomputed chunk", e);
             } catch (ExecutionException e) {
-                removeSimulation(sessionID);
+                closeSession(sessionID, state);
                 throw new RuntimeException("Precompute failed", e.getCause());
             } catch (RuntimeException e) {
                 // Simulation.run() advances mutable state before serialization and
                 // compression. Once either post-run step fails, retrying this index
                 // would compute from a later state and silently skip an interval.
                 // Invalidate the session so the client must initialize a fresh one.
-                removeSimulation(sessionID);
+                closeSession(sessionID, state);
                 throw e;
             }
 
-            servedChunkIndex.put(sessionID, expectedChunkIndex);
-            lastChunkBytes.put(sessionID, payload);
-            kickOffNextPrecompute(sessionID);
+            try {
+                boolean published = state.publishChunk(
+                        expectedChunkIndex,
+                        payload,
+                        () -> startPrecompute(simulation));
+                if (!published) {
+                    throw sessionNotFound(sessionID);
+                }
+            } catch (SessionNotFoundException e) {
+                throw e;
+            } catch (RuntimeException e) {
+                closeSession(sessionID, state);
+                throw e;
+            }
             return payload;
         } finally {
             lock.unlock();
         }
     }
 
-    private void clearChunkProtocolState(String sessionID) {
-        servedChunkIndex.remove(sessionID);
-        lastChunkBytes.remove(sessionID);
-        sessionLocks.remove(sessionID);
+    private void closeSession(String sessionID, SimulationSessionState state) {
+        if (state == null) {
+            return;
+        }
+        SimulationSessionState.Closure closure = state.close();
+        sessions.remove(sessionID, state);
+        cancelPrecompute(closure.pendingPrecompute());
+    }
+
+    private static void cancelPrecompute(CompletableFuture<byte[]> pending) {
+        if (pending != null) {
+            pending.cancel(true);
+        }
+    }
+
+    private SessionNotFoundException sessionNotFound(String sessionID) {
+        return new SessionNotFoundException("No live session for ID: " + sessionID);
     }
 
     /**
@@ -244,21 +245,17 @@ public class SimulationSessionService {
      * use {@link #getNextChunkBytes}.
      */
     public CompletableFuture<byte[]> peekPrecomputedChunk(String sessionID) {
-        return nextChunkCache.get(sessionID);
+        SimulationSessionState state = sessions.get(sessionID);
+        return state == null ? null : state.peekPrecomputedChunk();
     }
 
-    private void kickOffNextPrecompute(String sessionID) {
-        // computeIfAbsent prevents double-kickoff if a caller races with us.
-        nextChunkCache.computeIfAbsent(sessionID, id ->
-                CompletableFuture.supplyAsync(() -> computeChunkBytes(id), precomputeExecutor));
+    private CompletableFuture<byte[]> startPrecompute(Simulation simulation) {
+        return CompletableFuture.supplyAsync(
+                () -> computeChunkBytes(simulation),
+                precomputeExecutor);
     }
 
-    private byte[] computeChunkBytes(String sessionID) {
-        Simulation simulation = getSimulation(sessionID);
-        if (simulation == null) {
-            throw new IllegalArgumentException("Simulation not found for session ID: " + sessionID);
-        }
-
+    private byte[] computeChunkBytes(Simulation simulation) {
         ChunkResult chunkResult = simulation.run();
 
         // µ map built fresh each chunk; constant per session but cheap (~9 entries).
@@ -283,21 +280,18 @@ public class SimulationSessionService {
      */
     @Scheduled(fixedRate = 60_000)
     public void evictIdleSimulations() {
-        long now = System.currentTimeMillis();
-        Iterator<Map.Entry<String, Long>> it = lastAccessedAt.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, Long> entry = it.next();
-            if (now - entry.getValue() > IDLE_TIMEOUT_MS) {
-                String sessionID = entry.getKey();
-                simulationMap.remove(sessionID);
-                CompletableFuture<byte[]> pending = nextChunkCache.remove(sessionID);
-                if (pending != null) {
-                    pending.cancel(true);
-                }
-                it.remove();
-                clearChunkProtocolState(sessionID);
-                logger.info("Evicted idle simulation {}", sessionID);
+        long now = currentTimeMillis.getAsLong();
+        for (Map.Entry<String, SimulationSessionState> entry : sessions.entrySet()) {
+            String sessionID = entry.getKey();
+            SimulationSessionState state = entry.getValue();
+            SimulationSessionState.Closure closure =
+                    state.closeIfIdle(now, IDLE_TIMEOUT_MS);
+            if (!closure.closedNow()) {
+                continue;
             }
+            sessions.remove(sessionID, state);
+            cancelPrecompute(closure.pendingPrecompute());
+            logger.info("Evicted idle simulation {}", sessionID);
         }
     }
 }
