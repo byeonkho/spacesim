@@ -100,6 +100,8 @@ not this summary, controls.
 
 Third-party textures, imagery, fonts, astronomy data, and dependencies are not
 relicensed under the AGPL. Their sources, credits, changes, and terms are listed
-in [ATTRIBUTIONS.md](ATTRIBUTIONS.md). Astrodynamics uses
+in [ATTRIBUTIONS.md](ATTRIBUTIONS.md). The bundled skybox and several minor-body
+textures are restricted to noncommercial use, so commercial redistributors must
+replace them or obtain separate permission. Astrodynamics uses
 [Orekit](https://www.orekit.org/) by CS GROUP / CNES, built on
 [Hipparchus](https://hipparchus.org/).

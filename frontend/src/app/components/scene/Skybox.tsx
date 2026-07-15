@@ -17,10 +17,11 @@ import {
 // flickered between adjacent pixels as the projected center crossed
 // pixel boundaries during orbit.
 //
-// The texture: ESO's 6000×3000 Milky Way panorama by S. Brunier,
-// published under CC BY 4.0 with required credit "ESO/S. Brunier".
-// The distributed 18-megapixel TIFF was downsampled to 4096×2048
-// and JPEG-encoded at quality 85. See the root ATTRIBUTIONS.md.
+// The texture: NASA SVS Deep Star Maps 2020, built from Hipparcos-2,
+// Tycho-2, and Gaia DR2. The 8K EXR was tone-mapped from linear to
+// sRGB, downsampled to 4096×2048, and JPEG-encoded at quality 85.
+// Gaia's noncommercial terms and the full credits are documented in
+// the root ATTRIBUTIONS.md.
 //
 // Mapped via EquirectangularReflectionMapping (three.js's plate-carrée
 // reader), tagged sRGB so the renderer linearises on sample then re-
@@ -28,8 +29,8 @@ import {
 // the parent), this preserves the source colors 1:1.
 
 // Version suffix in the filename lets _headers cache this immutably the
-// same way the preset clips are: bump to -v3 when the texture is replaced.
-const SKYBOX_PATH = "/textures/skybox/skybox-full-v2.jpg";
+// same way the preset clips are: bump to -v2 when the texture is replaced.
+const SKYBOX_PATH = "/textures/skybox/skybox-full-v1.jpg";
 
 export function Skybox() {
   // onLoad fires once in a useLayoutEffect inside useTexture, before the

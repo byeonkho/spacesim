@@ -14,7 +14,11 @@ import SunTexture from "../../../public/textures/sun_texture.jpg";
 // (Pallas + Hygiea: only blurry Hubble discs; Apophis: radar-only until the
 // 2029 flyby), so they ride the fallback texture. See ATTRIBUTIONS.md for
 // licensing per asset.
+import PlutoTexture from "../../../public/textures/pluto.jpg";
 import CeresTexture from "../../../public/textures/ceres.jpg";
+import VestaTexture from "../../../public/textures/vesta.jpg";
+import ErosTexture from "../../../public/textures/eros.jpg";
+import BennuTexture from "../../../public/textures/bennu.jpg";
 import RyuguTexture from "../../../public/textures/ryugu.jpg";
 // Moons (public-domain NASA/USGS mission mosaics — see ATTRIBUTIONS.md). Bodies
 // with no usable public-domain mosaic (Deimos, Nereid) ride the fallback texture.
@@ -101,14 +105,14 @@ export const bodyProperties: Record<string, BodyProperties> = {
   // Minor bodies. Rotation rates are stylized (same convention as the
   // planets above — visually-pleasing spin, not real angular velocity).
   // Negative = retrograde.
-  PLUTO:   { texture: FallbackTexture as StaticImageData, rotationSpeed: -0.016 }, // 6.4 d retrograde; no commercially-clear full-surface map
+  PLUTO:   { texture: PlutoTexture   as StaticImageData, rotationSpeed: -0.016 }, // 6.4 d retrograde
   CERES:   { texture: CeresTexture   as StaticImageData, rotationSpeed:  0.045 }, // 9.07 hr
-  VESTA:   { texture: FallbackTexture as StaticImageData, rotationSpeed: 0.076 }, // 5.34 hr; source mosaic terms are not explicit enough
+  VESTA:   { texture: VestaTexture   as StaticImageData, rotationSpeed:  0.076 }, // 5.34 hr
   PALLAS:  { texture: FallbackTexture as StaticImageData, rotationSpeed: 0.052 }, // 7.81 hr — fallback (no mosaic)
   HYGIEA:  { texture: FallbackTexture as StaticImageData, rotationSpeed: 0.029 }, // 13.8 hr — fallback (no mosaic)
-  EROS:    { texture: FallbackTexture as StaticImageData, rotationSpeed: 0.076 }, // 5.27 hr; prior mosaic terms were not explicit enough
+  EROS:    { texture: ErosTexture    as StaticImageData, rotationSpeed:  0.076 }, // 5.27 hr
   APOPHIS: { texture: FallbackTexture as StaticImageData, rotationSpeed: 0.013 }, // 30.4 hr — fallback (no mosaic)
-  BENNU:   { texture: FallbackTexture as StaticImageData, rotationSpeed: 0.093 }, // 4.30 hr; prior mosaic terms were not explicit enough
+  BENNU:   { texture: BennuTexture   as StaticImageData, rotationSpeed:  0.093 }, // 4.30 hr
   RYUGU:   { texture: RyuguTexture   as StaticImageData, rotationSpeed:  0.053 }, // 7.63 hr
 
   // Moons. Stylized spins (cosmetic — real moons are tidally locked). Negative =

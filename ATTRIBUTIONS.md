@@ -10,18 +10,22 @@ dependencies keep their own notices in their packages and metadata.
 
 ## Sky imagery
 
-`frontend/public/textures/skybox/skybox-full-v2.jpg`
+`frontend/public/textures/skybox/skybox-full-v1.jpg`
 
-- Work: [The Milky Way panorama](https://www.eso.org/public/images/eso0932a/),
-  distributed by the European Southern Observatory as a 6000 x 3000 TIFF.
-- Credit: **ESO/S. Brunier**
-- License: [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/),
-  subject to [ESO's image-use terms](https://www.eso.org/public/copyright/).
-- Changes: resized to 4096 x 2048, converted to sRGB, stripped of metadata,
-  and JPEG-encoded at quality 85. The small base64 placeholder in
-  `frontend/src/app/components/scene/Layout.tsx` is a blurred 64 x 32
-  derivative of this file.
-- No endorsement by ESO or Serge Brunier is implied.
+- Work: [NASA SVS Deep Star Maps 2020](https://svs.gsfc.nasa.gov/4851/),
+  visualized by **Ernie Wright** from Hipparcos-2, Tycho-2, Gaia Data Release
+  2, and additional catalogues.
+- Requested credit: **NASA/Goddard Space Flight Center Scientific
+  Visualization Studio. Gaia DR2: ESA/Gaia/DPAC.**
+- License caveat: Gaia data are distributed under
+  [CC BY-NC 3.0 IGO](https://www.cosmos.esa.int/web/gaia-users/license).
+  The restored skybox is therefore for noncommercial use unless ESA grants
+  separate commercial authorization under its
+  [archive terms](https://www.cosmos.esa.int/web/esdc/terms-and-conditions).
+- Changes: the 8192 x 4096 EXR was tone-mapped from linear to sRGB,
+  downsampled to 4096 x 2048, and JPEG-encoded at quality 85. The small base64
+  placeholder in `frontend/src/app/components/scene/Layout.tsx` is a blurred
+  64 x 32 derivative of this file.
 
 ## Solar System Scope textures
 
@@ -47,9 +51,13 @@ Credit: **Solar System Scope**.
 
 | Repository file or rendering | Body | Source and terms | Changes and notes |
 | --- | --- | --- | --- |
-| `ceres.jpg` | Ceres | [USGS Dawn FC global mosaic](https://astrogeology.usgs.gov/search/map/ceres_dawn_fc_global_mosaic_140m); the [USGS media record](https://www.usgs.gov/media/images/global-mosaic-ceres-taken-during-dawn-mission) marks the mosaic public domain and the product record asks users to cite **NASA/JPL-Caltech/UCLA/MPS/DLR/IDA** | The official 1024 x 512 preview was resized to 2048 x 1024 and JPEG-encoded at quality 85. No-data boundary areas use a vertically stretched derivative of observed pixels for visual continuity; those areas are not additional observations. |
+| `pluto.jpg` | Pluto | [Steve Albers' Planetary Maps](https://stevealbers.net/albers/sos/sos.html), under his [personal, noncommercial terms](https://stevealbers.net/albers/sos/sos.html.new) | Derived from NASA New Horizons imagery and downsampled to 2048 x 1024 JPEG. |
+| `ceres.jpg` | Ceres | [Steve Albers' Planetary Maps](https://stevealbers.net/albers/sos/sos.html), under his [personal, noncommercial terms](https://stevealbers.net/albers/sos/sos.html.new) | Derived from NASA Dawn imagery and downsampled to 2048 x 1024 JPEG. |
+| `vesta.jpg` | Vesta | [Steve Albers' Planetary Maps](https://stevealbers.net/albers/sos/sos.html), under his [personal, noncommercial terms](https://stevealbers.net/albers/sos/sos.html.new) | Derived from NASA Dawn imagery and downsampled to 2048 x 1024 JPEG. |
+| `eros.jpg` | Eros | [NASA PDS Stooke Small Bodies Maps](https://pds.nasa.gov/ds-view/pds/viewProfile.jsp?dsid=MULTI-SA-MULTI-6-STOOKEMAPS-V2.0) | NEAR Shoemaker mosaic, downsampled to 2048 x 1024 JPEG. The exact redistribution grant for the bundled derivative has not been independently verified. |
+| `bennu.jpg` | Bennu | [NASA OSIRIS-REx global mosaic](https://www.asteroidmission.org/wp-content/uploads/2020/03/Bennu_Global_Mosaic.png) | Downsampled to 2048 x 1024 JPEG. Credit: **NASA/Goddard/University of Arizona**. The exact redistribution grant for the bundled derivative has not been independently verified. |
 | `ryugu.jpg` | Ryugu | [Hayabusa2 ONC global map](https://data.darts.isas.jaxa.jp/pub/hayabusa2/products/01_GlobalMap1/hyb2_onc_Global_01_l3dm_v06.jpg), governed by the [ISAS Data Policy](https://www.isas.jaxa.jp/en/researchers/data-policy/) | Resized from 3600 x 1800 to 2048 x 1024 and JPEG-recompressed. Origin: **ISAS/JAXA**. Contributors: JAXA, University of Tokyo, Kochi University, Rikkyo University, Nagoya University, Chiba Institute of Technology, Meiji University, University of Aizu, AIST. |
-| `fallback.jpg` | Pluto, Vesta, Pallas, Hygiea, Eros, Apophis, Bennu | Project-authored procedural texture | These bodies use the neutral fallback because no dedicated full-surface texture with sufficiently explicit redistribution terms is currently bundled. The prior Eros and Bennu mosaics were removed because their exact redistribution grants could not be grounded. |
+| `fallback.jpg` | Pallas, Hygiea, Apophis | Project-authored procedural texture | No separate third-party image is bundled for these bodies. |
 
 ## Moons
 

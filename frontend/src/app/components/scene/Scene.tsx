@@ -41,7 +41,7 @@ import { worldDistance, worldRadius } from "@/app/utils/scalePipeline";
 import { useDevSettings } from "@/app/dev/devSettingsStore";
 
 // Layout.tsx supplies only the temporary CSS placeholder visible while the
-// full texture loads. <Skybox> mounts the ESO panorama on scene.background.
+// full texture loads. <Skybox> mounts the NASA SVS map on scene.background.
 
 const Scene = () => {
   const showPlanetInfoOverlay = useSelector(selectShowPlanetInfoOverlay);
@@ -171,7 +171,7 @@ const Scene = () => {
       }}
       style={{ width: "100%", height: "100%" }}
     >
-      {/* ESO/S. Brunier Milky Way panorama mounted on scene.background; see
+      {/* NASA SVS Deep Star Maps 2020 mounted on scene.background; see
           Skybox.tsx for the why (drei <Stars/> twinkled on rotation due
           to point-primitive aliasing at our scene scale). */}
       <Skybox />

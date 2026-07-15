@@ -2,7 +2,7 @@ import { expect } from "@playwright/test";
 import { journey } from "../lib/kit";
 
 journey(
-  "minor-body asset policy: Ceres renders its sourced mosaic while Pluto and Vesta use the fallback",
+  "restored minor-body textures render for Pluto, Ceres, and Vesta",
   async (j) => {
     await j.goto("/");
     await j.waitForCanvas();
