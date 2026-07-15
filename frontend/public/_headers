@@ -40,5 +40,5 @@
 # filename had no cache rule, so returning visitors re-downloaded ~4.4 MB
 # every visit. The filename now carries a version suffix (bump -vN on any
 # replacement), so immutable caching is safe here too.
-/textures/skybox/skybox-full-v1.jpg
+/textures/skybox/skybox-full-v2.jpg
   Cache-Control: public, max-age=31536000, immutable

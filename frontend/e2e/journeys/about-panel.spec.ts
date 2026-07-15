@@ -35,6 +35,8 @@ journey(
     await expect(dialog).toContainText("watch their real");
     await expect(dialog).toContainText("Orekit");
     await expect(dialog).toContainText("JPL Horizons");
+    await expect(dialog).toContainText("Sky imagery: ESO/S. Brunier");
+    await expect(dialog).toContainText("Credits and licenses");
     await expect(dialog).toContainText("View on GitHub");
     await expect(dialog).toContainText("Report a bug");
     await expect(dialog).toContainText("Contact the author");
@@ -52,6 +54,15 @@ journey(
     await expect(
       dialog.getByRole("link", { name: /contact the author/i }),
     ).toHaveAttribute("href", "mailto:contact@nbodysim.com");
+    await expect(
+      dialog.getByRole("link", { name: "ESO/S. Brunier" }),
+    ).toHaveAttribute("href", "https://www.eso.org/public/images/eso0932a/");
+    await expect(
+      dialog.getByRole("link", { name: /credits and licenses/i }),
+    ).toHaveAttribute(
+      "href",
+      "https://github.com/byeonkho/nbodysim/blob/master/ATTRIBUTIONS.md",
+    );
 
     // Let the open fade settle, then capture the panel.
     await j.page.waitForTimeout(250);
@@ -72,4 +83,42 @@ journey(
     await j.screenshot("about-closed");
   },
   { viewports: ["desktop"] },
+);
+
+journey(
+  "mobile credits: expanded controls expose the sky credit and canonical notices",
+  async (j) => {
+    await j.goto("/");
+    await j.waitForCanvas();
+
+    const tour = j.page.getByRole("dialog", { name: /intro tour/i });
+    await tour.waitFor({ state: "visible" });
+    await tour.getByRole("button", { name: "Skip" }).click();
+    await tour.waitFor({ state: "hidden" });
+
+    await j.page.getByRole("button", { name: "Expand controls" }).click();
+    const controls = j.page.getByRole("region", {
+      name: "Playback and view controls",
+    });
+
+    await expect(controls).toContainText("Sky: ESO/S. Brunier");
+    const skyCredit = controls.getByRole("link", { name: "ESO/S. Brunier" });
+    const notices = controls.getByRole("link", {
+      name: /credits and licenses/i,
+    });
+    await expect(skyCredit).toBeVisible();
+    await expect(skyCredit).toHaveAttribute(
+      "href",
+      "https://www.eso.org/public/images/eso0932a/",
+    );
+    await expect(notices).toBeVisible();
+    await expect(notices).toHaveAttribute(
+      "href",
+      "https://github.com/byeonkho/nbodysim/blob/master/ATTRIBUTIONS.md",
+    );
+
+    await notices.scrollIntoViewIfNeeded();
+    await j.screenshot("mobile-credits");
+  },
+  { viewports: ["mobile"] },
 );

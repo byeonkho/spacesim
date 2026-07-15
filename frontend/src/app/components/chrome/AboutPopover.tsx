@@ -15,6 +15,8 @@ const FADE_MS = 150;
 
 const GITHUB_URL = "https://github.com/byeonkho/nbodysim";
 const ISSUES_URL = "https://github.com/byeonkho/nbodysim/issues/new";
+const ATTRIBUTIONS_URL = `${GITHUB_URL}/blob/master/ATTRIBUTIONS.md`;
+const ESO_SKY_URL = "https://www.eso.org/public/images/eso0932a/";
 // Branded contact address — set up a Cloudflare Email Routing rule forwarding
 // this to the real inbox. Swap the string here if the address changes.
 const CONTACT_EMAIL = "contact@nbodysim.com";
@@ -368,6 +370,28 @@ export function AboutPopover({
       <p className="text-dim text-[11.5px] leading-relaxed">
         Seeded with data from Orekit, and verifiable against real JPL Horizons
         data.
+      </p>
+
+      <p className="text-dim text-[11px] leading-relaxed">
+        Sky imagery:{" "}
+        <a
+          href={ESO_SKY_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="text-text hover:text-hi underline underline-offset-2"
+        >
+          ESO/S. Brunier
+        </a>
+        .{" "}
+        <a
+          href={ATTRIBUTIONS_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="text-text hover:text-hi underline underline-offset-2"
+        >
+          Credits and licenses
+        </a>
+        .
       </p>
 
       {/* 3. Divider */}

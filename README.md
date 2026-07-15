@@ -89,8 +89,17 @@ For a deeper architectural discussion, planned work, and known tradeoffs, see **
 
 Live and deployed at [nbodysim.com](https://nbodysim.com). The simulation runs end-to-end: three integrators, real JPL initial conditions, orbital trails, geocentric/heliocentric frame switching, Keplerian-element readouts, and the integrator-residual and reality-drift overlays. Planned work, known tradeoffs, and tech-choice rationale are tracked in [ARCHITECTURE.md](ARCHITECTURE.md).
 
-## Credits
+## License and attribution
 
-- Earth icon: [Global icons](https://www.flaticon.com/free-icons/global) by Freepik on Flaticon
-- Planet textures: [Solar System Scope](https://www.solarsystemscope.com/textures/), used under [CC Attribution 4.0](https://creativecommons.org/licenses/by/4.0/)
-- Astrodynamics: [Orekit](https://www.orekit.org/) by CS GROUP / CNES, built on [Hipparchus](https://hipparchus.org/)
+Unless a file or notice says otherwise, original source code authored for
+nbodysim is licensed under the
+[GNU Affero General Public License v3.0 only](LICENSE). The AGPL permits reuse,
+including commercial reuse, but distribution and modified network deployments
+must offer the corresponding source under the same license. The license text,
+not this summary, controls.
+
+Third-party textures, imagery, fonts, astronomy data, and dependencies are not
+relicensed under the AGPL. Their sources, credits, changes, and terms are listed
+in [ATTRIBUTIONS.md](ATTRIBUTIONS.md). Astrodynamics uses
+[Orekit](https://www.orekit.org/) by CS GROUP / CNES, built on
+[Hipparchus](https://hipparchus.org/).

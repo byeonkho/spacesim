@@ -41,6 +41,9 @@ import {
 // screen edge, plus the device safe area (an iPhone home indicator) when the
 // page opts into it.
 const BOTTOM_INSET = "calc(env(safe-area-inset-bottom, 0px) + 14px)";
+const ATTRIBUTIONS_URL =
+  "https://github.com/byeonkho/nbodysim/blob/master/ATTRIBUTIONS.md";
+const ESO_SKY_URL = "https://www.eso.org/public/images/eso0932a/";
 
 function Chip({
   icon,
@@ -270,6 +273,26 @@ export function MobileControlSheet({
                 onClick={() => dispatch(cycleSimulationScale())}
               />
             </div>
+            <p className="text-subdim text-center text-[10px] leading-relaxed">
+              Sky:{" "}
+              <a
+                href={ESO_SKY_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="text-dim hover:text-hi underline underline-offset-2"
+              >
+                ESO/S. Brunier
+              </a>{" "}
+              ·{" "}
+              <a
+                href={ATTRIBUTIONS_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="text-dim hover:text-hi underline underline-offset-2"
+              >
+                Credits and licenses
+              </a>
+            </p>
           </div>
         </div>
       </div>

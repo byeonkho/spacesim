@@ -204,8 +204,9 @@ Two issues that look plausible on a code read but were checked during review and
 | State | Redux Toolkit | Async thunks model the "fetch → worker decode → buffer → tick" pipeline cleanly |
 | UI primitives | Tailwind v4 + Radix + shadcn | CSS-first design tokens, headless primitives, vendored components |
 
-## Credits
+## License and attribution
 
-- Earth icon: [Global icons](https://www.flaticon.com/free-icons/global) by Freepik on Flaticon.
-- Planet textures: [Solar System Scope](https://www.solarsystemscope.com/textures/), used under [CC Attribution 4.0](https://creativecommons.org/licenses/by/4.0/).
-- Astrodynamics: [Orekit](https://www.orekit.org/) (CS GROUP / CNES).
+Original project source is licensed under
+[AGPL-3.0-only](LICENSE). Third-party asset, font, and astronomy-data terms are
+recorded in the canonical [attribution file](ATTRIBUTIONS.md). Astrodynamics
+uses [Orekit](https://www.orekit.org/) by CS GROUP / CNES.

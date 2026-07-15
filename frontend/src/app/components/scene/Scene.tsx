@@ -40,17 +40,8 @@ import { bodyColorRgb01, toBodyKey } from "@/app/constants/BodyVisuals";
 import { worldDistance, worldRadius } from "@/app/utils/scalePipeline";
 import { useDevSettings } from "@/app/dev/devSettingsStore";
 
-// Background is rendered in CSS on the parent container (Layout.tsx), not
-// as a three.js scene.background. The canvas is transparent (`alpha: true`),
-// so the design handoff's gradient stack — `radial-gradient(ellipse at ...)`
-// pair over `#050610`, lifted verbatim from .starfield in the handoff
-// HTML — shows through directly via the browser's CSS rendering. This
-// sidesteps three.js's color pipeline entirely (no canvas-texture color
-// space, no tone mapping concerns), and the visual is pixel-identical to
-// the design mockup since the same browser renders both.
-//
-// Stars are now drei's <Stars /> — procedural Points cloud rendered by
-// three.js on top of the transparent canvas, layered above the CSS bg.
+// Layout.tsx supplies only the temporary CSS placeholder visible while the
+// full texture loads. <Skybox> mounts the ESO panorama on scene.background.
 
 const Scene = () => {
   const showPlanetInfoOverlay = useSelector(selectShowPlanetInfoOverlay);
@@ -180,7 +171,7 @@ const Scene = () => {
       }}
       style={{ width: "100%", height: "100%" }}
     >
-      {/* NASA SVS Deep Star Maps 2020 mounted on scene.background — see
+      {/* ESO/S. Brunier Milky Way panorama mounted on scene.background; see
           Skybox.tsx for the why (drei <Stars/> twinkled on rotation due
           to point-primitive aliasing at our scene scale). */}
       <Skybox />

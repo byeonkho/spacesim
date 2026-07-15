@@ -44,7 +44,7 @@ const Layout: React.FC = () => {
             this layer shows through until the skybox is in place.
 
             LQIP: a 64×32 heavily-blurred crop of the full skybox JPG,
-            inlined as base64 (~1.3 KB) so it ships with the HTML and
+            inlined as base64 (~0.5 KB) so it ships with the HTML and
             renders at zero network cost. Stretched to cover via CSS
             (background-size: cover). When the full equirect skybox
             loads on top, the visible transition is "soft blur sharpens
@@ -56,7 +56,7 @@ const Layout: React.FC = () => {
         <div
           className="absolute inset-0 z-0"
           style={{
-            background: `url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QDMRXhpZgAASUkqAFgAAABPcGVuSW1hZ2VJTyAzLjEuMTMuMSA6IDdGOTYwOTMxNkY4ODM2QkFBRDBEMTY1NjM2MEIyMDZGMzE3OUE3OTAASAAAAAEAAABIAAAAAQAAAAQAMQECAEAAAAAIAAAAGgEFAAEAAABIAAAAGwEFAAEAAABQAAAAaYcEAAEAAACOAAAAAAAAAAQAAJAHAAQAAAAwMjMwAZEHAAQAAAABAgMAAKAHAAQAAAAwMTAwAaADAAEAAAABAAAAAAAAAP/bAEMACgcHCAcGCggICAsKCgsOGBAODQ0OHRUWERgjHyUkIh8iISYrNy8mKTQpISIwQTE0OTs+Pj4lLkRJQzxINz0+O//bAEMBCgsLDg0OHBAQHDsoIig7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O//AABEIACAAQAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APHM04DNNFTRp3oAQJTgg7mmu2DTN5pATeTkcGmNGVoSQg9assA8WaAKRpM05xg0ymBKsZJ6VOwCR4709p48cLVd33GgCJjzTaewHakxQACrloVY7W6GqYFSI+00gJ7m22sdvIqsYyO1XFuhtwwzQZYT1WgZ/9k=") center/cover, var(--color-space)`,
+            background: `url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDABIMDRANCxIQDhAUExIVGywdGxgYGzYnKSAsQDlEQz85Pj1HUGZXR0thTT0+WXlaYWltcnNyRVV9hnxvhWZwcm7/2wBDARMUFBsXGzQdHTRuST5Jbm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm7/wAARCAAgAEADASIAAhEBAxEB/8QAGQAAAwEBAQAAAAAAAAAAAAAAAAIDBAEG/8QAGxAAAgMBAQEAAAAAAAAAAAAAAAECERMEAxT/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A8VQUUzYZsCdBRbJjQ53J0gIUFGqXJJCPnaAhQUWxZx+TAXRnV6kgAtqxodLgzOAGuXZKQn0NmcLAvszj9WSsLA//2Q==") center/cover, var(--color-space)`,
           }}
         >
           <Scene />
