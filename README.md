@@ -6,13 +6,13 @@
 
 [![nbodysim: the solar system simulated in 3D, with orbital paths and trails computed from real astronomy data](assets/hero.gif)](https://nbodysim.com)
 
-Pick the bodies, a reference frame, an integrator, and a time step. The backend computes trajectories from JPL initial conditions using a pluggable, hand-written N-body integrator; the frontend tape-plays them in 3D at adjustable speed. Trajectories arrive as zstd-compressed binary chunks over HTTP/2, decoded in a Web Worker, so you can scrub, pause, and rewind without the simulation needing to keep up with the camera.
+Pick the bodies, a reference frame, an integrator, and a time step. Canonical presets start instantly from precomputed clips; custom scenarios are integrated by the backend from JPL initial conditions. The frontend tape-plays both paths in 3D at adjustable speed. Trajectories use the same zstd-compressed binary format and Web Worker decode path, so you can scrub, pause, and rewind without the simulation needing to keep up with the camera.
 
 ## What's interesting here
 
 - **A hand-written N-body integrator, not a black box.** Every body pulls on every other one, and the code that advances them through time is written from scratch rather than handed to a physics library. Under the hood that is a single 6N-dimensional state vector, stepped by Euler, RK4, or adaptive Dormand–Prince 853. A live `ΔE/E₀` energy readout makes the accuracy gap visible: it ticks past `1e-2` on Euler at a daily step, then sits at machine precision on DP853.
-- **A custom binary wire format.** Trajectories are a firehose of numbers, so they ship in a compact binary layout tuned to compress, not as bulky JSON. Positions travel as float32 per-step deltas off a float64 reference, byte-plane-shuffled so zstd squeezes the stable high-order bytes hard, and rebuilt by prefix-sum on the client. The Web Worker decodes straight into the typed-array layout Redux holds, so the hand-off is zero-copy.
-- **A reality-drift overlay.** The integrator's predicted position is drawn next to the *true* position from JPL's DE-440 ephemeris at the same date, with an "off by" readout. Euler visibly diverges; RK4 stays glued. It turns the accuracy trade-off into something you can see.
+- **A custom binary wire format.** Trajectories are a firehose of numbers, so they ship in a compact binary layout tuned to compress, not as bulky JSON. Positions travel as float32 per-step deltas off a float64 reference, byte-plane-shuffled so zstd squeezes the stable high-order bytes hard, and rebuilt by prefix-sum on the client. The Web Worker transfers decoded typed arrays to the main thread without cloning; Redux then bulk-copies them into its long-lived rolling buffer.
+- **A reality-drift overlay.** The integrator's predicted position is drawn next to the reference position from JPL's DE-440 ephemeris at the same date, with an "off by" readout. Euler visibly diverges; RK4 stays close. It turns one part of the accuracy trade-off into something you can see.
 
 ## Run locally
 
@@ -66,12 +66,12 @@ Open the local URL the dev server prints. The frontend defaults to a backend at 
 └──────────────────┘                                  └──────────────────────┘
 ```
 
-- **Initial conditions** come from JPL ephemerides via Orekit. Pick a date and bodies; their starting positions and velocities are exact. Bodies outside Orekit's bundled data (dwarf planets, named asteroids, the major moons) are sourced from JPL Horizons at submit time and cached.
+- **Initial conditions** are sampled from JPL ephemerides via Orekit. Bodies outside Orekit's bundled data (dwarf planets, named asteroids, and the major moons) are sourced from JPL Horizons at submit time and cached.
 - **N-body integration** advances all bodies together as a single 6N-dimensional state vector. Pluggable integrators (Euler, RK4, adaptive Dormand–Prince) trade accuracy for cost.
-- **Wire format** is a custom little-endian binary layout: body names + µ in a one-time header, a single `(startMillis, gapMillis)` timestamp pair (emissions are uniformly spaced), a per-body float64 position reference, then per-step float32 position and velocity deltas. Both float32 planes are byte-plane-shuffled so zstd compresses their stable high-order bytes; the whole body is zstd-compressed. The client un-shuffles and prefix-sums back to absolute positions in a Web Worker, decoding directly into the typed-array buffer the main thread reads, with no copy at the worker boundary.
-- **Transport** is plain HTTP/2: `POST /api/simulation/chunk` per chunk. No persistent connection; chunks are independently retryable and cacheable per session.
-- **Frontend** buffers the chunks in a flat typed array and tape-plays them via R3F's `useFrame`, interpolating between keyframes with cubic Hermite splines (using the integrator's exact velocities). When the buffer dips below a speed-aware threshold the next chunk is prefetched; old chunks are evicted at a byte-budgeted cap.
-- **Two scale presets.** **Real** uses true positions and radii (planets are tiny dots at solar-system distance, the honest reference); **Stylized** compresses radial distance with a log curve and enlarges bodies with a power law so the whole system fits one view, with a minimum-separation rule that keeps any moon visible next to its parent.
+- **Wire format** is a custom little-endian binary layout: body names + µ in a one-time header, a single `(startMillis, gapMillis)` timestamp pair (emissions are uniformly spaced), a per-body float64 position reference, then per-step float32 position and velocity deltas. Both float32 planes are byte-plane-shuffled so zstd compresses their stable high-order bytes; the whole body is zstd-compressed. The client un-shuffles and prefix-sums the values in a Web Worker, transfers the decoded buffers without cloning, and bulk-copies them into the rolling playback buffer.
+- **Transport** is plain HTTP/2: `POST /api/simulation/chunk` per live chunk. No persistent connection; stateful chunks are independently indexed and retryable. They are not currently CDN-cached.
+- **Frontend** buffers chunks in flat typed arrays and tape-plays them via R3F's `useFrame`, interpolating between keyframes with cubic Hermite splines using the integrator-emitted velocities. When the buffer dips below a speed-aware threshold the next chunk is prefetched; old chunks are evicted at a byte-budgeted cap.
+- **Two scale presets.** **Real** uses physical positions and radii (planets are tiny dots at solar-system distance, the honest reference); **Stylized** compresses radial distance with a log curve and enlarges bodies with a power law so the whole system fits one view, with a minimum-separation rule that keeps any moon visible next to its parent.
 
 For a deeper architectural discussion, planned work, and known tradeoffs, see **[ARCHITECTURE.md](ARCHITECTURE.md)**.
 
