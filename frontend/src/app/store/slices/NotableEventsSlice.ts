@@ -2,23 +2,22 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/app/store/Store";
 import type { DetectedEvent } from "@/app/utils/eventScanner";
 
-// The full map of detected notable events plus the narration high-water mark.
+// The full map of detected notable events plus per-event narration state.
 // Events use GLOBAL timestep coordinates (eviction-invariant). The scrubber
-// markers read this whole array; narration walks it as the playhead advances.
+// markers read this whole array; narration marks each eligible event once.
 
 export interface SimEvent extends DetectedEvent {
   id: number;
+  narrated: boolean;
 }
 
 interface NotableEventsState {
   detectedEvents: SimEvent[]; // sorted ascending by timeIndex
-  narrationCursorGlobal: number; // events with timeIndex <= this have narrated
   nextId: number;
 }
 
 const initialState: NotableEventsState = {
   detectedEvents: [],
-  narrationCursorGlobal: -1,
   nextId: 1,
 };
 
@@ -35,7 +34,11 @@ export const notableEventsSlice = createSlice({
     ) => {
       const { events, bufferStartTimestep } = action.payload;
       for (const e of events) {
-        state.detectedEvents.push({ ...e, id: state.nextId });
+        state.detectedEvents.push({
+          ...e,
+          id: state.nextId,
+          narrated: false,
+        });
         state.nextId += 1;
       }
       // Drop anything that has slid out of the live window.
@@ -44,37 +47,32 @@ export const notableEventsSlice = createSlice({
       );
       state.detectedEvents.sort((a, b) => a.timeIndex - b.timeIndex);
     },
-    advanceNarrationCursor: (state, action: PayloadAction<number>) => {
-      state.narrationCursorGlobal = Math.max(
-        state.narrationCursorGlobal,
-        action.payload,
-      );
+    markEventsNarrated: (state, action: PayloadAction<number[]>) => {
+      for (const event of state.detectedEvents) {
+        if (action.payload.includes(event.id)) {
+          event.narrated = true;
+        }
+      }
     },
     resetNotableEvents: (state) => {
       state.detectedEvents = [];
-      state.narrationCursorGlobal = -1;
       state.nextId = 1;
     },
   },
 });
 
-export const { addDetectedEvents, advanceNarrationCursor, resetNotableEvents } =
+export const { addDetectedEvents, markEventsNarrated, resetNotableEvents } =
   notableEventsSlice.actions;
 
 export const selectDetectedEvents = (state: RootState): SimEvent[] =>
   state.notableEvents.detectedEvents;
-export const selectNarrationCursorGlobal = (state: RootState): number =>
-  state.notableEvents.narrationCursorGlobal;
 
-// Events newly crossed since the cursor, up to and including the playhead.
 export function eventsToNarrate(
   events: SimEvent[],
-  cursorGlobal: number,
   playheadGlobal: number,
 ): SimEvent[] {
-  if (playheadGlobal <= cursorGlobal) return [];
   return events.filter(
-    (e) => e.timeIndex > cursorGlobal && e.timeIndex <= playheadGlobal,
+    (event) => !event.narrated && event.timeIndex <= playheadGlobal,
   );
 }
 

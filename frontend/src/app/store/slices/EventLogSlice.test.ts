@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import eventLogReducer, {
   clearEvents,
+  invalidateSimSeekTargets,
   pushEvent,
   setEventFilter,
 } from "./EventLogSlice";
@@ -134,5 +135,42 @@ describe("EventLogSlice timeIndex", () => {
       pushEvent({ source: "USR", severity: "user", message: "Paused" }),
     );
     expect(s.events[0].timeIndex).toBeUndefined();
+  });
+});
+
+describe("EventLogSlice: invalidateSimSeekTargets", () => {
+  it("preserves history but clears timeIndex only from SIM rows", () => {
+    let state = initialState();
+    state = eventLogReducer(
+      state,
+      pushEvent({
+        source: "SIM",
+        severity: "info",
+        message: "Old perihelion",
+        timeIndex: 5,
+        ts: 100,
+      }),
+    );
+    state = eventLogReducer(
+      state,
+      pushEvent({
+        source: "USR",
+        severity: "user",
+        message: "Paused",
+        timeIndex: 7,
+        ts: 200,
+      }),
+    );
+    state = eventLogReducer(state, setEventFilter("SIM"));
+    const before = state.events.map((event) => ({ ...event }));
+
+    state = eventLogReducer(state, invalidateSimSeekTargets());
+
+    expect(state.events).toEqual([
+      before[0],
+      { ...before[1], timeIndex: undefined },
+    ]);
+    expect(state.filter).toBe("SIM");
+    expect(state.nextId).toBe(3);
   });
 });

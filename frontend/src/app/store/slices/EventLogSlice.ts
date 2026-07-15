@@ -65,11 +65,22 @@ export const eventLogSlice = createSlice({
     clearEvents: (state) => {
       state.events = [];
     },
+    invalidateSimSeekTargets: (state) => {
+      for (const event of state.events) {
+        if (event.source === "SIM") {
+          event.timeIndex = undefined;
+        }
+      }
+    },
   },
 });
 
-export const { pushEvent, setEventFilter, clearEvents } =
-  eventLogSlice.actions;
+export const {
+  pushEvent,
+  setEventFilter,
+  clearEvents,
+  invalidateSimSeekTargets,
+} = eventLogSlice.actions;
 
 export const selectEvents = (state: RootState) => state.eventLog.events;
 export const selectEventFilter = (state: RootState) => state.eventLog.filter;

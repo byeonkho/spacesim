@@ -1,14 +1,14 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import type { DetectedEvent } from "@/app/utils/eventScanner";
 import reducer, {
   addDetectedEvents,
-  advanceNarrationCursor,
-  resetNotableEvents,
   eventsToNarrate,
+  markEventsNarrated,
+  resetNotableEvents,
   type SimEvent,
 } from "./NotableEventsSlice";
-import type { DetectedEvent } from "@/app/utils/eventScanner";
 
-function de(timeIndex: number): DetectedEvent {
+function detected(timeIndex: number): DetectedEvent {
   return {
     type: "perihelion",
     timeIndex,
@@ -20,42 +20,98 @@ function de(timeIndex: number): DetectedEvent {
 }
 
 describe("NotableEventsSlice", () => {
-  it("adds events, assigns ids, keeps them sorted", () => {
-    let s = reducer(undefined, addDetectedEvents({ events: [de(30), de(10)], bufferStartTimestep: 0 }));
-    expect(s.detectedEvents.map((e) => e.timeIndex)).toEqual([10, 30]);
-    expect(new Set(s.detectedEvents.map((e) => e.id)).size).toBe(2);
-    s = reducer(s, addDetectedEvents({ events: [de(20)], bufferStartTimestep: 0 }));
-    expect(s.detectedEvents.map((e) => e.timeIndex)).toEqual([10, 20, 30]);
+  it("adds events, assigns ids, initializes narration, and sorts", () => {
+    let state = reducer(
+      undefined,
+      addDetectedEvents({
+        events: [detected(30), detected(10)],
+        bufferStartTimestep: 0,
+      }),
+    );
+    expect(state.detectedEvents.map((event) => event.timeIndex)).toEqual([
+      10,
+      30,
+    ]);
+    expect(new Set(state.detectedEvents.map((event) => event.id)).size).toBe(2);
+    expect(state.detectedEvents.every((event) => !event.narrated)).toBe(true);
+
+    state = reducer(
+      state,
+      addDetectedEvents({
+        events: [detected(20)],
+        bufferStartTimestep: 0,
+      }),
+    );
+    expect(state.detectedEvents.map((event) => event.timeIndex)).toEqual([
+      10,
+      20,
+      30,
+    ]);
   });
 
   it("drops events evicted out of the live window", () => {
-    let s = reducer(undefined, addDetectedEvents({ events: [de(5), de(50)], bufferStartTimestep: 0 }));
-    s = reducer(s, addDetectedEvents({ events: [], bufferStartTimestep: 40 }));
-    expect(s.detectedEvents.map((e) => e.timeIndex)).toEqual([50]);
+    let state = reducer(
+      undefined,
+      addDetectedEvents({
+        events: [detected(5), detected(50)],
+        bufferStartTimestep: 0,
+      }),
+    );
+    state = reducer(
+      state,
+      addDetectedEvents({ events: [], bufferStartTimestep: 40 }),
+    );
+    expect(state.detectedEvents.map((event) => event.timeIndex)).toEqual([50]);
   });
 
-  it("advances the narration cursor monotonically", () => {
-    let s = reducer(undefined, advanceNarrationCursor(100));
-    expect(s.narrationCursorGlobal).toBe(100);
-    s = reducer(s, advanceNarrationCursor(50)); // backward scrub does not lower it
-    expect(s.narrationCursorGlobal).toBe(100);
+  it("marks only requested ids", () => {
+    let state = reducer(
+      undefined,
+      addDetectedEvents({
+        events: [detected(10), detected(20)],
+        bufferStartTimestep: 0,
+      }),
+    );
+    state = reducer(
+      state,
+      markEventsNarrated([state.detectedEvents[0].id]),
+    );
+    expect(state.detectedEvents.map((event) => event.narrated)).toEqual([
+      true,
+      false,
+    ]);
   });
 
-  it("resets everything", () => {
-    let s = reducer(undefined, addDetectedEvents({ events: [de(5)], bufferStartTimestep: 0 }));
-    s = reducer(s, advanceNarrationCursor(5));
-    s = reducer(s, resetNotableEvents());
-    expect(s.detectedEvents).toEqual([]);
-    expect(s.narrationCursorGlobal).toBe(-1);
+  it("resets events and ids", () => {
+    let state = reducer(
+      undefined,
+      addDetectedEvents({
+        events: [detected(5)],
+        bufferStartTimestep: 0,
+      }),
+    );
+    state = reducer(state, markEventsNarrated([1]));
+    state = reducer(state, resetNotableEvents());
+    expect(state.detectedEvents).toEqual([]);
+    expect(state.nextId).toBe(1);
   });
 });
 
 describe("eventsToNarrate", () => {
-  const evs: SimEvent[] = [10, 20, 30].map((t, i) => ({ ...de(t), id: i + 1 }));
-  it("returns events strictly past the cursor and up to the playhead", () => {
-    expect(eventsToNarrate(evs, 9, 20).map((e) => e.timeIndex)).toEqual([10, 20]);
+  const events: SimEvent[] = [
+    { ...detected(10), id: 1, narrated: true },
+    { ...detected(20), id: 2, narrated: false },
+    { ...detected(30), id: 3, narrated: false },
+  ];
+
+  it("returns every unnarrated event at or behind the playhead", () => {
+    expect(eventsToNarrate(events, 25).map((event) => event.id)).toEqual([2]);
   });
-  it("returns nothing when the playhead is at or behind the cursor", () => {
-    expect(eventsToNarrate(evs, 20, 20)).toEqual([]);
+
+  it("includes a late-added event even when its time is far behind", () => {
+    const late = { ...detected(5), id: 4, narrated: false };
+    expect(
+      eventsToNarrate([late, ...events], 25).map((event) => event.id),
+    ).toEqual([4, 2]);
   });
 });

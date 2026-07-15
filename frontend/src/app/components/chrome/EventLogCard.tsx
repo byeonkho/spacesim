@@ -118,12 +118,11 @@ function EventRow({ event }: { event: LogEvent }) {
   const dotClass = severityDotClass(event.severity);
   const messageDimmed = event.severity === "info";
 
-  const local =
-    event.timeIndex !== undefined ? event.timeIndex - bufferStart : -1;
-  const seekable = local >= 0 && local <= total - 1;
+  const seekLocalIndex = eventSeekLocalIndex(event, bufferStart, total);
+  const seekable = seekLocalIndex !== null;
 
   const onClick = seekable
-    ? () => dispatch(setCurrentTimeStepIndex(Math.round(local)))
+    ? () => dispatch(setCurrentTimeStepIndex(seekLocalIndex))
     : undefined;
 
   return (
@@ -150,6 +149,16 @@ function EventRow({ event }: { event: LogEvent }) {
       </span>
     </div>
   );
+}
+
+export function eventSeekLocalIndex(
+  event: LogEvent,
+  bufferStart: number,
+  total: number,
+): number | null {
+  if (event.timeIndex === undefined) return null;
+  const local = event.timeIndex - bufferStart;
+  return local >= 0 && local <= total - 1 ? Math.round(local) : null;
 }
 
 function severityDotClass(severity: EventSeverity): string {
