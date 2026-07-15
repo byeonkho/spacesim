@@ -10,6 +10,11 @@ import org.orekit.time.TimeScalesFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import personal.spacesim.simulation.ChunkResult;
+import personal.spacesim.simulation.Simulation;
+import personal.spacesim.simulation.SimulationFactory;
+import personal.spacesim.utils.compressor.ZstdCompressor;
+import personal.spacesim.utils.serializers.BinaryResponseSerializer;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -31,6 +36,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -191,5 +198,99 @@ class SimulationSessionServiceTest {
     void unknownSessionThrowsSessionNotFound() {
         assertThrows(SessionNotFoundException.class,
                 () -> service.getNextChunkBytes("does-not-exist", 0));
+    }
+
+    @Test
+    void serializationFailureInvalidatesAdvancedSessionBeforeRetry() {
+        SimulationFactory simulationFactory = mock(SimulationFactory.class);
+        BinaryResponseSerializer serializer = mock(BinaryResponseSerializer.class);
+        ZstdCompressor compressor = mock(ZstdCompressor.class);
+        Simulation simulation = mock(Simulation.class);
+        ChunkResult chunkResult = mock(ChunkResult.class);
+        SimulationSessionService isolatedService = new SimulationSessionService(
+                simulationFactory, serializer, compressor);
+
+        when(simulationFactory.createSimulation(
+                anyString(), anyList(), anyString(), anyString(),
+                any(AbsoluteDate.class), anyString(), anyInt(), anyInt()))
+                .thenReturn(simulation);
+        when(simulation.run()).thenReturn(chunkResult);
+        when(simulation.getCelestialBodies()).thenReturn(List.of());
+        when(serializer.serialize(eq(chunkResult), any()))
+                .thenThrow(new IllegalStateException("non-finite trajectory output"));
+
+        String sessionID = isolatedService.createSimulation(
+                List.of("Sun"),
+                "ICRF",
+                "EULER",
+                new AbsoluteDate("2024-01-01T00:00:00.000", TimeScalesFactory.getUTC()),
+                "days",
+                1,
+                5000
+        );
+
+        assertThrows(IllegalStateException.class,
+                () -> isolatedService.getNextChunkBytes(sessionID, 0));
+
+        Throwable retryFailure = assertThrows(RuntimeException.class,
+                () -> isolatedService.getNextChunkBytes(sessionID, 0));
+        assertAll(
+                () -> assertInstanceOf(SessionNotFoundException.class, retryFailure),
+                () -> assertNull(isolatedService.getSimulation(sessionID)),
+                () -> verify(simulation, times(1)).run()
+        );
+    }
+
+    @Test
+    void exceptionalBackgroundPrecomputeInvalidatesSessionBeforeRetry() throws Exception {
+        SimulationFactory simulationFactory = mock(SimulationFactory.class);
+        BinaryResponseSerializer serializer = mock(BinaryResponseSerializer.class);
+        ZstdCompressor compressor = mock(ZstdCompressor.class);
+        Simulation simulation = mock(Simulation.class);
+        ChunkResult firstChunk = mock(ChunkResult.class);
+        SimulationSessionService isolatedService = new SimulationSessionService(
+                simulationFactory, serializer, compressor);
+
+        when(simulationFactory.createSimulation(
+                anyString(), anyList(), anyString(), anyString(),
+                any(AbsoluteDate.class), anyString(), anyInt(), anyInt()))
+                .thenReturn(simulation);
+        when(simulation.run())
+                .thenReturn(firstChunk)
+                .thenThrow(new IllegalStateException("background simulation failed"));
+        when(simulation.getCelestialBodies()).thenReturn(List.of());
+        when(serializer.serialize(eq(firstChunk), any())).thenReturn(new byte[]{1});
+        when(compressor.compress(any(byte[].class))).thenReturn(new byte[]{2});
+
+        String sessionID = isolatedService.createSimulation(
+                List.of("Sun"),
+                "ICRF",
+                "EULER",
+                new AbsoluteDate("2024-01-01T00:00:00.000", TimeScalesFactory.getUTC()),
+                "days",
+                1,
+                5000
+        );
+
+        assertArrayEquals(new byte[]{2}, isolatedService.getNextChunkBytes(sessionID, 0));
+        CompletableFuture<byte[]> failedPrecompute =
+                isolatedService.peekPrecomputedChunk(sessionID);
+        ExecutionException backgroundFailure = assertThrows(
+                ExecutionException.class,
+                () -> failedPrecompute.get(5, TimeUnit.SECONDS));
+        assertInstanceOf(IllegalStateException.class, backgroundFailure.getCause());
+
+        RuntimeException requestFailure = assertThrows(
+                RuntimeException.class,
+                () -> isolatedService.getNextChunkBytes(sessionID, 1));
+        assertAll(
+                () -> assertEquals("Precompute failed", requestFailure.getMessage()),
+                () -> assertInstanceOf(IllegalStateException.class, requestFailure.getCause()),
+                () -> assertNull(isolatedService.getSimulation(sessionID)),
+                () -> verify(simulation, times(2)).run()
+        );
+
+        assertThrows(SessionNotFoundException.class,
+                () -> isolatedService.getNextChunkBytes(sessionID, 1));
     }
 }

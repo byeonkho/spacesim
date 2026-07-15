@@ -149,6 +149,10 @@ public class BinaryResponseSerializer {
             millis[t] = date.toDate(TimeScalesFactory.getUTC()).getTime();
             Double d = deltaE != null ? deltaE.get(date) : null;
             dE[t] = d != null ? d.floatValue() : 0.0f;
+            if (!Float.isFinite(dE[t])) {
+                throw new IllegalStateException(
+                        "Non-finite relative energy at timestep " + t);
+            }
 
             List<CelestialBodySnapshot> snapshot = entry.getValue();
             for (int b = 0; b < bodyCount; b++) {
@@ -161,6 +165,13 @@ public class BinaryResponseSerializer {
                 vx[idx] = (float) vel.getX();
                 vy[idx] = (float) vel.getY();
                 vz[idx] = (float) vel.getZ();
+                if (!Double.isFinite(px[idx])
+                        || !Double.isFinite(py[idx])
+                        || !Double.isFinite(pz[idx])) {
+                    throw new IllegalStateException(
+                            "Non-finite position for body " + snapshot.get(b).name()
+                                    + " at timestep " + t);
+                }
             }
             t++;
         }
@@ -303,6 +314,10 @@ public class BinaryResponseSerializer {
         // needs no clearing between calls.
         int n = vals.length;
         for (int i = 0; i < n; i++) {
+            if (!Float.isFinite(vals[i])) {
+                throw new IllegalStateException(
+                        "Non-finite float32 trajectory value at plane index " + i);
+            }
             int bits = Float.floatToRawIntBits(vals[i]);
             for (int p = 0; p < 4; p++) {
                 out[p * n + i] = (byte) (bits >>> (8 * p));

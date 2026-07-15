@@ -24,7 +24,10 @@ import personal.spacesim.simulation.body.BodyCatalog;
 import personal.spacesim.simulation.frame.CustomFrameFactory;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/simulation")
@@ -84,9 +87,15 @@ public class SimulationController {
                 || celestialBodyNames.size() > BodyCatalog.MAX_BODIES_PER_SIM) {
             return ResponseEntity.badRequest().build();
         }
+        Set<String> normalizedBodyNames = new HashSet<>(celestialBodyNames.size());
         for (String name : celestialBodyNames) {
             if (!BodyCatalog.isKnown(name)) {
                 logger.warn("Rejecting /initialize with unknown body name: {}", name);
+                return ResponseEntity.badRequest().build();
+            }
+            String normalizedName = name.trim().toUpperCase(Locale.ROOT);
+            if (!normalizedBodyNames.add(normalizedName)) {
+                logger.warn("Rejecting /initialize with duplicate body name: {}", name);
                 return ResponseEntity.badRequest().build();
             }
         }
@@ -226,6 +235,9 @@ public class SimulationController {
         // extremes of the long range): reject those as garbage too.
         long windowMs = toEpoch - fromEpoch;
         if (toEpoch <= fromEpoch || windowMs < 0 || windowMs > MAX_GROUND_TRUTH_WINDOW_MS) {
+            return ResponseEntity.badRequest().build();
+        }
+        if (stepSeconds != null && !Double.isFinite(stepSeconds)) {
             return ResponseEntity.badRequest().build();
         }
         Frame resolvedFrame;

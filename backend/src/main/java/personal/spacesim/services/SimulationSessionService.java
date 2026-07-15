@@ -200,17 +200,27 @@ public class SimulationSessionService {
             // same-session requests serialize as intended.
             CompletableFuture<byte[]> cached = nextChunkCache.remove(sessionID);
             byte[] payload;
-            if (cached != null) {
-                try {
+            try {
+                if (cached != null) {
                     payload = cached.get();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException("Interrupted while awaiting precomputed chunk", e);
-                } catch (ExecutionException e) {
-                    throw new RuntimeException("Precompute failed", e.getCause());
+                } else {
+                    payload = computeChunkBytes(sessionID);
                 }
-            } else {
-                payload = computeChunkBytes(sessionID);
+            } catch (InterruptedException e) {
+                cached.cancel(true);
+                Thread.currentThread().interrupt();
+                removeSimulation(sessionID);
+                throw new RuntimeException("Interrupted while awaiting precomputed chunk", e);
+            } catch (ExecutionException e) {
+                removeSimulation(sessionID);
+                throw new RuntimeException("Precompute failed", e.getCause());
+            } catch (RuntimeException e) {
+                // Simulation.run() advances mutable state before serialization and
+                // compression. Once either post-run step fails, retrying this index
+                // would compute from a later state and silently skip an interval.
+                // Invalidate the session so the client must initialize a fresh one.
+                removeSimulation(sessionID);
+                throw e;
             }
 
             servedChunkIndex.put(sessionID, expectedChunkIndex);

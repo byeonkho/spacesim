@@ -3,6 +3,8 @@ package personal.spacesim.apis;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.data.DataContext;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.time.AbsoluteDate;
@@ -26,6 +28,8 @@ import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -116,5 +120,35 @@ class SimulationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"sessionID\":\"" + prior + "\",\"expectedChunkIndex\":0}"))
                 .andExpect(status().isGone());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "[\"Sun\",\"Earth\",\"earth\"]",
+            "[\"Sun\",\"Ceres\",\"CERES\"]"
+    })
+    void initializeRejectsCaseInsensitiveDuplicateBodiesBeforeSideEffects(
+            String bodyNamesJson
+    ) throws Exception {
+        String prior = liveSession();
+        int sessionCountBefore = service.getAllSimulations().size();
+        String body = "{"
+                + "\"celestialBodyNames\":" + bodyNamesJson + ","
+                + "\"date\":\"2024-01-01T00:00:00.000\","
+                + "\"frame\":\"ICRF\","
+                + "\"integrator\":\"EULER\","
+                + "\"timeStepUnit\":\"days\","
+                + "\"fidelityBucket\":null,"
+                + "\"previousSessionID\":\"" + prior + "\"}";
+
+        mockMvc.perform(post("/api/simulation/initialize")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+
+        assertEquals(sessionCountBefore, service.getAllSimulations().size(),
+                "duplicate rejection must not create a session");
+        assertNotNull(service.getSimulation(prior),
+                "duplicate rejection must not release the prior session");
     }
 }

@@ -3,6 +3,8 @@ package personal.spacesim.apis;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.data.DataContext;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.time.AbsoluteDate;
@@ -135,6 +137,19 @@ class GroundTruthControllerTest {
                         .param("frame", "ICRF")
                         .param("fromEpoch", String.valueOf(w[0]))
                         .param("toEpoch", String.valueOf(toMs)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"NaN", "Infinity", "-Infinity"})
+    void nonFiniteStepSecondsReturns400(String stepSeconds) throws Exception {
+        long[] w = tenDayWindow();
+        mockMvc.perform(get("/api/simulation/ground-truth")
+                        .param("body", "EARTH")
+                        .param("frame", "ICRF")
+                        .param("fromEpoch", String.valueOf(w[0]))
+                        .param("toEpoch", String.valueOf(w[1]))
+                        .param("stepSeconds", stepSeconds))
                 .andExpect(status().isBadRequest());
     }
 }

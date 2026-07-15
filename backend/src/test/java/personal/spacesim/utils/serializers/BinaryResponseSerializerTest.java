@@ -359,6 +359,102 @@ class BinaryResponseSerializerTest {
     }
 
     @Test
+    void rejectsNonFinitePosition() {
+        ChunkResult chunk = singleBodyChunk(
+                new Vector3D(Double.NaN, 2.0, 3.0),
+                Vector3D.ZERO,
+                0.0
+        );
+
+        assertThrows(IllegalStateException.class,
+                () -> new BinaryResponseSerializer().serialize(chunk, Map.of("Earth", 1.0)));
+    }
+
+    @Test
+    void rejectsVelocityThatCannotBeEncodedAsFiniteFloat32() {
+        ChunkResult chunk = singleBodyChunk(
+                Vector3D.ZERO,
+                new Vector3D(Double.POSITIVE_INFINITY, 0.0, 0.0),
+                0.0
+        );
+
+        assertThrows(IllegalStateException.class,
+                () -> new BinaryResponseSerializer().serialize(chunk, Map.of("Earth", 1.0)));
+    }
+
+    @Test
+    void rejectsNonFiniteRelativeEnergy() {
+        ChunkResult chunk = singleBodyChunk(Vector3D.ZERO, Vector3D.ZERO, Double.NaN);
+
+        assertThrows(IllegalStateException.class,
+                () -> new BinaryResponseSerializer().serialize(chunk, Map.of("Earth", 1.0)));
+    }
+
+    @Test
+    void rejectsFinitePositionDeltaThatOverflowsFloat32() {
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate t0 = new AbsoluteDate(2024, 1, 1, 0, 0, 0.0, utc);
+        AbsoluteDate t1 = t0.shiftedBy(1.0);
+
+        Map<AbsoluteDate, List<CelestialBodySnapshot>> snapshots = new LinkedHashMap<>();
+        snapshots.put(t0, List.of(new CelestialBodySnapshot(
+                "Earth",
+                new Vector3D(-Double.MAX_VALUE / 2.0, 0.0, 0.0),
+                Vector3D.ZERO)));
+        snapshots.put(t1, List.of(new CelestialBodySnapshot(
+                "Earth",
+                new Vector3D(Double.MAX_VALUE / 2.0, 0.0, 0.0),
+                Vector3D.ZERO)));
+        Map<AbsoluteDate, Double> deltaE = new LinkedHashMap<>();
+        deltaE.put(t0, 0.0);
+        deltaE.put(t1, 0.0);
+        ChunkResult chunk = new ChunkResult(snapshots, deltaE, null);
+
+        assertThrows(IllegalStateException.class,
+                () -> new BinaryResponseSerializer().serialize(chunk, Map.of("Earth", 1.0)));
+    }
+
+    @Test
+    void rejectsFiniteVelocityDeltaThatOverflowsFloat32() {
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate t0 = new AbsoluteDate(2024, 1, 1, 0, 0, 0.0, utc);
+        AbsoluteDate t1 = t0.shiftedBy(1.0);
+
+        Map<AbsoluteDate, List<CelestialBodySnapshot>> snapshots = new LinkedHashMap<>();
+        snapshots.put(t0, List.of(new CelestialBodySnapshot(
+                "Earth",
+                Vector3D.ZERO,
+                new Vector3D(-Float.MAX_VALUE, 0.0, 0.0))));
+        snapshots.put(t1, List.of(new CelestialBodySnapshot(
+                "Earth",
+                Vector3D.ZERO,
+                new Vector3D(Float.MAX_VALUE, 0.0, 0.0))));
+        Map<AbsoluteDate, Double> deltaE = new LinkedHashMap<>();
+        deltaE.put(t0, 0.0);
+        deltaE.put(t1, 0.0);
+        ChunkResult chunk = new ChunkResult(snapshots, deltaE, null);
+
+        assertThrows(IllegalStateException.class,
+                () -> new BinaryResponseSerializer().serialize(chunk, Map.of("Earth", 1.0)));
+    }
+
+    private static ChunkResult singleBodyChunk(
+            Vector3D position,
+            Vector3D velocity,
+            double relativeEnergy
+    ) {
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate date = new AbsoluteDate(2024, 1, 1, 0, 0, 0.0, utc);
+        CelestialBodySnapshot body = new CelestialBodySnapshot(
+                "Earth", position, velocity);
+        return new ChunkResult(
+                Map.of(date, List.of(body)),
+                Map.of(date, relativeEnergy),
+                null
+        );
+    }
+
+    @Test
     void multiByteUtf8NamesUseByteLengthNotCharLength() {
         // "Α" (Greek capital alpha) is 2 bytes in UTF-8 but 1 character.
         // The serializer must write nameLength=2, otherwise the frontend
