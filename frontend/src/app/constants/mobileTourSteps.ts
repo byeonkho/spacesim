@@ -42,8 +42,8 @@ export const MOBILE_TOUR_STEPS: readonly MobileTourStep[] = [
     dim: "light",
     eyebrow: "Welcome",
     copy:
-      "Everything you see is moving under real gravity, worked out live as it " +
-      "goes. Here's the quick tour.",
+      "Explore a ready-made solar system instantly, or build your own and let " +
+      "the simulator calculate how the worlds move. Here's the quick tour.",
   },
   {
     id: "inspect",
