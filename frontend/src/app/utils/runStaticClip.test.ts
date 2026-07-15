@@ -1,8 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
+import { configureStore } from "@reduxjs/toolkit";
+import simulationReducer, {
   appendChunkToBuffer,
   loadSimulation,
 } from "@/app/store/slices/SimulationSlice";
+import eventLogReducer from "@/app/store/slices/EventLogSlice";
+import notableEventsReducer, {
+  addDetectedEvents,
+} from "@/app/store/slices/NotableEventsSlice";
+import { createNotableEventsMiddleware } from "@/app/store/middleware/notableEventsMiddleware";
 import { beginLaunch, resetLaunchEpochForTests } from "@/app/store/launchEpoch";
 import { DEFAULT_CLIP_ID } from "@/app/constants/ClipPresets";
 
@@ -50,10 +56,41 @@ vi.mock("@/app/store/middleware/simulationRequestThunk", () => ({
 
 import { runStaticClip } from "./runStaticClip";
 
+function decodedRadialChunk(radii: number[], startGlobal: number) {
+  const positions = new Float64Array(radii.length * 2 * 6);
+  const timestamps = new Float64Array(radii.length);
+  for (let i = 0; i < radii.length; i++) {
+    positions[i * 12 + 6] = radii[i];
+    timestamps[i] = (startGlobal + i) * 86_400_000;
+  }
+  return {
+    bodyNames: ["Sun", "P"],
+    bodyCount: 2,
+    timestepCount: radii.length,
+    positions,
+    timestamps,
+    mu: { Sun: 1, P: 0 },
+    deltaERelative: new Float32Array(radii.length),
+    dp853AvgStepSeconds: null,
+    dp853AcceptRate: null,
+  };
+}
+
 describe("runStaticClip stale-launch guard", () => {
   beforeEach(() => {
     resetLaunchEpochForTests();
-    decodeMock.mockClear();
+    decodeMock.mockReset();
+    decodeMock.mockResolvedValue({
+      bodyNames: ["EARTH"],
+      bodyCount: 1,
+      timestepCount: 1,
+      positions: new Float64Array(6),
+      timestamps: new Float64Array(1),
+      mu: { EARTH: 1 },
+      deltaERelative: new Float32Array(1),
+      dp853AvgStepSeconds: null,
+      dp853AcceptRate: null,
+    });
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => ({
@@ -114,5 +151,49 @@ describe("runStaticClip stale-launch guard", () => {
     expect(ok).toBe(false);
     expect(loadCount).toBe(0); // guard fired before the first store mutation
     expect(appendCount).toBe(0);
+  });
+
+  it("detects a cross-chunk event through the real store lifecycle", async () => {
+    decodeMock
+      .mockResolvedValueOnce(decodedRadialChunk([3, 2], 0))
+      .mockResolvedValueOnce(decodedRadialChunk([1, 2, 3], 2));
+    const store = configureStore({
+      reducer: {
+        simulation: simulationReducer,
+        eventLog: eventLogReducer,
+        notableEvents: notableEventsReducer,
+      },
+      middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware({ serializableCheck: false }).concat(
+          createNotableEventsMiddleware(),
+        ),
+    });
+    store.dispatch(
+      addDetectedEvents({
+        events: [
+          {
+            type: "perihelion",
+            timeIndex: 99,
+            bodies: ["OLD"],
+            severity: "info",
+            magnitude: 1,
+            message: "Old run",
+          },
+        ],
+        bufferStartTimestep: 0,
+      }),
+    );
+
+    const ok = await runStaticClip(
+      store.dispatch as never,
+      DEFAULT_CLIP_ID,
+    );
+
+    expect(ok).toBe(true);
+    const events = store.getState().notableEvents.detectedEvents;
+    expect(events).toHaveLength(1);
+    expect(events[0].type).toBe("perihelion");
+    expect(Math.round(events[0].timeIndex)).toBe(2);
+    expect(events[0].bodies).toEqual(["P"]);
   });
 });
