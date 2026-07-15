@@ -357,11 +357,10 @@ export function AboutPopover({
 
       {/* 2. Pitch */}
       <p className="text-text text-[12.5px] leading-relaxed">
-        A real-time gravitational simulation of any number of celestial bodies
-        from our solar system, computed on the fly with your parameters. Pick
-        the bodies you want, then hit{" "}
-        <span className="text-hi font-medium">Run</span> and watch their real
-        orbits play back in 3D.
+        A ready-made solar system starts instantly. To experiment, pick the bodies
+        and settings you want, then press{" "}
+        <span className="text-hi font-medium">Run</span> to calculate a custom
+        simulation and watch it play back in 3D.
       </p>
 
       {/* 2b. Data provenance / credibility note. */}

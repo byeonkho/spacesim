@@ -12,8 +12,7 @@ export interface TourStep {
   copy: string;
 }
 
-// Phase 1 — shown over the empty landing scene. Advancing past "sim-setup"
-// happens by running a sim (see TourSlice / tourMiddleware), not via Next.
+// Landing steps shown before the visitor starts or accepts a simulation.
 export const PHASE1_STEPS: readonly TourStep[] = [
   {
     id: "welcome",
@@ -21,10 +20,9 @@ export const PHASE1_STEPS: readonly TourStep[] = [
     placement: "center",
     eyebrow: "Welcome",
     copy:
-      "Welcome to nbodysim. Every world you're about to see moves under real " +
-      "gravity, computed live from the same physics that steers the actual " +
-      "solar system. No pre-baked animations, no shortcuts. Here's the " +
-      "30-second tour.",
+      "Welcome to nbodysim. Explore a ready-made solar system instantly, or " +
+      "build your own and let the simulator calculate how the worlds move " +
+      "under gravity. Here's the 30-second tour.",
   },
   {
     id: "sim-setup",
@@ -37,7 +35,7 @@ export const PHASE1_STEPS: readonly TourStep[] = [
   },
 ];
 
-// Phase 2 — auto-resumes once the first chunk lands and the scene is live.
+// Playback steps shown after the first chunk reaches the scene.
 export const PHASE2_STEPS: readonly TourStep[] = [
   {
     id: "timeline",

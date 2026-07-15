@@ -30,9 +30,12 @@ journey(
     await expect(dialog).toContainText("nbodysim");
     await expect(dialog).toContainText("REAL-TIME SOLAR SYSTEM SIMULATOR");
     await expect(dialog).toContainText(
-      "gravitational simulation of any number of celestial bodies",
+      "ready-made solar system starts instantly",
     );
-    await expect(dialog).toContainText("watch their real");
+    await expect(dialog).toContainText("calculate a custom");
+    await expect(dialog).toContainText(
+      "simulation and watch it play back in 3D",
+    );
     await expect(dialog).toContainText("Orekit");
     await expect(dialog).toContainText("JPL Horizons");
     await expect(dialog).toContainText("View on GitHub");
