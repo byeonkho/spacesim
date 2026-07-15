@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.LongSupplier;
 
 @Component
 public class SimulationSessionService {
@@ -49,6 +50,7 @@ public class SimulationSessionService {
     private final SimulationFactory simulationFactory;
     private final BinaryResponseSerializer binaryResponseSerializer;
     private final ZstdCompressor zstdCompressor;
+    private final LongSupplier currentTimeMillis;
 
     // Bounded executor for precompute work. Threads are daemon so they don't
     // prevent JVM shutdown if a request is in flight at exit.
@@ -66,9 +68,20 @@ public class SimulationSessionService {
             BinaryResponseSerializer binaryResponseSerializer,
             ZstdCompressor zstdCompressor
     ) {
+        this(simulationFactory, binaryResponseSerializer, zstdCompressor,
+                System::currentTimeMillis);
+    }
+
+    SimulationSessionService(
+            SimulationFactory simulationFactory,
+            BinaryResponseSerializer binaryResponseSerializer,
+            ZstdCompressor zstdCompressor,
+            LongSupplier currentTimeMillis
+    ) {
         this.simulationFactory = simulationFactory;
         this.binaryResponseSerializer = binaryResponseSerializer;
         this.zstdCompressor = zstdCompressor;
+        this.currentTimeMillis = currentTimeMillis;
         this.sessions = new ConcurrentHashMap<>();
     }
 
@@ -101,7 +114,7 @@ public class SimulationSessionService {
                 targetSnapshotsPerChunk
         );
         sessions.put(sessionID, new SimulationSessionState(
-                simulation, System.currentTimeMillis()));
+                simulation, currentTimeMillis.getAsLong()));
         logger.info("sessionID: {}", sessionID);
         return sessionID;
     }
@@ -148,7 +161,7 @@ public class SimulationSessionService {
      */
     public byte[] getNextChunkBytes(String sessionID, int expectedChunkIndex) {
         SimulationSessionState state = sessions.get(sessionID);
-        if (state == null || !state.touchIfOpen(System.currentTimeMillis())) {
+        if (state == null || !state.touchIfOpen(currentTimeMillis.getAsLong())) {
             throw sessionNotFound(sessionID);
         }
 
@@ -267,7 +280,7 @@ public class SimulationSessionService {
      */
     @Scheduled(fixedRate = 60_000)
     public void evictIdleSimulations() {
-        long now = System.currentTimeMillis();
+        long now = currentTimeMillis.getAsLong();
         for (Map.Entry<String, SimulationSessionState> entry : sessions.entrySet()) {
             String sessionID = entry.getKey();
             SimulationSessionState state = entry.getValue();

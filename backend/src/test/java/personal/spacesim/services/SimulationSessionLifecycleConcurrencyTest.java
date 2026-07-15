@@ -9,17 +9,21 @@ import personal.spacesim.utils.compressor.ZstdCompressor;
 import personal.spacesim.utils.serializers.BinaryResponseSerializer;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.LockSupport;
+import java.util.function.LongSupplier;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -106,7 +110,57 @@ class SimulationSessionLifecycleConcurrencyTest {
         }
     }
 
+    @Test
+    void idleEvictionReturnsWhilePrecomputeRunsAndLateCompletionStaysDiscarded()
+            throws Exception {
+        AtomicLong now = new AtomicLong(0L);
+        Harness harness = newHarness(now::get);
+        CountDownLatch precomputeStarted = new CountDownLatch(1);
+        CountDownLatch allowPrecomputeToFinish = new CountDownLatch(1);
+        CountDownLatch precomputeFinished = new CountDownLatch(1);
+        when(harness.simulation().run()).thenReturn(harness.chunkResult()).thenAnswer(invocation -> {
+            precomputeStarted.countDown();
+            try {
+                allowPrecomputeToFinish.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                precomputeFinished.countDown();
+            }
+            return harness.chunkResult();
+        });
+
+        assertArrayEquals(COMPRESSED_CHUNK,
+                harness.service().getNextChunkBytes(harness.sessionID(), 0));
+        assertTrue(precomputeStarted.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
+        CompletableFuture<byte[]> pending =
+                harness.service().peekPrecomputedChunk(harness.sessionID());
+        assertNotNull(pending);
+
+        now.set(TimeUnit.MINUTES.toMillis(16));
+        ExecutorService evictionExecutor = Executors.newSingleThreadExecutor();
+        try {
+            Future<?> eviction = evictionExecutor.submit(
+                    harness.service()::evictIdleSimulations);
+            eviction.get(1, TimeUnit.SECONDS);
+
+            assertTrue(pending.isCancelled());
+            assertReleased(harness);
+
+            allowPrecomputeToFinish.countDown();
+            assertTrue(precomputeFinished.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
+            assertReleased(harness);
+        } finally {
+            allowPrecomputeToFinish.countDown();
+            evictionExecutor.shutdownNow();
+        }
+    }
+
     private static Harness newHarness() {
+        return newHarness(System::currentTimeMillis);
+    }
+
+    private static Harness newHarness(LongSupplier currentTimeMillis) {
         SimulationFactory simulationFactory = mock(SimulationFactory.class);
         BinaryResponseSerializer serializer = mock(BinaryResponseSerializer.class);
         ZstdCompressor compressor = mock(ZstdCompressor.class);
@@ -122,7 +176,7 @@ class SimulationSessionLifecycleConcurrencyTest {
         when(compressor.compress(any(byte[].class))).thenReturn(COMPRESSED_CHUNK);
 
         SimulationSessionService service = new SimulationSessionService(
-                simulationFactory, serializer, compressor);
+                simulationFactory, serializer, compressor, currentTimeMillis);
         String sessionID = service.createSimulation(
                 List.of("Sun"), "ICRF", "EULER", AbsoluteDate.J2000_EPOCH,
                 "days", 1, 1);
