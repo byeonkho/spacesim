@@ -2,85 +2,105 @@ import type { Middleware } from "@reduxjs/toolkit";
 import {
   appendChunkToBuffer,
   loadSimulation,
-  setCurrentTimeStepIndex,
+  selectBufferStartTimestep,
   selectChunkBuffer,
   selectCurrentTimeStepIndex,
-  selectBufferStartTimestep,
+  setCurrentTimeStepIndex,
 } from "@/app/store/slices/SimulationSlice";
 import {
   addDetectedEvents,
-  advanceNarrationCursor,
+  eventsToNarrate,
+  markEventsNarrated,
   resetNotableEvents,
   selectDetectedEvents,
-  selectNarrationCursorGlobal,
-  eventsToNarrate,
 } from "@/app/store/slices/NotableEventsSlice";
-import { pushEvent } from "@/app/store/slices/EventLogSlice";
-import { scanBuffer } from "@/app/utils/eventScanner";
+import {
+  invalidateSimSeekTargets,
+  pushEvent,
+} from "@/app/store/slices/EventLogSlice";
+import { NotableEventStreamScanner } from "@/app/utils/notableEventStreamScanner";
 
-// Single driver for the notable-events feature. Mirrors groundTruthMiddleware:
-// it reacts to appendChunkToBuffer (the one action both the live and static-
-// clip paths dispatch). Scan runs on the main thread; for the default static
-// clip and typical body counts that is a few hundred-thousand cheap ops, on the
-// order of rebuildTrueTrack which already runs here. (A future optimisation
-// could move the scan into the decode worker.)
+export function createNotableEventsMiddleware(): Middleware {
+  const scanner = new NotableEventStreamScanner();
 
-let scanHighWaterGlobal = 0;
+  return (storeApi) => {
+    const narrateEligibleEvents = (): void => {
+      const state = storeApi.getState();
+      const buffer = selectChunkBuffer(state);
+      if (buffer === null) return;
+      const playheadGlobal =
+        Math.floor(selectCurrentTimeStepIndex(state)) +
+        selectBufferStartTimestep(state);
+      const detectedEvents = selectDetectedEvents(state);
 
-export const notableEventsMiddleware: Middleware = (storeApi) => (next) => (action) => {
-  const result = next(action);
-
-  if (loadSimulation.match(action)) {
-    scanHighWaterGlobal = 0;
-    storeApi.dispatch(resetNotableEvents());
-    return result;
-  }
-
-  if (appendChunkToBuffer.match(action)) {
-    const state = storeApi.getState();
-    const buffer = selectChunkBuffer(state);
-    if (!buffer) return result;
-    const events = scanBuffer(buffer, scanHighWaterGlobal);
-    const bufferStartTimestep = selectBufferStartTimestep(state);
-    storeApi.dispatch(addDetectedEvents({ events, bufferStartTimestep }));
-    scanHighWaterGlobal = buffer.bufferStartTimestep + buffer.totalTimesteps - 1;
-    return result;
-  }
-
-  if (setCurrentTimeStepIndex.match(action)) {
-    const state = storeApi.getState();
-    const buffer = selectChunkBuffer(state);
-    if (!buffer) return result;
-    const bufferStart = selectBufferStartTimestep(state);
-    const playheadGlobal = Math.floor(selectCurrentTimeStepIndex(state)) + bufferStart;
-    const cursor = selectNarrationCursorGlobal(state);
-    const detectedEvents = selectDetectedEvents(state);
-    // This branch runs every frame during playback. Do an allocation-free
-    // pre-scan first and only build the filtered array on the rare frame that
-    // actually crosses an event, to keep per-frame garbage off the hot path.
-    let crossed = false;
-    for (let i = 0; i < detectedEvents.length; i++) {
-      const ti = detectedEvents[i].timeIndex;
-      if (ti > cursor && ti <= playheadGlobal) {
-        crossed = true;
-        break;
+      let hasEligibleEvent = false;
+      for (let index = 0; index < detectedEvents.length; index++) {
+        const event = detectedEvents[index];
+        if (event.timeIndex > playheadGlobal) break;
+        if (!event.narrated) {
+          hasEligibleEvent = true;
+          break;
+        }
       }
-    }
-    if (!crossed) return result;
-    const toNarrate = eventsToNarrate(detectedEvents, cursor, playheadGlobal);
-    for (const e of toNarrate) {
-      storeApi.dispatch(
-        pushEvent({
-          source: "SIM",
-          severity: e.severity,
-          message: e.message,
-          timeIndex: e.timeIndex,
-        }),
-      );
-    }
-    storeApi.dispatch(advanceNarrationCursor(playheadGlobal));
-    return result;
-  }
+      if (!hasEligibleEvent) return;
 
-  return result;
-};
+      const toNarrate = eventsToNarrate(detectedEvents, playheadGlobal);
+      const narratedIds: number[] = [];
+      for (const event of toNarrate) {
+        storeApi.dispatch(
+          pushEvent({
+            source: "SIM",
+            severity: event.severity,
+            message: event.message,
+            timeIndex: event.timeIndex,
+          }),
+        );
+        narratedIds.push(event.id);
+      }
+      storeApi.dispatch(markEventsNarrated(narratedIds));
+    };
+
+    return (next) => (action) => {
+      const result = next(action);
+
+      if (loadSimulation.match(action)) {
+        scanner.reset();
+        storeApi.dispatch(resetNotableEvents());
+        storeApi.dispatch(invalidateSimSeekTargets());
+        return result;
+      }
+
+      if (appendChunkToBuffer.match(action)) {
+        const state = storeApi.getState();
+        const buffer = selectChunkBuffer(state);
+        if (buffer === null) return result;
+        const bufferStartTimestep = selectBufferStartTimestep(state);
+        const payloadStartGlobal =
+          buffer.bufferStartTimestep +
+          buffer.totalTimesteps -
+          action.payload.timestepCount;
+        try {
+          const events = scanner.consume(action.payload, payloadStartGlobal);
+          scanner.pruneBefore(bufferStartTimestep);
+          storeApi.dispatch(
+            addDetectedEvents({ events, bufferStartTimestep }),
+          );
+        } catch (error) {
+          scanner.pruneBefore(bufferStartTimestep);
+          storeApi.dispatch(
+            addDetectedEvents({ events: [], bufferStartTimestep }),
+          );
+          console.warn("[events] skipped an unsafe append boundary", error);
+        }
+        narrateEligibleEvents();
+        return result;
+      }
+
+      if (setCurrentTimeStepIndex.match(action)) {
+        narrateEligibleEvents();
+      }
+
+      return result;
+    };
+  };
+}
