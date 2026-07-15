@@ -17,7 +17,7 @@ import type { RootState } from "@/app/store/Store";
 // Critical contract: submitting a new sim must atomically reset session
 // state so a late-arriving chunk from the prior session can't splatter
 // stale timesteps into the new buffer, and view prefs must survive the
-// swap. See todo #55 — silent corruption was the original failure mode.
+// swap. Silent corruption was the original failure mode.
 
 type Slice = ReturnType<typeof simulationReducer>;
 

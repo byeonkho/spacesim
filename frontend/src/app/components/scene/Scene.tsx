@@ -159,9 +159,9 @@ const Scene = () => {
       // body materials render colors 1:1 from our half-Lambert wrap,
       // matching the look the lighting balance was tuned against.
       flat
-      // Transparent canvas — the CSS background on Layout.tsx (the
-      // design handoff's gradient stack) shows through. Without this,
-      // the WebGL clear color (default opaque black) would hide the CSS.
+      // The CSS background is the temporary loading backdrop beneath the
+      // scene. A transparent canvas exposes it until the scene paints; the
+      // default opaque WebGL clear color would hide it.
       // preserveDrawingBuffer only under e2e: headless Chromium clears the
       // WebGL buffer after compositing, so a Playwright readPixels grab comes
       // back blank without it. Off in production (it carries a small perf cost).

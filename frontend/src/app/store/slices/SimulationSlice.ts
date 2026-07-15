@@ -85,11 +85,8 @@ export interface SimulationScale {
 
 export type CameraPreset = "top-down" | "free";
 
-// Display frame is a *render-time* choice independent of the integration
-// frame the backend used. Backend snapshots are always Sun-relative
-// (Simulation.snapshotFromState shifts by the Sun's state regardless of
-// session frame), so switching display frames is just a per-frame pivot
-// subtraction on the client — no buffer flush, no resubmit. See todo #42.
+// Backend snapshots are always Sun-relative, so display-frame switching is a
+// render-time pivot subtraction and never requires a buffer flush or resubmit.
 export type DisplayFrame = "helio" | "geo";
 
 export interface SimulationParameters {
@@ -205,9 +202,9 @@ export const simulationSlice = createSlice({
       // activeBody alongside the new params prevents stale timesteps from
       // the prior session from rendering with the new scales/textures
       // (and prevents resumed playback at the old scrubber position).
-      // View prefs (showGrid, simulationScale, cameraPreset, displayFrame,
-      // lastRequest) are intentionally preserved — those are user
-      // preferences, not session state. See todo #55.
+      // View settings and the last request describe user preferences, not the
+      // active session, so a resubmit preserves them while rebuilding session
+      // state.
       state.chunkBuffer = null;
       state.hasReceivedFirstChunk = false;
       state.chunksAppended = 0;

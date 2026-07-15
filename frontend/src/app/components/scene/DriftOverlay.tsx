@@ -20,8 +20,7 @@ import { writePivotInto } from "@/app/utils/framePivot";
 import { worldRadius } from "@/app/utils/scalePipeline";
 import { getDevSettings } from "@/app/dev/devSettingsStore";
 
-// Truth = warm yellow; the connector showing the gap = red. Matches the
-// design mockups for the drift overlay.
+// The reference track is warm yellow; the connector showing the gap is red.
 const TRUE_COLOR: [number, number, number] = [1.0, 0.82, 0.4];
 const CONNECTOR_COLOR: [number, number, number] = [1.0, 0.36, 0.45];
 const MAX_TRAIL_POINTS = 5000;
@@ -192,8 +191,8 @@ const DriftOverlay: React.FC = () => {
     let count = 0;
     for (let i = start; i <= end; i++) {
       readBodyPositionInto(truePos.current, trueTrack, i, 0);
-      // Frame pivot comes from the PREDICTED buffer (predicted Earth), so the
-      // true trail shares world space with everything else (design §6).
+      // Predicted and reference markers share the same frame, scale, and body-
+      // transform chain, so the reference trail uses the predicted pivot.
       writePivotInto(pivot.current, predicted, i, displayFrame);
       trueSimple.current.x = truePos.current.x - pivot.current.x;
       trueSimple.current.y = truePos.current.y - pivot.current.y;

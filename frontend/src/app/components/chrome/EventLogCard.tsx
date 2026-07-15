@@ -22,10 +22,8 @@ import { CollapseChevron } from "@/app/components/chrome/CollapseChevron";
 import { InfoTooltip } from "@/app/components/chrome/InfoTooltip";
 import { EVENT_LOG_COPY } from "@/app/constants/glossaryTooltipCopy";
 
-// Event log card. USR entries flow in via the userActionLogger
-// middleware; SIM entries arrive in Phase 6 (#40). Filter chips reuse
-// the chrome accent treatment; "view all →" footer link is reserved
-// for a future paginated history view.
+// USR entries flow from userActionLogger; SIM entries flow from
+// notableEventsMiddleware. Filter chips reuse the chrome accent treatment.
 
 const FILTERS: readonly EventFilter[] = ["ALL", "SIM", "USR"];
 

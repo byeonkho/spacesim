@@ -6,7 +6,7 @@ import { worldDistance, type ScalePreset } from "@/app/utils/scalePipeline";
 // ecliptic plane sits roughly in the XY plane. Three.js conventionally
 // treats the XZ plane as the horizontal floor (Y is up). Mapping ICRF
 // → three.js axis-by-axis would render the orbital plane vertically,
-// which is wrong for the design's top-down view.
+// which conflicts with the public top-down view.
 //
 // The fix: swap Y and Z. ICRF X → world X (left/right), ICRF Y → world
 // Z (in-plane forward/back), ICRF Z → world Y (small vertical wobble

@@ -187,10 +187,8 @@ export const requestRunSimulation = createAsyncThunk<
         return;
       }
 
-      // Stale-session guard: if the user resubmitted while this chunk was
-      // in flight (or being decoded), the slice's current sessionID has
-      // already moved on. Drop silently — merging would splatter old
-      // timesteps into the new buffer. See todo #55.
+      // Drop a decoded chunk when its session no longer matches. Appending it
+      // would splice stale timesteps into the replacement simulation.
       const currentSessionID =
         getState().simulation.simulationParameters?.simulationMetaData?.sessionID;
       if (currentSessionID !== sessionID) {

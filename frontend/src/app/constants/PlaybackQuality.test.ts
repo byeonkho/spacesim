@@ -27,7 +27,7 @@ describe("FIDELITY_BUCKETS", () => {
 });
 
 describe("K_BY_BUCKET", () => {
-  it("mirrors backend FidelityBucket K values (design doc table)", () => {
+  it("mirrors production FidelityBucket K constants", () => {
     expect(K_BY_BUCKET).toEqual({
       low: 20,
       medLow: 10,
@@ -45,7 +45,7 @@ describe("K_BY_BUCKET", () => {
 });
 
 describe("N_BY_BUCKET", () => {
-  it("mirrors backend FidelityBucket N values (design doc table)", () => {
+  it("mirrors production FidelityBucket N constants", () => {
     expect(N_BY_BUCKET).toEqual({
       low: 3000,
       medLow: 5000,

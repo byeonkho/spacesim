@@ -1,11 +1,8 @@
 "use client";
 
-// Primary CTA in the top bar — opens the SimSetup drawer. Two visual
-// states (filled vs outlined) match the handoff: filled when closed,
-// outlined "active" when the drawer is open. Pulse dot at top-right
-// hints "do this first" until the user has run their first sim
-// (derived from SimulationSlice.lastRequest — once it exists, the
-// pulse is suppressed). See spacesim-ui/design_handoff_sim_setup/.
+// Primary CTA in the top bar opens the SimSetup drawer. It is filled when
+// closed and outlined while active. The pulse is suppressed once
+// SimulationSlice.lastRequest shows that the user has run a simulation.
 
 interface SimSetupButtonProps {
   active: boolean;

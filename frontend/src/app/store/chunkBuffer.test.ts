@@ -577,9 +577,8 @@ describe("appendChunk: chunk-level DP853 telemetry", () => {
     expect(buf.dp853AcceptRate).toBeNull();
   });
 
-  // Regression: post-Phase-1, currentTimeStepIndex is a float driven by
-  // wall-clock-rate animation. The Phase 1 hotfix (commit 9464608) floored
-  // at Trail / DevPanel / TopStatusStrip-buffered sites but missed this
+  // Regression: currentTimeStepIndex can be fractional during wall-clock-rate
+  // playback. Other consumers floor before typed-array access, but this
   // selector path (TopStatusStrip + Timeline both consume
   // selectCurrentTimeStepIsoString). With a fractional index,
   // Float64Array[3.5] returns undefined → new Date(undefined) is an Invalid

@@ -61,11 +61,8 @@ import {
 } from "@/app/constants/glossaryTooltipCopy";
 import { ScrubberMarkers } from "@/app/components/chrome/ScrubberMarkers";
 
-// Bottom timeline: transport + rate + scrubber + view toggles. Replaces
-// TimeControls.tsx + MiscActionBar.tsx + ControlsContainer.tsx. Scrubber
-// is click-to-jump in this commit; drag + keyboard shortcuts come in a
-// follow-up. Tick labels and T+ days are placeholders until Phase 2 (#58)
-// surfaces JD / window math.
+// Desktop timeline combining transport, playback rate, scrubber, and view
+// toggles in the bottom chrome.
 
 export function Timeline() {
   return (

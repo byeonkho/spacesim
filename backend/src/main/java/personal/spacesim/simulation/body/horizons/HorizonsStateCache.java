@@ -47,10 +47,9 @@ public class HorizonsStateCache {
     private record Key(String spkId, long epochSecondsFromJ2000) {}
 
     /**
-     * Self-describing on-disk record. Filename embeds the key for human
-     * inspection and seed-bakeability; the file body repeats both fields
-     * so each file is independently parseable (useful when shipping
-     * prebaked entries — see todo #65c).
+     * Self-describing on-disk record. The filename embeds the key for inspection
+     * and seed generation; the file body repeats both fields so every record can
+     * be parsed independently when bundled as a precomputed seed.
      */
     record DiskEntry(
         String spkId,

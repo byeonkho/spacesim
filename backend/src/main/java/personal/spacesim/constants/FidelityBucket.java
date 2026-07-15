@@ -79,7 +79,7 @@ public enum FidelityBucket {
      * selected (or after switching integrators mid-config).
      *
      * <p>Defaults are tuned for bandwidth: client-side cubic Hermite
-     * interpolation (using the integrator's exact velocities) reconstructs
+     * interpolation (using the integrator-emitted velocities) reconstructs
      * positions to well below a pixel even at coarse keyframe density, so the
      * landing defaults sit one bucket below the middle. Measured chunk sizes
      * shrank ~34-47% vs the previous one-bucket-finer defaults with no visible

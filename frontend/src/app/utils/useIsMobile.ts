@@ -2,9 +2,8 @@
 
 import { useSyncExternalStore } from "react";
 
-// Below this width the app swaps to the mobile guided-explorer chrome.
-// Width-only by design (see the mobile design spec); a coarse-pointer
-// override is a possible later refinement, not v1.
+// Viewports narrower than 1280px use the mobile guided-explorer chrome. The
+// current rule is width-only and does not inspect pointer capabilities.
 export const MOBILE_MAX_WIDTH = 1280;
 
 const QUERY = `(max-width: ${MOBILE_MAX_WIDTH - 1}px)`;

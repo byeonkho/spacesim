@@ -15,7 +15,7 @@ import personal.spacesim.simulation.Simulation;
 import personal.spacesim.simulation.SimulationFactory;
 
 /**
- * One-off measurement harness for the integrator inner loop (todo #53).
+ * Opt-in measurement harness for the integrator inner loop.
  *
  * <p>Runs a representative chunk (Sun + 9 bodies, 10K timesteps, hours unit)
  * for each integrator, prints elapsed time, and writes a JFR profile to

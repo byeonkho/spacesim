@@ -97,8 +97,8 @@ describe("BodyVisuals — moon entries", () => {
   it("each new moon has an entry in every table", () => {
     for (const key of NEW_MOONS) {
       expect(BODY_ORDER).toContain(key);
-      // Moons share the existing "planet" category so the drawer renders
-      // them inside the Planets section (sub-grouped by parent in Phase 6).
+      // Moon entries stay in the planet category so the drawer groups them
+      // with their parent planets.
       expect(BODY_CATEGORY[key]).toBe("planet");
       expect(BODY_COLOR[key]).toMatch(/^#[0-9a-f]{6}$/i);
       expect(BODY_NAIF[key]).toMatch(/^\d{3}$/);

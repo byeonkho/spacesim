@@ -417,11 +417,11 @@ export function getTimestampAsIsoString(
   buffer: ChunkBuffer,
   timestepIdx: number,
 ): string {
-  // Floor the index so float values from Phase 1's wall-clock-rate animation
-  // driving land on a real keyframe slot. Float64Array indexed with a
-  // fractional key returns undefined → new Date(undefined) is an Invalid Date
-  // whose .toISOString() throws RangeError. Semantically: "the
-  // timestamp at or before this fractional position" — same reasoning as
+  // Fractional playback indices floor to the preceding keyframe before typed-
+  // array access. Float64Array indexed with a fractional key returns undefined
+  // → new Date(undefined) is an Invalid Date whose .toISOString() throws
+  // RangeError. Semantically: "the timestamp at or before this fractional
+  // position" — same reasoning as
   // Trail's tail loop ("integer indexing is semantically correct for
   // historical keyframe reads").
   const idx = Math.floor(timestepIdx);

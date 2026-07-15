@@ -1,14 +1,9 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/app/store/Store";
 
-// Event log feed for the right-column chrome panel. USR entries come
-// from the userActionLogger middleware (see store/middleware/
-// userActionLogger.ts) intercepting user-driven slice actions. SIM
-// entries land in Phase 6 (#40) when the backend event scanner ships.
-//
-// History capped at MAX_EVENTS to bound memory; the design's "view
-// all" footer link will eventually paginate / filter from a larger
-// store, but for now the cap keeps the panel snappy.
+// USR entries come from userActionLogger. SIM entries come from
+// notableEventsMiddleware as playback crosses detected events. History is
+// capped at MAX_EVENTS so the panel remains bounded and responsive.
 
 export type EventSource = "USR" | "SIM";
 export type EventSeverity = "info" | "user" | "warn";

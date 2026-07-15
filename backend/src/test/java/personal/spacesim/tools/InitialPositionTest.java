@@ -88,8 +88,8 @@ public class InitialPositionTest {
     @Test
     void eclipticPlaneAssumptionHolds() {
         // Sanity: the |Z| / |r| ratio should never exceed sin(23.4°) ≈ 0.4
-        // for any major body. This is what makes the design's top-down
-        // ecliptic projection visually reasonable. If a future frame
+        // for any major body. This keeps the public top-down ecliptic view
+        // visually consistent. If a future frame
         // change put bodies into an unexpected orientation (e.g.,
         // accidentally serving Earth-centered coords), bodies would
         // suddenly have |Z| comparable to |X|/|Y| and this would catch

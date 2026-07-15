@@ -4,13 +4,12 @@ import {
   type BodyProperties,
 } from "@/app/constants/SimConstants";
 
-// Canonical visual data for celestial bodies — color tokens (from the design
-// handoff palette), NAIF identifiers, display names, and stable ordering.
+// Canonical visual data for celestial bodies: shared colors, NAIF identifiers,
+// display names, stable ordering, and chrome visuals.
 //
 // Scene 3D rendering still pulls textures from SimConstants.bodyProperties.
-// This module is for UI chrome (selector pills, body card sphere, ghost-label
-// dots, mobile chip). Phase 1B's stylized scene variant will also read from
-// here.
+// This module owns the UI chrome data used by selector pills, body-card
+// spheres, ghost-label dots, and mobile chips.
 
 export type BodyKey =
   | "SUN"
@@ -301,8 +300,8 @@ export const BODY_DISPLAY: Record<BodyKey, string> = {
 
 // Re-export the texture map keyed by BodyKey for ergonomic typed access.
 // Source of truth for textures stays in SimConstants. Bodies without a
-// dedicated texture yet (minor bodies pre-Phase-4 textures) fall back to
-// the FALLBACK entry so the module loads cleanly.
+// dedicated texture fall back to the FALLBACK entry so the module loads
+// cleanly.
 export const BODY_TEXTURE: Record<BodyKey, StaticImageData> = (
   Object.fromEntries(
     BODY_ORDER.map((key) => {
@@ -314,7 +313,7 @@ export const BODY_TEXTURE: Record<BodyKey, StaticImageData> = (
 );
 
 // Darken a hex color by `percent` per channel (0–255). Negative darkens.
-// Drives the radial-gradient outer stop (design's "60% darker" terminator).
+// Drives the radial-gradient's 60-point-darker outer stop.
 export function shadeColor(hex: string, percent: number): string {
   const num = parseInt(hex.replace("#", ""), 16);
   const r = clamp((num >> 16) + percent);
@@ -327,9 +326,8 @@ function clamp(v: number) {
   return Math.max(0, Math.min(255, v));
 }
 
-// Inline-style background for a body sphere. Matches the chrome rendering
-// from the handoff: radial gradient from body color (top-left highlight)
-// to a 60-points-darker outer ring.
+// Inline-style background for a chrome body sphere: a radial gradient from the
+// body color at the top-left highlight to a 60-point-darker outer ring.
 export function bodyGradient(key: BodyKey): string {
   const c = BODY_COLOR[key];
   return `radial-gradient(circle at 30% 30%, ${c} 0%, ${c} 50%, ${shadeColor(c, -60)} 100%)`;

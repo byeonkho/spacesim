@@ -18,16 +18,14 @@ import personal.spacesim.utils.compressor.ZstdCompressor;
 import personal.spacesim.utils.serializers.BinaryResponseSerializer;
 
 /**
- * One-off wire-size measurement harness for chunk bandwidth (todos
- * #37 and #69). Walks realistic user-facing scenarios (full solar
- * system, 10 bodies), runs the same serialize → zstd pipeline the
- * controller uses, and prints snapshots / raw KB / zstd KB / ratio /
+ * Opt-in wire-size measurement harness for chunk bandwidth. It walks a
+ * representative 10-body scenario, runs the same serialize → zstd pipeline
+ * the controller uses, and prints snapshots / raw KB / zstd KB / ratio /
  * B/snap·body per row.
  *
- * <p>For DP853 (Mode C time-gap thinning), exercises the three
- * preset-relevant N values from the design doc — N=5000 / N=10000 /
- * N=15000 — so each row's snapshot count should land within ±5% of
- * its target N. That's the Phase 2 verify criterion.
+ * <p>The rows are explicit exploratory K or N cases rather than production
+ * defaults. For DP853 (Mode C time-gap thinning), each row's snapshot count
+ * should land within ±5% of its target N.
  *
  * <p>Disabled by default — runs only when {@code -Dchunk.benchmark=true}.
  *
@@ -51,11 +49,11 @@ class ChunkSizeBenchmark {
     private record Scenario(String label, String integrator, int k, int n) {}
 
     // Fixed-step rows use K (n is ignored). DP853 rows use N (k is ignored).
-    // DP853 N values match the design doc preset map (bucket 2, 4, 5).
+    // Every row is an explicit exploratory case, not a production default.
     private static final List<Scenario> SCENARIOS = List.of(
         new Scenario("euler   K=1   (highest)",   "euler", 1,  0),
-        new Scenario("rk4     K=4   (default)",   "rk4",   4,  0),
-        new Scenario("dp853   N=5000  (default)", "dp853", 1,  5000),
+        new Scenario("rk4     K=4",               "rk4",   4,  0),
+        new Scenario("dp853   N=5000",            "dp853", 1,  5000),
         new Scenario("dp853   N=10000 (high)",    "dp853", 1, 10000),
         new Scenario("dp853   N=15000 (highest)", "dp853", 1, 15000)
     );
@@ -112,9 +110,9 @@ class ChunkSizeBenchmark {
         }
 
         System.out.println();
-        System.out.println("Wire-size targets (per design doc):");
-        System.out.println("  Default tier (Euler/RK4): 2 MB compressed ceiling");
-        System.out.println("  DP853 tier (opt-in):      6 MB compressed ceiling");
+        System.out.println("Exploratory wire-size reference ceilings");
+        System.out.println("  Euler/RK4 reference: 2 MB compressed ceiling");
+        System.out.println("  DP853 reference:     6 MB compressed ceiling");
         System.out.println();
     }
 }

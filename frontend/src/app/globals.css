@@ -8,7 +8,7 @@
 @source "../**/*.{ts,tsx,js,jsx}";
 
 /* ─────────────────────────────────────────────────────────────────────────
-   spacesim design tokens — sourced from frontend/design_handoff_spacesim_ui/.
+   spacesim theme tokens.
    Tailwind v4 CSS-first config: tokens declared inside @theme become utility
    classes (e.g. text-hi, bg-accent, font-mono, ring-accent).
    ───────────────────────────────────────────────────────────────────────── */
@@ -46,7 +46,7 @@
     var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: var(--font-jetbrains), "JetBrains Mono", monospace;
 
-  /* Radii — design uses 14 for panels, 12 for top strip, 18 for mobile dock. */
+  /* Current chrome radii: panels, top strip, mobile dock, and chips. */
   --radius-panel: 14px;
   --radius-strip: 12px;
   --radius-dock: 18px;
@@ -59,7 +59,7 @@
   --animate-cta-pulse: spacesim-cta-pulse 1.5s ease-in-out infinite;
 }
 
-/* Glass surface — every panel uses this recipe (per handoff README). */
+/* Shared glass-surface recipe for panels. */
 @utility glass {
   background: rgba(20, 22, 30, 0.62);
   backdrop-filter: blur(22px) saturate(150%);
@@ -100,11 +100,9 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Sim setup CTA pulse dot — gentle scale + opacity loop. Per the
-   sim-setup handoff: "1.5s transform: scale() + opacity loop reads
-   well — but only show it until the user has run their first
-   simulation." Suppression is handled in SimSetupButton via the
-   showPulse prop (derived from SimulationSlice.lastRequest). */
+/* Sim setup CTA pulse dot: a gentle scale and opacity loop shown until the
+   user runs a simulation. SimSetupButton controls suppression through the
+   showPulse prop derived from SimulationSlice.lastRequest. */
 @keyframes spacesim-cta-pulse {
   0%, 100% {
     transform: scale(1);
@@ -116,8 +114,7 @@
   }
 }
 
-/* Reset baseline. MUI's CssBaseline still applies via its ThemeProvider during
-   the migration; once MUI is removed (Phase 1), this becomes the only baseline. */
+/* Global reset baseline for the current UI stack. */
 html,
 body {
   margin: 0;

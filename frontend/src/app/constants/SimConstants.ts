@@ -45,7 +45,7 @@ const SimConstants = {
     LOG: {
       name: "Log",
       preset: "log" as const,
-      AXES: { SIZE: 150 }, // starting value — tuned in Phase 4 after the dev-mode tuning gate
+      AXES: { SIZE: 150 }, // Tuned size for the log-scale axes.
     },
     REALISTIC: {
       name: "Realistic",

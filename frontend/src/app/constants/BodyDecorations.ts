@@ -1,8 +1,8 @@
 import type { BodyKey } from "@/app/constants/BodyVisuals";
 
-// Per-body scene decorations — the single "switch" for Saturn's rings and the
-// atmospheric halos. Visual-only; no simulation impact. A future stylized scene
-// variant (todo #38) would gate/restyle these from here.
+// Per-body scene decorations are visual-only and have no simulation impact.
+// This table is the single place a visual style can gate or restyle rings and
+// atmospheric halos.
 
 export interface RingConfig {
   /** Inner ring radius as a multiple of the planet's world radius. */

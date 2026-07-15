@@ -2,7 +2,7 @@
 //
 // JD: Julian Date — continuous count of days since noon UTC on
 //   Jan 1, 4713 BC (proleptic Julian calendar). Standard astrodynamics
-//   timestamp; the design's top strip surfaces it next to UTC.
+//   timestamp; the top strip displays it next to UTC.
 // J2000 epoch: JD 2451545.0 = Jan 1 2000 12:00:00 TT (≈ UTC + 32.184s).
 //   For visualization purposes we treat as Jan 1 2000 12:00 UTC; the
 //   sub-minute TT offset is invisible on a "T+8929 d" readout.
@@ -27,7 +27,7 @@ export function daysSinceJ2000(d: Date): number {
 }
 
 // Pretty-print JD with thin-space thousand separators and a 5-digit
-// fractional component to match the design ("2 460 478.79167").
+// fractional component, for example "2 460 478.79167".
 export function formatJD(jd: number): string {
   if (!Number.isFinite(jd)) return "—";
   // Round to 5 decimal places first so that a fraction like 0.9999951
@@ -62,7 +62,7 @@ export function timeStepSeconds(unit: string | undefined): number {
   return SECS_PER_UNIT[unit] ?? 3600;
 }
 
-// "3600 s" / "86 400 s" — Δt formatted like the design's status strip.
+// Format Δt for the status strip, for example "3600 s" or "86 400 s".
 export function formatTimeStep(unit: string | undefined): string {
   const seconds = timeStepSeconds(unit);
   const grouped = seconds

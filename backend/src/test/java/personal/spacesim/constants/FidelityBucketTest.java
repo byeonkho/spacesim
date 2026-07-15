@@ -9,16 +9,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Pins the user-facing bucket → (K, N) table and per-integrator landing
- * defaults. Both halves of this contract are load-bearing for the
- * frontend mirror in {@code PlaybackQuality.ts} — drift here means
- * silent quality regressions in the UI.
+ * Pins the production {@link FidelityBucket} constants and
+ * {@link FidelityBucket#defaultFor(String)} results. Both halves of this
+ * contract are load-bearing for the frontend mirror in
+ * {@code PlaybackQuality.ts}; drift here means silent quality regressions in
+ * the UI.
  */
 class FidelityBucketTest {
 
     @Test
     void allBucketsResolveToExpectedKValues() {
-        // Design doc table — Euler/RK4 column.
+        // Production FidelityBucket constants for the Euler/RK4 column.
         assertEquals(20, FidelityBucket.fromWireName("low").keyframesPerKept());
         assertEquals(10, FidelityBucket.fromWireName("medLow").keyframesPerKept());
         assertEquals(5,  FidelityBucket.fromWireName("medium").keyframesPerKept());
@@ -27,7 +28,7 @@ class FidelityBucketTest {
 
     @Test
     void allBucketsResolveToExpectedNValues() {
-        // Design doc table — DP853 column.
+        // Production FidelityBucket constants for the DP853 column.
         assertEquals(3000,  FidelityBucket.fromWireName("low").targetSnapshotsPerChunk());
         assertEquals(5000,  FidelityBucket.fromWireName("medLow").targetSnapshotsPerChunk());
         assertEquals(7500,  FidelityBucket.fromWireName("medium").targetSnapshotsPerChunk());
@@ -92,7 +93,7 @@ class FidelityBucketTest {
 
     @Test
     void defaultForEulerIsMedHigh() {
-        // Per design doc landing defaults.
+        // Production FidelityBucket.defaultFor() landing default.
         assertEquals(FidelityBucket.MED_HIGH, FidelityBucket.defaultFor("euler"));
     }
 

@@ -17,16 +17,15 @@ import personal.spacesim.utils.compressor.ZstdCompressor;
 import personal.spacesim.utils.serializers.BinaryResponseSerializer;
 
 /**
- * Measures the exact before/after chunk size of lowering the per-integrator
- * landing default by one fidelity bucket (the #3 "coarser default density"
- * experiment). Runs the real serialize → zstd pipeline at the v3 wire format,
- * so the numbers are the true wire cost.
+ * Replays the historical one-bucket transition that produced the current RK4
+ * and DP853 defaults. It runs the production serialize → zstd pipeline at the
+ * v3 wire format so both current and previous settings share one harness.
  *
- * <p>Pairs measured (current default → one bucket coarser):
+ * <p>Pairs measured (current default compared with the previous default):
  * <ul>
- *   <li>RK4: MEDIUM (K=5) → MED_LOW (K=10) — a clean 2x fewer keyframes.</li>
- *   <li>DP853: MED_LOW (N=5000) → LOW (N=3000) — ~1.67x fewer (DP853's buckets
- *       bottom out at N=3000).</li>
+ *   <li>RK4: MED_LOW (K=10) compared with MEDIUM (K=5).</li>
+ *   <li>DP853: LOW (N=3000) compared with MED_LOW (N=5000); DP853's buckets
+ *       bottom out at N=3000.</li>
  * </ul>
  *
  * <p>Accuracy of the coarser setting is characterised separately by
@@ -77,10 +76,10 @@ class BucketDefaultBenchmark {
             new AbsoluteDate(2026, 1, 1, 0, 0, 0.0, TimeScalesFactory.getUTC());
 
         List<Variant> variants = List.of(
-            new Variant("RK4   MEDIUM  K=5   (current default)", "rk4", FidelityBucket.MEDIUM, true),
-            new Variant("RK4   MED_LOW K=10  (proposed)",        "rk4", FidelityBucket.MED_LOW, false),
-            new Variant("DP853 MED_LOW N=5000 (current default)","dp853", FidelityBucket.MED_LOW, true),
-            new Variant("DP853 LOW     N=3000 (proposed)",       "dp853", FidelityBucket.LOW, false)
+            new Variant("RK4   MED_LOW K=10  (current default)", "rk4", FidelityBucket.MED_LOW, true),
+            new Variant("RK4   MEDIUM  K=5   (previous default)", "rk4", FidelityBucket.MEDIUM, false),
+            new Variant("DP853 LOW     N=3000 (current default)", "dp853", FidelityBucket.LOW, true),
+            new Variant("DP853 MED_LOW N=5000 (previous default)", "dp853", FidelityBucket.MED_LOW, false)
         );
 
         measureBodySet("DEFAULT (10 bodies)", BODIES_DEFAULT, startDate, variants);
