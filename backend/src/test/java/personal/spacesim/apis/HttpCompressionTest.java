@@ -109,8 +109,7 @@ class HttpCompressionTest {
 
         // 3) Chunk payload is application/octet-stream (zstd already) — must NOT
         //    be gzip-compressed even when the client accepts gzip.
-        String chunkBody = "{\"sessionID\":\"" + sessionId
-            + "\",\"expectedChunkIndex\":0}";
+        String chunkBody = "{\"sessionID\":\"" + sessionId + "\"}";
         HttpResponse<byte[]> chunk = http.send(
             HttpRequest.newBuilder(URI.create(base() + "/chunk"))
                 .header("Content-Type", "application/json")

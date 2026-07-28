@@ -9,6 +9,7 @@ import personal.spacesim.utils.serializers.AbsoluteDateDeserializer;
 import personal.spacesim.utils.serializers.AbsoluteDateSerializer;
 import personal.spacesim.utils.serializers.Vector3DSerializer;
 import tools.jackson.core.StreamWriteFeature;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.module.SimpleModule;
 
 @Configuration(proxyBeanMethods = false)
@@ -22,6 +23,7 @@ public class JacksonConfig {
             module.addSerializer(AbsoluteDate.class, new AbsoluteDateSerializer());
             module.addDeserializer(AbsoluteDate.class, new AbsoluteDateDeserializer());
             builder.addModule(module);
+            builder.disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);
             builder.enable(StreamWriteFeature.WRITE_BIGDECIMAL_AS_PLAIN);
         };
     }
