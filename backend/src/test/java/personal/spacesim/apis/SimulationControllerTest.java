@@ -27,6 +27,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -93,10 +95,39 @@ class SimulationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"sessionID\":\"" + sessionID + "\",\"expectedChunkIndex\":0}"))
                 .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM))
                 .andExpect(result -> {
                     byte[] body = result.getResponse().getContentAsByteArray();
                     if (body.length == 0) throw new AssertionError("expected chunk bytes");
                 });
+    }
+
+    @Test
+    void initializeResponseKeepsPublicJsonShape() throws Exception {
+        String body = """
+                {
+                  "celestialBodyNames": ["Sun", "Earth"],
+                  "date": "2024-01-01T00:00:00.000",
+                  "frame": "ICRF",
+                  "integrator": "EULER",
+                  "timeStepUnit": "days",
+                  "fidelityBucket": null
+                }
+                """;
+
+        mockMvc.perform(post("/api/simulation/initialize")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.celestialBodyPropertiesList.length()").value(2))
+                .andExpect(jsonPath("$.celestialBodyPropertiesList[0].name").value("SUN"))
+                .andExpect(jsonPath("$.celestialBodyPropertiesList[0].mass").isNumber())
+                .andExpect(jsonPath("$.celestialBodyPropertiesList[0].mu").isNumber())
+                .andExpect(jsonPath("$.celestialBodyPropertiesList[0].radius").isNumber())
+                .andExpect(jsonPath("$.celestialBodyPropertiesList[0].position").doesNotExist())
+                .andExpect(jsonPath("$.celestialBodyPropertiesList[0].velocity").doesNotExist())
+                .andExpect(jsonPath("$.simulationMetaData.sessionID").isString());
     }
 
     @Test
@@ -144,7 +175,8 @@ class SimulationControllerTest {
         mockMvc.perform(post("/api/simulation/initialize")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(""));
 
         assertEquals(sessionCountBefore, service.getAllSimulations().size(),
                 "duplicate rejection must not create a session");
