@@ -108,7 +108,7 @@ public class HorizonsStateCache {
                 try (InputStream in = seed.getInputStream()) {
                     DiskEntry entry = JSON.readValue(in, DiskEntry.class);
                     store.put(new Key(entry.spkId(), entry.epochSeconds()), entry.toState());
-                } catch (IOException e) {
+                } catch (IOException | JacksonException e) {
                     log.warn("Skipping corrupt prebaked Horizons entry {}: {}",
                             seed, e.toString());
                 }
@@ -186,7 +186,7 @@ public class HorizonsStateCache {
             } catch (AtomicMoveNotSupportedException ame) {
                 Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING);
             }
-        } catch (IOException e) {
+        } catch (IOException | JacksonException e) {
             // Disk write failure is not fatal — the in-memory cache still
             // serves the rest of this process; only future cold-start
             // efficiency is lost.
