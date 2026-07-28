@@ -8,22 +8,29 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.zip.GZIPInputStream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 class SentryAutoConfigurationTest {
 
-    private static final CountDownLatch ENVELOPE_RECEIVED = new CountDownLatch(1);
+    private static CountDownLatch envelopeReceived;
+    private static AtomicReference<String> probeEnvelope;
     private static HttpServer server;
 
     @Autowired
@@ -32,8 +39,13 @@ class SentryAutoConfigurationTest {
     @Autowired
     private IScopes scopes;
 
+    @Autowired
+    private SentryExceptionResolver resolver;
+
     @DynamicPropertySource
     static void sentryProperties(DynamicPropertyRegistry registry) {
+        envelopeReceived = new CountDownLatch(1);
+        probeEnvelope = new AtomicReference<>();
         try {
             server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         } catch (IOException e) {
@@ -41,11 +53,21 @@ class SentryAutoConfigurationTest {
         }
         server.createContext("/", exchange -> {
             try {
-                exchange.getRequestBody().transferTo(OutputStream.nullOutputStream());
+                byte[] body = exchange.getRequestBody().readAllBytes();
+                if ("gzip".equalsIgnoreCase(
+                        exchange.getRequestHeaders().getFirst("Content-Encoding"))) {
+                    body = new GZIPInputStream(
+                            new ByteArrayInputStream(body)).readAllBytes();
+                }
+                String envelope = new String(body, StandardCharsets.UTF_8);
+                if (envelope.contains("boot4-sentry-probe")
+                        && envelope.contains("Spring7ExceptionResolver")) {
+                    probeEnvelope.set(envelope);
+                    envelopeReceived.countDown();
+                }
                 exchange.sendResponseHeaders(200, -1);
             } finally {
                 exchange.close();
-                ENVELOPE_RECEIVED.countDown();
             }
         });
         server.start();
@@ -67,14 +89,24 @@ class SentryAutoConfigurationTest {
 
     @Test
     void boot4AutoConfigurationWiresMvcAndSendsEvents() throws Exception {
-        assertNotNull(context.getBean(SentryExceptionResolver.class));
+        assertEquals(resolver, context.getBean(SentryExceptionResolver.class));
         assertTrue(scopes.isEnabled(), "Sentry scopes must be enabled with a DSN");
 
-        scopes.captureException(new IllegalStateException("boot4-sentry-probe"));
+        MockHttpServletRequest request =
+                new MockHttpServletRequest("GET", "/api/simulation/probe");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        resolver.resolveException(
+                request,
+                response,
+                null,
+                new IllegalStateException("boot4-sentry-probe"));
         scopes.flush(5_000);
 
         assertTrue(
-                ENVELOPE_RECEIVED.await(5, TimeUnit.SECONDS),
-                "the local endpoint must receive a Sentry envelope");
+                envelopeReceived.await(5, TimeUnit.SECONDS),
+                "the local endpoint must receive the MVC resolver's probe envelope");
+        assertNotNull(probeEnvelope.get());
+        assertTrue(probeEnvelope.get().contains("boot4-sentry-probe"));
+        assertTrue(probeEnvelope.get().contains("Spring7ExceptionResolver"));
     }
 }
