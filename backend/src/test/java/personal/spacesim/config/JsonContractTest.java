@@ -1,12 +1,12 @@
 package personal.spacesim.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Test;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -19,7 +19,7 @@ class JsonContractTest {
     private record WirePayload(AbsoluteDate date, Vector3D vector) {}
 
     @Autowired
-    private ObjectMapper mapper;
+    private JsonMapper mapper;
 
     @Test
     void preservesAbsoluteDateAndVector3DWireShape() throws Exception {

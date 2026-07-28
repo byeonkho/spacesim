@@ -1,10 +1,10 @@
 package personal.spacesim.apis;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -42,7 +42,7 @@ class HttpCompressionTest {
     private int port;
 
     private final HttpClient http = HttpClient.newHttpClient();
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final JsonMapper mapper = JsonMapper.builder().build();
 
     private String base() {
         return "http://localhost:" + port + "/api/simulation";
@@ -109,7 +109,8 @@ class HttpCompressionTest {
 
         // 3) Chunk payload is application/octet-stream (zstd already) — must NOT
         //    be gzip-compressed even when the client accepts gzip.
-        String chunkBody = "{\"sessionID\":\"" + sessionId + "\"}";
+        String chunkBody = "{\"sessionID\":\"" + sessionId
+            + "\",\"expectedChunkIndex\":0}";
         HttpResponse<byte[]> chunk = http.send(
             HttpRequest.newBuilder(URI.create(base() + "/chunk"))
                 .header("Content-Type", "application/json")

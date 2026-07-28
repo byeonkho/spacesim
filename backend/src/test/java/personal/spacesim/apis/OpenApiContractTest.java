@@ -1,13 +1,14 @@
 package personal.spacesim.apis;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,9 +42,10 @@ class OpenApiContractTest {
     // module root when running tests).
     private static final Path SPEC_FILE = Path.of("openapi.json");
 
-    private static final ObjectMapper CANONICAL = new ObjectMapper()
-            .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)
-            .enable(SerializationFeature.INDENT_OUTPUT);
+    private static final JsonMapper CANONICAL = JsonMapper.builder()
+            .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
+            .enable(SerializationFeature.INDENT_OUTPUT)
+            .build();
 
     @Autowired
     private MockMvc mockMvc;
@@ -60,7 +62,7 @@ class OpenApiContractTest {
         // and strip the volatile `servers` block if present.
         JsonNode tree = CANONICAL.readTree(raw);
         if (tree.has("servers")) {
-            ((com.fasterxml.jackson.databind.node.ObjectNode) tree).remove("servers");
+            ((ObjectNode) tree).remove("servers");
         }
         String canonical = CANONICAL.writeValueAsString(tree) + "\n";
 
