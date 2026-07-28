@@ -7,14 +7,18 @@ Date: 2026-07-28
 Migrate the backend from Spring Boot 3.5.16 to Spring Boot 4 in two
 production-observed stages:
 
-1. Spring Boot 4.0.7 with springdoc 3.0.3 and a complete Jackson 3 migration.
+1. Spring Boot 4.0.7 with a complete Jackson 3 production migration and
+   springdoc 3.0.3 as test-only contract tooling.
 2. Spring Boot 4.1.0 only after the first stage has run in production for at
    least 24 hours without an unexplained error.
 
-The first stage is one atomic, contract-preserving change. It does not use
-Spring Boot's deprecated Jackson 2 compatibility module or classic starters.
-It does not change the public HTTP API, generated frontend types, JSON formats,
-binary chunk format, or simulation behavior.
+The first stage is one atomic, contract-preserving change. The production
+runtime uses Jackson 3 databind plus Jackson's retained annotations artifact.
+Swagger Core and Jackson 2 databind exist only in the test dependency graph,
+and the deployed application does not serve `/v3/api-docs`. The migration does
+not use Spring Boot's deprecated Jackson 2 compatibility module or classic
+starters. It does not change the public HTTP API, generated frontend types,
+JSON formats, binary chunk format, or simulation behavior.
 
 ## Why upgrade
 
@@ -27,7 +31,8 @@ feature.
   Framework 7, Jakarta EE 11, and Tomcat 11.
 - Adopts Jackson 3 directly instead of accumulating a deprecated Jackson 2
   bridge that would require another migration.
-- Aligns springdoc with its supported Spring Boot 4 line.
+- Aligns the test-only springdoc contract generator with its supported Spring
+  Boot 4 line.
 - Uses Spring Boot 4's focused production and test starters, making framework
   dependencies more explicit.
 - Reduces the size and urgency of a future forced migration.
@@ -73,7 +78,7 @@ References:
 ### Included
 
 - Spring Boot parent 3.5.16 to 4.0.7.
-- springdoc 2.8.17 to 3.0.3.
+- springdoc 2.8.17 to 3.0.3 for test-only contract generation.
 - Replacement of the deprecated web starter with the explicit Spring MVC
   starter.
 - Adoption of Spring Boot 4's modular MVC test starter.
@@ -102,9 +107,10 @@ continues to run on Eclipse Temurin 25.
 
 ### Framework baseline
 
-Use Spring Boot 4.0.7, Spring Framework 7, the explicit Spring MVC starter,
-Actuator, and springdoc 3.0.3. Use the focused MVC test starter rather than
-restoring the broad Spring Boot 3 classpath through a classic starter.
+Use Spring Boot 4.0.7, Spring Framework 7, the explicit Spring MVC starter, and
+Actuator in production. Use the focused MVC test starter and springdoc 3.0.3
+for contract generation rather than restoring the broad Spring Boot 3
+classpath through a classic starter.
 
 The existing controller, service, DTO, simulation, compression, and filter
 boundaries remain in place. Dependency changes must not leak into the
@@ -117,9 +123,10 @@ must not replace it with a manually constructed mapper.
 
 Custom Orekit serializers and the deserializer are registered through a
 Jackson 3 module or an equivalent Spring Boot Jackson 3 extension point. A
-narrow builder customizer may retain explicitly required generator behavior.
-Broad Jackson 2 default emulation is not enabled unless a contract test proves
-that a required behavior cannot be reproduced narrowly.
+narrow builder customizer retains explicitly required generator behavior and
+disables `FAIL_ON_NULL_FOR_PRIMITIVES`. This preserves the previously accepted
+behavior in which a missing primitive request property keeps its Java default
+value. No broader Jackson 2 default emulation is enabled.
 
 The request and response path remains:
 
@@ -136,10 +143,17 @@ written files must also be readable by the Spring Boot 3.5 version so a rollback
 can reuse the same cache directory safely. A corrupt entry remains a logged
 warning that is skipped; it never prevents application startup.
 
-### Test and artifact mappers
+### Test-only OpenAPI tooling and artifact mappers
 
-- `OpenApiContractTest` uses a dedicated deterministic Jackson 3 mapper for
-  parsing, sorting, normalization, and output.
+- springdoc 3.0.3, Swagger Core, and Jackson 2 databind are test dependencies
+  used only for contract generation. They are absent from the production
+  runtime dependency graph.
+- `OpenApiContractTest` generates the OpenAPI document in a test application
+  context, then uses a dedicated deterministic Jackson 3 mapper for parsing,
+  sorting, normalization, and output.
+- The committed `backend/openapi.json` remains the frontend code-generation
+  contract. `OpenApiContractTest` generates it in write mode and fails on drift
+  in its default assertion mode.
 - Preset generation uses the Spring-managed `JsonMapper` because its manifest
   must match live API serialization.
 - Tests that only parse response JSON may use a local minimal Jackson 3 mapper
@@ -163,8 +177,10 @@ Railway port binding.
 - `Vector3D` remains an object with `x`, `y`, and `z` numeric properties.
 - Horizons cache files remain compatible in both upgrade and rollback
   directions.
-- `/v3/api-docs` remains semantically identical after volatile metadata and
-  object ordering are normalized.
+- The committed `backend/openapi.json` remains semantically identical after
+  volatile metadata and object ordering are normalized.
+- The production application does not expose `/v3/api-docs`; OpenAPI
+  generation remains a test-only build concern.
 - Generated TypeScript API types have no semantic diff.
 - Known invalid requests retain their current status codes and sanitized
   response behavior.
@@ -232,9 +248,18 @@ Performance comparisons are diagnostic gates:
 - Investigate post-chunk memory growth above roughly 15 percent or 50 MiB.
 - Block when a regression is unexplained or operationally meaningful.
 
+The verified Spring Boot 4.0.7 candidate remained below every investigation
+threshold:
+
+- Production image size decreased by 2.235 percent.
+- Readiness measured 1.67, 1.66, and 1.66 seconds.
+- Like-for-like memory after one chunk measured 265.3 MiB and 267.2 MiB against
+  the 257.3 MiB baseline, increases of roughly 3.1 and 3.9 percent.
+
 ## Rollout
 
-After review, verification, and explicit merge authorization:
+After review, verification, and explicit merge authorization, merge is followed
+by a separate production deployment gate:
 
 1. Confirm the exact Railway deployment reaches `SUCCESS`.
 2. Confirm startup logs show Spring Boot 4.0.7 and Java 25 with no
@@ -246,6 +271,10 @@ After review, verification, and explicit merge authorization:
 7. Observe at least one Railway sleep and wake cycle.
 8. Hold Spring Boot 4.1 work for 24 hours without an unexplained production
    error.
+
+The 24-hour observation window begins only after the exact post-merge
+deployment and operational checks succeed. Local verification and merge do not
+start that clock.
 
 Any contract, runtime, or operational regression discovered during the
 observation window triggers rollback. A corrected migration must pass the

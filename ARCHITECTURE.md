@@ -28,7 +28,7 @@ End-to-end hosted simulation. A user picks bodies, frame, integrator, and time s
    Cloudflare Pages                                      Railway
 ```
 
-**Backend.** Spring Boot 3 + Orekit 13. `POST /api/simulation/initialize` builds a session with bodies, frame, integrator, and start date; subsequent `POST /api/simulation/chunk` calls return zstd-compressed binary trajectories. After each chunk is served, the next 10k-step block is speculatively pre-computed on a daemon executor so subsequent requests hit cache. Sessions are tracked by sessionID and evicted by a periodic idle-timeout sweeper.
+**Backend.** Spring Boot 4 + Orekit 13. `POST /api/simulation/initialize` builds a session with bodies, frame, integrator, and start date; subsequent `POST /api/simulation/chunk` calls return zstd-compressed binary trajectories. After each chunk is served, the next 10k-step block is speculatively pre-computed on a daemon executor so subsequent requests hit cache. Sessions are tracked by sessionID and evicted by a periodic idle-timeout sweeper.
 
 **Frontend.** Next.js + React Three Fiber. Redux Toolkit holds a typed-array-backed chunk buffer (`Float64Array` positions, velocities, and timestamps) laid out in the same row-major shape as the wire format, giving O(1) lookup by timestep index. The decode worker transfers its typed-array buffers to the main thread without cloning; Redux then uses one `Float64Array.set()` bulk copy to append them to the long-lived buffer. An async thunk fetches the next chunk when the buffer dips below a speed-aware threshold (`max(1000, speedMultiplier × FPS × rolling-fetch-latency × 1.5)`), and `copyWithin`-shifts the oldest entries left when capacity is reached. Capacity is byte-budget-derived at session start (12 MB mobile / 48 MB desktop) so it scales inversely with body count. The render loop tape-plays the buffer at a target frame rate via R3F's `useFrame`; the scene supports Real and Stylized scale presets with per-parent moon-system scaling.
 
@@ -203,7 +203,7 @@ Two issues that look plausible on a code read but were checked during review and
 
 | Layer | Choice | Why |
 |---|---|---|
-| Backend framework | Spring Boot 3 (Java 21 LTS) | Familiar, batteries-included; HTTP/2 supports independently retryable indexed chunk delivery |
+| Backend framework | Spring Boot 4.0 (Java 21 target, Temurin 25 runtime) | Current Spring baseline with focused MVC/RestClient modules; HTTP/2 supports independently retryable indexed chunk delivery |
 | Astrodynamics | Orekit 13 | JPL ephemerides, ICRF/GCRF reference frames, validated propagators; avoids reinventing physics |
 | Wire compression | Zstd | Good ratio on the binary trajectory format; small WASM decoder client-side |
 | Frontend framework | Next.js (CSR) | Project is interactive; SSR not relevant here |
