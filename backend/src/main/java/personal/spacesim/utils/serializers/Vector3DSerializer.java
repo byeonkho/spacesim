@@ -1,20 +1,23 @@
 package personal.spacesim.utils.serializers;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
-import java.io.IOException;
-
-public class Vector3DSerializer extends JsonSerializer<Vector3D> {
+public class Vector3DSerializer extends ValueSerializer<Vector3D> {
 
     @Override
-    public void serialize(Vector3D value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        gen.writeStartObject();
-        gen.writeNumberField("x", value.getX());
-        gen.writeNumberField("y", value.getY());
-        gen.writeNumberField("z", value.getZ());
-        gen.writeEndObject();
+    public void serialize(
+            Vector3D value,
+            JsonGenerator generator,
+            SerializationContext context
+    ) throws JacksonException {
+        generator.writeStartObject();
+        generator.writeNumberProperty("x", value.getX());
+        generator.writeNumberProperty("y", value.getY());
+        generator.writeNumberProperty("z", value.getZ());
+        generator.writeEndObject();
     }
 }

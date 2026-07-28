@@ -1,11 +1,12 @@
 package personal.spacesim.simulation.body.horizons;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -69,7 +70,7 @@ public class HorizonsStateCache {
         }
     }
 
-    private static final ObjectMapper JSON = new ObjectMapper();
+    private static final JsonMapper JSON = JsonMapper.builder().build();
 
     private final ConcurrentHashMap<Key, HorizonsResponseParser.State> store =
             new ConcurrentHashMap<>();
@@ -139,7 +140,7 @@ public class HorizonsStateCache {
             DiskEntry entry = JSON.readValue(file.toFile(), DiskEntry.class);
             Key key = new Key(entry.spkId(), entry.epochSeconds());
             store.put(key, entry.toState());
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             // Corrupt JSON, truncated write from a prior crash, schema drift —
             // any single bad file would otherwise prevent boot. Log and skip;
             // the next access for that key will re-fetch.

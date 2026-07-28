@@ -1,16 +1,19 @@
 package personal.spacesim.utils.serializers;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import org.orekit.time.AbsoluteDate;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
-import java.io.IOException;
-
-public class AbsoluteDateSerializer extends JsonSerializer<AbsoluteDate> {
+public class AbsoluteDateSerializer extends ValueSerializer<AbsoluteDate> {
 
     @Override
-    public void serialize(AbsoluteDate value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        gen.writeString(value.toString());
+    public void serialize(
+            AbsoluteDate value,
+            JsonGenerator generator,
+            SerializationContext context
+    ) throws JacksonException {
+        generator.writeString(value.toString());
     }
 }
