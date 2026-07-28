@@ -25,7 +25,6 @@
     "@types/three": "^0.185.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "dotenv": "^16.4.7",
     "lucide-react": "^1.14.0",
     "next": "^16.2.6",
     "prettier": "^3.4.2",
