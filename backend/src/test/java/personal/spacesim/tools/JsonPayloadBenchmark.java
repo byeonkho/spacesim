@@ -1,6 +1,5 @@
 package personal.spacesim.tools;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.luben.zstd.Zstd;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,6 +24,7 @@ import personal.spacesim.services.SimulationSessionService;
 import personal.spacesim.simulation.Simulation;
 import personal.spacesim.simulation.SimulationFactory;
 import personal.spacesim.simulation.body.CelestialBodyWrapper;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Measurement tool: quantifies JSON payload sizes for the two HTTP endpoints
@@ -84,9 +84,9 @@ class JsonPayloadBenchmark {
     @Autowired private SimulationSessionService simulationSessionService;
     @Autowired private GroundTruthProvider      groundTruthProvider;
 
-    // Autowire the project's ObjectMapper so JSON output exactly matches the
+    // Autowire the project's JsonMapper so JSON output exactly matches the
     // wire: custom Vector3D / AbsoluteDate serializers + WRITE_BIGDECIMAL_AS_PLAIN.
-    @Autowired private ObjectMapper objectMapper;
+    @Autowired private JsonMapper objectMapper;
 
     @Test
     void measure() throws Exception {

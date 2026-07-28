@@ -14,6 +14,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class HorizonsStateCacheTest {
 
+    private static final String BOOT3_DISK_ENTRY_JSON =
+            "{\"spkId\":\"2000433\",\"epochSeconds\":0,"
+                    + "\"px\":1.5E11,\"py\":2.5E10,\"pz\":3.5E9,"
+                    + "\"vx\":40000.0,\"vy\":5000.0,\"vz\":600.0}";
+
     @Test
     void cachesPerSpkIdAndEpoch(@TempDir Path cacheDir) {
         AtomicInteger calls = new AtomicInteger();
@@ -113,6 +118,10 @@ class HorizonsStateCacheTest {
         assertTrue(Files.exists(expected),
             "Expected cache file at " + expected + "; listing: "
                 + Files.list(cacheDir).toList());
+        assertEquals(
+                BOOT3_DISK_ENTRY_JSON,
+                Files.readString(expected),
+                "Jackson 3 must preserve the Boot 3 cache schema byte-for-byte");
     }
 
     @Test

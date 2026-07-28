@@ -1,8 +1,5 @@
 package personal.spacesim.assets;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.orekit.time.AbsoluteDate;
@@ -13,6 +10,9 @@ import personal.spacesim.constants.FidelityBucket;
 import personal.spacesim.dtos.SimulationResponseDTO;
 import personal.spacesim.services.SimulationSessionService;
 import personal.spacesim.utils.serializers.BinaryResponseSerializer;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
@@ -112,7 +112,7 @@ class PresetClipAssetGeneratorTest {
     // The Spring-configured mapper, so the body-list JSON serializes exactly as
     // the live /initialize endpoint does (no plain-ObjectMapper drift).
     @Autowired
-    private ObjectMapper mapper;
+    private JsonMapper mapper;
 
     @Test
     void writeBundles() throws Exception {
